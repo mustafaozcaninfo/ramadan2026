@@ -23,6 +23,34 @@
     "shareApp": "Share App",
     "feedback": "Feedback"
   },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageDescription": "Change application language",
+    "notifications": "Notifications",
+    "notificationsDescription": "Manage Suhoor and Iftar reminders",
+    "general": "General",
+    "preferences": "Preferences"
+  },
+  "about": {
+    "title": "About",
+    "appName": "Ramadan 2026 Doha",
+    "description": "Ramadan calendar and dua app specially designed for Doha, Qatar",
+    "features": "Features",
+    "featurePrayerTimes": "Daily prayer times (Suhoor, Iftar and all prayers)",
+    "featureCountdown": "Live countdown (for Suhoor and Iftar)",
+    "featureCalendar": "30-day Ramadan calendar",
+    "featureDuas": "Daily dua collection",
+    "featureNotifications": "Reminder notifications (15, 10, 5 minutes and at prayer time)",
+    "featurePWA": "Progressive Web App (PWA) support",
+    "featureOffline": "Offline functionality",
+    "featureMultilingual": "Turkish and English language support",
+    "location": "Location",
+    "method": "Method",
+    "dataSource": "Data Source",
+    "version": "Version",
+    "versionNumber": "1.0.0"
+  },
   "home": {
     "title": "Ramadan 2026 Doha",
     "subtitle": "Iftar & Suhoor Schedule",

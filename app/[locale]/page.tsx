@@ -2,9 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { getTodayPrayerTimes, getRamadanDay, getPrayerTimes } from '@/lib/prayer';
 import { PrayerTimeCard } from '@/components/PrayerTimeCard';
 import { DuaOfTheDay } from '@/components/DuaOfTheDay';
-import { NotificationButton } from '@/components/NotificationButton';
 import { AzanButton } from '@/components/AzanButton';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Navigation } from '@/components/Navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MenuButton } from '@/components/MenuButton';
@@ -160,16 +158,8 @@ export default async function HomePage({
           {/* Dua of the Day */}
           <DuaOfTheDay locale={locale as 'tr' | 'en'} />
 
-          {/* Notification Button */}
-          <NotificationButton />
-
           {/* Azan Button */}
           <AzanButton />
-
-          {/* Language Switcher (moved down) */}
-          <div className="flex justify-end pt-2">
-            <LanguageSwitcher />
-          </div>
 
           {/* Calendar Link */}
           <Link href="/calendar">

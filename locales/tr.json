@@ -23,6 +23,34 @@
     "shareApp": "Uygulamayı Paylaş",
     "feedback": "Geri Bildirim"
   },
+  "settings": {
+    "title": "Ayarlar",
+    "language": "Dil",
+    "languageDescription": "Uygulama dilini değiştirin",
+    "notifications": "Bildirimler",
+    "notificationsDescription": "Sahur ve İftar hatırlatıcılarını yönetin",
+    "general": "Genel",
+    "preferences": "Tercihler"
+  },
+  "about": {
+    "title": "Hakkında",
+    "appName": "Ramadan 2026 Doha",
+    "description": "Doha, Qatar için özel olarak hazırlanmış Ramazan takvimi ve dua uygulaması",
+    "features": "Özellikler",
+    "featurePrayerTimes": "Günlük namaz vakitleri (Sahur, İftar ve tüm vakitler)",
+    "featureCountdown": "Canlı geri sayım (Sahur ve İftar için)",
+    "featureCalendar": "30 günlük Ramazan takvimi",
+    "featureDuas": "Günlük dua koleksiyonu",
+    "featureNotifications": "Hatırlatıcı bildirimleri (15, 10, 5 dakika ve vakit zamanında)",
+    "featurePWA": "Progressive Web App (PWA) desteği",
+    "featureOffline": "Çevrimdışı çalışma",
+    "featureMultilingual": "Türkçe ve İngilizce dil desteği",
+    "location": "Konum",
+    "method": "Metod",
+    "dataSource": "Veri Kaynağı",
+    "version": "Sürüm",
+    "versionNumber": "1.0.0"
+  },
   "home": {
     "title": "Ramadan 2026 Doha",
     "subtitle": "İftar ve Sahur Takvimi",

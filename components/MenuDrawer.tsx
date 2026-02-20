@@ -33,20 +33,14 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
     {
       icon: Settings,
       label: t('settings'),
-      href: '#',
-      onClick: () => {
-        // Settings functionality can be added later
-        onClose();
-      },
+      href: '/settings',
+      onClick: onClose,
     },
     {
       icon: Info,
       label: tMenu('about') || (locale === 'tr' ? 'Hakkında' : 'About'),
-      href: '#',
-      onClick: () => {
-        // About modal can be added later
-        onClose();
-      },
+      href: '/about',
+      onClick: onClose,
     },
   ];
 
