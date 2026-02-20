@@ -29,12 +29,18 @@ function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCard
 
   const textColor = variant === 'sahur' ? 'text-blue-100' : 'text-ramadan-gold';
 
+  // Visual indicator when time is very close (less than 1 hour)
+  const isLowTime = (label.toLowerCase().includes('minute') || label.toLowerCase().includes('dakika')) && value < 5;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.1, duration: 0.3 }}
-      className={`flex flex-col items-center justify-center ${gradientClass} ${borderClass} rounded-2xl p-4 sm:p-5 md:p-6 min-w-[70px] sm:min-w-[90px] md:min-w-[110px] border-2 shadow-lg shadow-black/20 backdrop-blur-sm hover:scale-105 transition-all duration-300`}
+      className={`flex flex-col items-center justify-center ${gradientClass} ${borderClass} rounded-2xl p-4 sm:p-5 md:p-6 flex-1 max-w-[100px] sm:max-w-[120px] border-2 shadow-lg shadow-black/20 backdrop-blur-sm hover:scale-105 transition-all duration-300 ${isLowTime ? 'ring-2 ring-red-400/50 ring-opacity-75' : ''}`}
+      role="timer"
+      aria-label={`${value} ${label}`}
+      style={{ willChange: 'transform' }}
     >
       <motion.div
         key={value}
@@ -119,8 +125,34 @@ export function Countdown({ targetTime, label, locale = 'tr', variant = 'iftar' 
         { value: timeRemaining.seconds, label: labels[3] },
       ];
 
+  // Check if countdown reached zero
+  const isZero = timeRemaining.days === 0 && timeRemaining.hours === 0 && 
+                 timeRemaining.minutes === 0 && timeRemaining.seconds === 0;
+
+  useEffect(() => {
+    if (isZero && typeof window !== 'undefined') {
+      // Announce when countdown reaches zero
+      const announcement = locale === 'tr' 
+        ? 'Süre doldu!'
+        : 'Time is up!';
+      
+      // Create a live region for announcement
+      const announcementEl = document.createElement('div');
+      announcementEl.setAttribute('role', 'status');
+      announcementEl.setAttribute('aria-live', 'polite');
+      announcementEl.setAttribute('aria-atomic', 'true');
+      announcementEl.className = 'sr-only';
+      announcementEl.textContent = announcement;
+      document.body.appendChild(announcementEl);
+      
+      setTimeout(() => {
+        document.body.removeChild(announcementEl);
+      }, 1000);
+    }
+  }, [isZero, locale]);
+
   return (
-    <div className="w-full">
+    <div className="w-full" role="timer" aria-live="polite" aria-atomic="false" aria-label={label || undefined}>
       {label && (
         <p className="text-xs sm:text-sm text-slate-300 dark:text-slate-400 mb-3 sm:mb-4 text-center font-medium">
           {label}

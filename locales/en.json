@@ -14,7 +14,8 @@
     "duaOfTheDay": "Dua of the Day",
     "azan": "Azan",
     "source": "Source",
-    "officialQatarMethod": "Official Qatar Method"
+    "officialQatarMethod": "Official Qatar Method",
+    "navigation": "Main navigation"
   },
   "home": {
     "title": "Ramadan 2026 Doha",
@@ -41,7 +42,8 @@
     "allPrayerTimes": "Prayer Times",
     "dayDua": "Dua of the Day",
     "expand": "View details",
-    "collapse": "Close"
+    "collapse": "Close",
+    "scrollToToday": "Go to Today"
   },
   "notifications": {
     "permissionRequest": "Notification Permission Required",

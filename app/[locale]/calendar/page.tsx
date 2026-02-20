@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Navigation } from '@/components/Navigation';
 import { CalendarDayCard } from '@/components/CalendarDayCard';
+import { ScrollToToday } from '@/components/ScrollToToday';
+import { CalendarCardSkeleton } from '@/components/LoadingSkeleton';
 import { Link } from '@/lib/i18n/routing';
+import { isToday } from 'date-fns';
 export default async function CalendarPage({
   params,
 }: {
@@ -45,7 +48,8 @@ export default async function CalendarPage({
         </div>
 
         <div className="max-w-6xl mx-auto">
-          <div className="flex justify-end mb-3 sm:mb-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+            {prayerTimes.length > 0 && <ScrollToToday targetId="today" />}
             <LanguageSwitcher />
           </div>
 
@@ -61,18 +65,20 @@ export default async function CalendarPage({
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
               {prayerTimes.map((day, index) => {
                 const date = new Date(startDate);
                 date.setDate(startDate.getDate() + index);
+                const dayId = `day-${index + 1}`;
                 return (
-                  <CalendarDayCard
-                    key={day.data.date.readable}
-                    day={day}
-                    dayNumber={index + 1}
-                    locale={locale as 'tr' | 'en'}
-                    date={date}
-                  />
+                  <div key={day.data.date.readable} id={dayId}>
+                    <CalendarDayCard
+                      day={day}
+                      dayNumber={index + 1}
+                      locale={locale as 'tr' | 'en'}
+                      date={date}
+                    />
+                  </div>
                 );
               })}
             </div>

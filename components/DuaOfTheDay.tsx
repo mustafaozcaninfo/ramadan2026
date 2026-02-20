@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getDuaOfTheDay } from '@/lib/duas';
 import { BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { CopyButton } from './CopyButton';
+import { ShareButton } from './ShareButton';
 
 interface DuaOfTheDayProps {
   locale: 'tr' | 'en';
@@ -11,6 +13,7 @@ interface DuaOfTheDayProps {
 
 export function DuaOfTheDay({ locale }: DuaOfTheDayProps) {
   const dua = getDuaOfTheDay(locale);
+  const shareText = `${dua.title}\n\n${dua.arabic}\n\n${dua.transliteration}\n\n${dua.translation}`;
 
   return (
     <motion.div
@@ -18,24 +21,42 @@ export function DuaOfTheDay({ locale }: DuaOfTheDayProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
+      <Card 
+        className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden"
+        role="article"
+        aria-label={locale === 'tr' ? 'Günün Duası' : 'Dua of the Day'}
+      >
       <div className="absolute inset-0 bg-gradient-to-br from-ramadan-gold/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
 
       <CardHeader className="relative z-10 pb-3">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 bg-ramadan-gold/30 rounded-lg">
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-ramadan-gold" />
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-ramadan-gold/30 rounded-lg">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-ramadan-gold" />
+            </div>
+            <CardTitle className="text-lg sm:text-xl bg-gradient-to-r from-ramadan-gold to-ramadan-green bg-clip-text text-transparent font-bold">
+              {locale === 'tr' ? 'Günün Duası' : 'Dua of the Day'}
+            </CardTitle>
           </div>
-          <CardTitle className="text-lg sm:text-xl bg-gradient-to-r from-ramadan-gold to-ramadan-green bg-clip-text text-transparent font-bold">
-            {locale === 'tr' ? 'Günün Duası' : 'Dua of the Day'}
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <CopyButton 
+              text={shareText}
+              label={locale === 'tr' ? 'Dua kopyalandı' : 'Dua copied'}
+              className="h-8 px-2 sm:px-3 text-xs"
+            />
+            <ShareButton 
+              title={dua.title}
+              text={shareText}
+              className="h-8 px-2 sm:px-3 text-xs"
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3 sm:space-y-4 relative z-10 pt-2">
         <div>
           <h3 className="font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-slate-100">{dua.title}</h3>
           <div className="bg-slate-700/50 rounded-lg p-3 sm:p-4 mb-2 sm:mb-3 border border-slate-600/40">
-            <p className="text-xl sm:text-2xl text-right leading-relaxed text-ramadan-green font-arabic drop-shadow-lg">
+            <p className="text-xl sm:text-2xl text-right leading-relaxed text-ramadan-green font-arabic drop-shadow-lg" lang="ar">
               {dua.arabic}
             </p>
           </div>

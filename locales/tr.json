@@ -14,7 +14,8 @@
     "duaOfTheDay": "Günün Duası",
     "azan": "Ezan",
     "source": "Kaynak",
-    "officialQatarMethod": "Resmi Qatar Metodu"
+    "officialQatarMethod": "Resmi Qatar Metodu",
+    "navigation": "Ana navigasyon"
   },
   "home": {
     "title": "Ramadan 2026 Doha",
@@ -41,7 +42,8 @@
     "allPrayerTimes": "Namaz Vakitleri",
     "dayDua": "Günün Duası",
     "expand": "Detayları aç",
-    "collapse": "Kapat"
+    "collapse": "Kapat",
+    "scrollToToday": "Bugüne Git"
   },
   "notifications": {
     "permissionRequest": "Bildirim izni gerekli",

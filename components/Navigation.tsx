@@ -16,7 +16,11 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/98 via-slate-900/95 to-slate-900/90 backdrop-blur-md border-t border-slate-700/50 z-50 safe-area-inset-bottom shadow-2xl shadow-black/20">
+    <nav 
+      className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/98 via-slate-900/95 to-slate-900/90 backdrop-blur-md border-t border-slate-700/50 z-50 safe-area-inset-bottom shadow-2xl shadow-black/20"
+      role="navigation"
+      aria-label={t('navigation') || 'Main navigation'}
+    >
       <div className="container mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-around py-2 sm:py-3">
           {navItems.map((item) => {
@@ -32,6 +36,8 @@ export function Navigation() {
                     ? 'text-ramadan-green bg-gradient-to-b from-ramadan-green/10 to-transparent'
                     : 'text-slate-400 active:text-ramadan-green hover:text-slate-300'
                 )}
+                aria-current={isActive ? 'page' : undefined}
+                aria-label={item.label}
               >
                 {isActive && (
                   <div className="absolute inset-0 bg-gradient-to-b from-ramadan-green/5 to-transparent rounded-xl"></div>

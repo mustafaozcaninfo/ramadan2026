@@ -117,7 +117,7 @@ export function PrayerTimeCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 rounded-xl p-4 sm:p-5 border border-blue-500/40 shadow-lg shadow-blue-500/20 backdrop-blur-sm hover:border-blue-400/60 transition-all duration-300 relative"
+      className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 rounded-xl p-4 sm:p-5 border border-blue-500/60 shadow-lg shadow-blue-500/30 backdrop-blur-sm hover:border-blue-400/80 transition-all duration-300 relative flex flex-col"
     >
       <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
         <div className="p-1.5 sm:p-2 bg-blue-500/30 rounded-lg">
@@ -130,9 +130,11 @@ export function PrayerTimeCard({
       <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 tabular-nums drop-shadow-lg">
         {sahurHasPassedToday ? nextFajr : fajr}
       </div>
-      <Countdown targetTime={sahurTargetTime} label={sahurLabel} locale={locale} variant="sahur" />
-      {/* Güneş Doğuşu: mobilde countdown altında (iç içe geçmesin), desktop'ta sağ altta */}
-      <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-slate-400 sm:absolute sm:bottom-4 sm:right-4 sm:mt-0">
+      <div className="flex-1">
+        <Countdown targetTime={sahurTargetTime} label={sahurLabel} locale={locale} variant="sahur" />
+      </div>
+      {/* Güneş Doğuşu: flex layout ile mobilde countdown altında, desktop'ta sağ altta */}
+      <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-slate-400 sm:mt-4">
         <Sun className="w-3.5 h-3.5 shrink-0 text-amber-400/80" aria-hidden />
         <span className="truncate">
           {locale === 'tr' ? 'Güneş Doğuşu' : 'Sunrise'}: <span className="text-slate-200 font-semibold tabular-nums">{sunrise}</span>
@@ -147,7 +149,7 @@ export function PrayerTimeCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 rounded-xl p-4 sm:p-5 border border-ramadan-gold/50 shadow-lg shadow-ramadan-gold/30 backdrop-blur-sm hover:border-ramadan-gold/70 transition-all duration-300 relative overflow-hidden"
+      className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 rounded-xl p-4 sm:p-5 border border-ramadan-gold/60 shadow-lg shadow-ramadan-gold/40 backdrop-blur-sm hover:border-ramadan-gold/80 transition-all duration-300 relative overflow-hidden"
     >
       {/* Gold glow effect - Daha belirgin */}
       <div className="absolute inset-0 bg-gradient-to-br from-ramadan-gold/10 to-transparent pointer-events-none"></div>
@@ -172,7 +174,7 @@ export function PrayerTimeCard({
     <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-qatar-maroon/10 via-transparent to-ramadan-green/10 pointer-events-none" aria-hidden />
 
-      <CardHeader className="relative z-10 pb-3 sm:pb-4">
+      <CardHeader className="relative z-10 p-4 sm:p-5 pb-3 sm:pb-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg sm:text-xl bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent font-bold">
@@ -194,7 +196,7 @@ export function PrayerTimeCard({
           {hijriDate && <p className="text-ramadan-gold font-semibold">{hijriDate}</p>}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 sm:space-y-5 relative z-10 pt-2">
+      <CardContent className="p-4 sm:p-5 pt-0 space-y-5 sm:space-y-6 relative z-10">
         {/* Dynamic order: which vakit is next comes first */}
         {isSahurNext ? (
           <>
