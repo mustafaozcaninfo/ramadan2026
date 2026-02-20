@@ -9,8 +9,8 @@ import { Navigation } from '@/components/Navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Link } from '@/lib/i18n/routing';
 import { Button } from '@/components/ui/button';
-import { Calendar } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { Calendar, Menu } from 'lucide-react';
+import { format } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 
 export default async function HomePage({
@@ -41,7 +41,7 @@ export default async function HomePage({
 
   // Format dates with locale support
   const dateLocale = locale === 'tr' ? tr : enUS;
-  
+
   // Parse date from DD-MM-YYYY format or use readable date
   let dateObj: Date;
   if (dateInfo.gregorian.date && dateInfo.gregorian.date.includes('-')) {
@@ -51,17 +51,19 @@ export default async function HomePage({
     // Fallback: use today's date
     dateObj = new Date();
   }
-  
+
   // Get next day's prayer times (for correct next-day countdown)
   const tomorrowObj = new Date(dateObj);
   tomorrowObj.setDate(tomorrowObj.getDate() + 1);
   const tomorrowIso = tomorrowObj.toISOString().split('T')[0];
   const nextDayData = await getPrayerTimes(tomorrowIso);
   const nextTimings = nextDayData.data.timings;
-  
-  // Format gregorian date based on locale
-  const gregorianDate = format(dateObj, 'EEEE, d MMMM yyyy', { locale: dateLocale });
-  
+
+  // Format gregorian & hijri dates based on locale
+  const dayName = format(dateObj, 'EEEE', { locale: dateLocale });
+  const dayDate = format(dateObj, 'd MMMM yyyy', { locale: dateLocale });
+  const gregorianDate = `${dayName}, ${dayDate}`;
+
   // Format hijri date
   const hijriDate = dateInfo.hijri?.day && dateInfo.hijri?.month?.en
     ? `${dateInfo.hijri.day} ${dateInfo.hijri.month.en} ${dateInfo.hijri.year} AH`
@@ -76,18 +78,73 @@ export default async function HomePage({
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl"></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-ramadan-gold rounded-full blur-3xl"></div>
         </div>
-        
+
         {/* Header with animated crescent moon - Mobil optimizasyon */}
         <div className="container mx-auto px-3 sm:px-4 pt-3 sm:pt-4 pb-4 sm:pb-6 relative z-10">
-          <div className="text-center mb-4 sm:mb-6">
-            <div className="inline-block mb-2 sm:mb-3">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-ramadan-green via-ramadan-gold to-qatar-maroon bg-clip-text text-transparent mb-1 drop-shadow-lg">
-                {t('title')}
-              </h1>
+          <div className="mb-4 sm:mb-6">
+            {/* Top bar with date & menu */}
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="text-left">
+                <p className="text-[11px] sm:text-xs uppercase tracking-[0.25em] text-slate-300">
+                  {locale === 'tr' ? 'Bugün' : 'Today'}
+                </p>
+                <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-ramadan-green via-ramadan-gold to-qatar-maroon bg-clip-text text-transparent drop-shadow-lg">
+                  {gregorianDate}
+                </h1>
+                {hijriDate && (
+                  <p className="mt-1 text-xs sm:text-sm text-ramadan-gold font-semibold">
+                    {hijriDate}
+                  </p>
+                )}
+                {ramadanDay !== null && (
+                  <p className="mt-2 inline-flex items-center rounded-full bg-slate-800/70 border border-slate-600/60 px-3 py-1 text-[11px] sm:text-xs font-semibold text-slate-100 shadow-ramadan-glow">
+                    {locale === 'tr' ? `Ramazan ${ramadanDay}. Gün` : `Ramadan Day ${ramadanDay}`}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                aria-label={locale === 'tr' ? 'Menü' : 'Menu'}
+                className="mt-1 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-900/70 text-slate-200 shadow-lg backdrop-blur-sm hover:border-ramadan-green/70 hover:text-ramadan-green transition-colors"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
             </div>
-            <p className="text-slate-200 text-sm sm:text-base font-medium">{t('subtitle')}</p>
-            <div className="mt-2 sm:mt-3 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-qatar-maroon/30 backdrop-blur-sm rounded-full border border-qatar-maroon/40 shadow-lg">
-              <span className="text-white text-xs sm:text-sm font-semibold">{tCommon('location')}</span>
+
+            {/* Hero banner with Ramadan image */}
+            <div
+              className="relative overflow-hidden rounded-2xl border border-ramadan-gold/40 bg-slate-900/60 shadow-2xl shadow-black/40"
+              style={{
+                backgroundImage:
+                  "linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.6) 40%, rgba(15,23,42,0.9) 100%), url('/ramadan-bg.jpg')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-amber-200 uppercase tracking-[0.2em]">
+                    {locale === 'tr' ? 'Ramazan 2026' : 'Ramadan 2026'}
+                  </p>
+                  <p className="mt-1 text-lg sm:text-2xl font-semibold text-amber-100 drop-shadow-md">
+                    {locale === 'tr' ? 'Ramazan-ı Şerif Mübarek Olsun' : 'Ramadan Kareem'}
+                  </p>
+                  <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 text-[11px] sm:text-xs text-slate-100 border border-amber-300/40">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-ramadan-glow" />
+                    {tCommon('location')}
+                  </p>
+                </div>
+                <div className="hidden sm:flex flex-col items-end text-right text-xs text-slate-100/90">
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-amber-200">
+                    {locale === 'tr' ? 'İftar & Sahur' : 'Iftar & Suhoor'}
+                  </span>
+                  <span className="mt-1 text-sm font-semibold">
+                    {locale === 'tr'
+                      ? 'Resmi Qatar Metodu'
+                      : 'Official Qatar Method'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
