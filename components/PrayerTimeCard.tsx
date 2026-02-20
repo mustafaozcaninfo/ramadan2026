@@ -86,42 +86,43 @@ export function PrayerTimeCard({
   const isFasting = now >= todayFajrCompare && now < todayMaghribCompare;
   const isIftar = now >= todayMaghribCompare && !isAfterMidnight;
 
-  // Calculate time until next event for status description
-  const getTimeUntilNextEvent = () => {
-    if (isIftar) {
-      return null; // Already iftar time
-    }
+  // Calculate fasting duration (how long we've been fasting today)
+  const getFastingDuration = () => {
     if (isFasting) {
-      const diff = todayMaghribCompare.getTime() - now.getTime();
+      // Currently fasting: calculate from Sahur time to now
+      const diff = now.getTime() - todayFajrCompare.getTime();
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      if (hours > 0) {
-        return locale === 'tr' 
-          ? `${hours} saat ${minutes} dakika sonra iftar`
-          : `${hours}h ${minutes}m until iftar`;
-      }
-      return locale === 'tr'
-        ? `${minutes} dakika sonra iftar`
-        : `${minutes}m until iftar`;
-    }
-    if (isBeforeSahur) {
-      const diff = todayFajrCompare.getTime() - now.getTime();
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
       if (hours > 0) {
         return locale === 'tr'
-          ? `${hours} saat ${minutes} dakika sonra sahur`
-          : `${hours}h ${minutes}m until suhoor`;
+          ? `Bugün ${hours} saat ${minutes} dakika oruç tutuldu`
+          : `Fasted ${hours}h ${minutes}m today`;
       }
       return locale === 'tr'
-        ? `${minutes} dakika sonra sahur`
-        : `${minutes}m until suhoor`;
+        ? `Bugün ${minutes} dakika oruç tutuldu`
+        : `Fasted ${minutes}m today`;
+    }
+    if (isIftar) {
+      // Iftar time: calculate total fasting duration (Sahur to Iftar)
+      const diff = todayMaghribCompare.getTime() - todayFajrCompare.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      if (hours > 0) {
+        return locale === 'tr'
+          ? `Bugün ${hours} saat ${minutes} dakika oruç tutuldu`
+          : `Fasted ${hours}h ${minutes}m today`;
+      }
+      return locale === 'tr'
+        ? `Bugün ${minutes} dakika oruç tutuldu`
+        : `Fasted ${minutes}m today`;
     }
     return null;
   };
 
   const getStatusBadge = () => {
-    const timeUntil = getTimeUntilNextEvent();
+    const fastingDuration = getFastingDuration();
     
     if (isIftar) {
       return (
@@ -129,9 +130,11 @@ export function PrayerTimeCard({
           <span className="inline-flex items-center rounded-full border-2 border-amber-500 bg-gradient-to-r from-amber-500/90 to-amber-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-amber-500/30">
             {locale === 'tr' ? 'İftar Vakti' : 'Iftar Time'}
           </span>
-          <span className="text-[10px] text-amber-200/80 font-medium">
-            {locale === 'tr' ? 'Oruç açma zamanı' : 'Time to break fast'}
-          </span>
+          {fastingDuration && (
+            <span className="text-[10px] text-amber-200/80 font-medium text-right">
+              {fastingDuration}
+            </span>
+          )}
         </div>
       );
     }
@@ -141,9 +144,9 @@ export function PrayerTimeCard({
           <span className="inline-flex items-center rounded-full border-2 border-emerald-500 bg-gradient-to-r from-emerald-600/90 to-emerald-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/30">
             {locale === 'tr' ? 'Oruçlu' : 'Fasting'}
           </span>
-          {timeUntil && (
+          {fastingDuration && (
             <span className="text-[10px] text-emerald-200/80 font-medium text-right">
-              {timeUntil}
+              {fastingDuration}
             </span>
           )}
         </div>
@@ -155,11 +158,9 @@ export function PrayerTimeCard({
           <span className="inline-flex items-center rounded-full border-2 border-slate-500 bg-gradient-to-r from-slate-600/90 to-slate-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-slate-500/30">
             {locale === 'tr' ? 'Sahur Öncesi' : 'Before Suhoor'}
           </span>
-          {timeUntil && (
-            <span className="text-[10px] text-slate-300/80 font-medium text-right">
-              {timeUntil}
-            </span>
-          )}
+          <span className="text-[10px] text-slate-300/80 font-medium text-right">
+            {locale === 'tr' ? 'Henüz oruç başlamadı' : 'Fasting has not started yet'}
+          </span>
         </div>
       );
     }
@@ -236,18 +237,10 @@ export function PrayerTimeCard({
         </div>
         
         {/* Title Section - Clean and minimal */}
-        <div className="flex items-center gap-2 mb-2">
+        <div className="mb-2">
           <CardTitle className="text-base sm:text-lg bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent font-bold">
             {locale === 'tr' ? 'Namaz Vakitleri' : 'Prayer Times'}
           </CardTitle>
-          {ramadanDay !== null && (
-            <span
-              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold bg-qatar-maroon/50 text-white border border-qatar-maroon/70 shadow-md"
-              aria-label={locale === 'tr' ? `Ramazan ${ramadanDay}. gün` : `Ramadan day ${ramadanDay}`}
-            >
-              {locale === 'tr' ? `${ramadanDay}. Gün` : `Day ${ramadanDay}`}
-            </span>
-          )}
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-5 pt-0 space-y-5 sm:space-y-6 relative z-10">
