@@ -51,7 +51,7 @@ export default async function CalendarPage({
 
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-            {prayerTimes.length > 0 && <ScrollToToday targetId="today" />}
+            {prayerTimes.length > 0 && <ScrollToToday targetId="today" startDate={startDate} />}
             <LanguageSwitcher />
           </div>
 
