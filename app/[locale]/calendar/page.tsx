@@ -5,9 +5,11 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Navigation } from '@/components/Navigation';
 import { CalendarDayCard } from '@/components/CalendarDayCard';
 import { ScrollToToday } from '@/components/ScrollToToday';
+import { ExpandCollapseToggle } from '@/components/ExpandCollapseToggle';
 import { CalendarCardSkeleton } from '@/components/LoadingSkeleton';
 import { Link } from '@/lib/i18n/routing';
 import { isToday } from 'date-fns';
+import { CalendarPageClient } from './CalendarPageClient';
 export default async function CalendarPage({
   params,
 }: {
@@ -65,23 +67,11 @@ export default async function CalendarPage({
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
-              {prayerTimes.map((day, index) => {
-                const date = new Date(startDate);
-                date.setDate(startDate.getDate() + index);
-                const dayId = `day-${index + 1}`;
-                return (
-                  <div key={day.data.date.readable} id={dayId}>
-                    <CalendarDayCard
-                      day={day}
-                      dayNumber={index + 1}
-                      locale={locale as 'tr' | 'en'}
-                      date={date}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+            <CalendarPageClient
+              prayerTimes={prayerTimes}
+              startDate={startDate}
+              locale={locale as 'tr' | 'en'}
+            />
           )}
 
           <div className="text-center text-xs sm:text-sm text-slate-300 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-600/50">

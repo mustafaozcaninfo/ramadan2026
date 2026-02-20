@@ -64,15 +64,21 @@ interface CalendarDayCardProps {
   dayNumber: number;
   locale: 'tr' | 'en';
   date: Date;
+  expanded?: boolean;
+  onToggle?: () => void;
 }
 
-export function CalendarDayCard({ day, dayNumber, locale, date }: CalendarDayCardProps) {
+export function CalendarDayCard({ day, dayNumber, locale, date, expanded: controlledExpanded, onToggle }: CalendarDayCardProps) {
   const t = useTranslations('calendar');
-  const [expanded, setExpanded] = useState(false);
+  const [internalExpanded, setInternalExpanded] = useState(false);
   const dateLocale = locale === 'tr' ? tr : enUS;
   const isTodayDate = isToday(date);
   const timings = day.data.timings;
   const dua = getDuaByDay(dayNumber, locale);
+
+  // Use controlled expanded state if provided, otherwise use internal state
+  const expanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
+  const setExpanded = onToggle || (() => setInternalExpanded(prev => !prev));
 
   return (
     <div
@@ -88,7 +94,7 @@ export function CalendarDayCard({ day, dayNumber, locale, date }: CalendarDayCar
 
       <button
         type="button"
-        onClick={() => setExpanded((e) => !e)}
+        onClick={setExpanded}
         className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ramadan-green focus-visible:ring-offset-2 rounded-lg active:scale-[0.98] transition-transform"
         aria-expanded={expanded}
         aria-controls={`day-${dayNumber}-content`}

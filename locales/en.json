@@ -17,6 +17,12 @@
     "officialQatarMethod": "Official Qatar Method",
     "navigation": "Main navigation"
   },
+  "menu": {
+    "menu": "Menu",
+    "about": "About",
+    "shareApp": "Share App",
+    "feedback": "Feedback"
+  },
   "home": {
     "title": "Ramadan 2026 Doha",
     "subtitle": "Iftar & Suhoor Schedule",
@@ -43,7 +49,9 @@
     "dayDua": "Dua of the Day",
     "expand": "View details",
     "collapse": "Close",
-    "scrollToToday": "Go to Today"
+    "scrollToToday": "Go to Today",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All"
   },
   "notifications": {
     "permissionRequest": "Notification Permission Required",

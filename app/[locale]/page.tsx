@@ -7,9 +7,10 @@ import { AzanButton } from '@/components/AzanButton';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Navigation } from '@/components/Navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { MenuButton } from '@/components/MenuButton';
 import { Link } from '@/lib/i18n/routing';
 import { Button } from '@/components/ui/button';
-import { Calendar, Menu } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 
@@ -102,13 +103,7 @@ export default async function HomePage({
                   </p>
                 )}
               </div>
-              <button
-                type="button"
-                aria-label={locale === 'tr' ? 'Menü' : 'Menu'}
-                className="mt-1 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-900/70 text-slate-200 shadow-lg backdrop-blur-sm hover:border-ramadan-green/70 hover:text-ramadan-green transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ramadan-green focus-visible:ring-offset-2"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
+              <MenuButton locale={locale as 'tr' | 'en'} />
             </div>
 
             {/* Hero banner with Ramadan image */}

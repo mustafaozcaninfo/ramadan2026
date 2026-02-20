@@ -17,6 +17,12 @@
     "officialQatarMethod": "Resmi Qatar Metodu",
     "navigation": "Ana navigasyon"
   },
+  "menu": {
+    "menu": "Menü",
+    "about": "Hakkında",
+    "shareApp": "Uygulamayı Paylaş",
+    "feedback": "Geri Bildirim"
+  },
   "home": {
     "title": "Ramadan 2026 Doha",
     "subtitle": "İftar ve Sahur Takvimi",
@@ -43,7 +49,9 @@
     "dayDua": "Günün Duası",
     "expand": "Detayları aç",
     "collapse": "Kapat",
-    "scrollToToday": "Bugüne Git"
+    "scrollToToday": "Bugüne Git",
+    "expandAll": "Tümünü Aç",
+    "collapseAll": "Tümünü Kapat"
   },
   "notifications": {
     "permissionRequest": "Bildirim izni gerekli",
