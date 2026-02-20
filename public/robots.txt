@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ramadan-2026-doha.vercel.app/sitemap.xml

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bildirim Testi</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #fff;
+    }
+    button {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #059669;
+    }
+    .info {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔔 Bildirim Test Sayfası</h1>
+  
+  <div class="info">
+    <h3>Nasıl Çalışıyor?</h3>
+    <ul>
+      <li><strong>15 dakika önce:</strong> "15 dakika kaldı" bildirimi</li>
+      <li><strong>10 dakika önce:</strong> "10 dakika kaldı" bildirimi</li>
+      <li><strong>5 dakika önce:</strong> "5 dakika kaldı" bildirimi</li>
+      <li><strong>Tam zamanında:</strong> "Sahur Vakti!" / "İftar Vakti!" bildirimi + <strong>Ezan sesi çalar</strong></li>
+    </ul>
+  </div>
+
+  <h2>Test Butonları</h2>
+  
+  <button onclick="testNotificationNow()">Şimdi Bildirim Gönder (Ezan ile)</button>
+  <button onclick="testNotification15min()">15 Dakika Bildirimi Test</button>
+  <button onclick="testAzanSound()">Sadece Ezan Sesi Test</button>
+  <button onclick="requestPermission()">Bildirim İzni İste</button>
+
+  <div class="info">
+    <h3>Durum:</h3>
+    <p id="status">Yükleniyor...</p>
+  </div>
+
+  <script>
+    // Check notification permission
+    function updateStatus() {
+      const statusEl = document.getElementById('status');
+      if (!('Notification' in window)) {
+        statusEl.textContent = '❌ Bu tarayıcı bildirimleri desteklemiyor';
+        return;
+      }
+      
+      const permission = Notification.permission;
+      if (permission === 'granted') {
+        statusEl.textContent = '✅ Bildirim izni verildi';
+      } else if (permission === 'denied') {
+        statusEl.textContent = '❌ Bildirim izni reddedildi';
+      } else {
+        statusEl.textContent = '⚠️ Bildirim izni bekleniyor';
+      }
+    }
+
+    function requestPermission() {
+      if (!('Notification' in window)) {
+        alert('Bu tarayıcı bildirimleri desteklemiyor');
+        return;
+      }
+      
+      Notification.requestPermission().then((permission) => {
+        updateStatus();
+        if (permission === 'granted') {
+          alert('Bildirim izni verildi!');
+        }
+      });
+    }
+
+    function testNotificationNow() {
+      if (Notification.permission !== 'granted') {
+        alert('Önce bildirim izni verin!');
+        return;
+      }
+
+      // Show notification
+      new Notification('İftar Vakti!', {
+        body: 'İftar vakti geldi',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: 'test-iftar-now',
+      });
+
+      // Play azan sound
+      try {
+        const audio = new Audio('/azan.mp3');
+        audio.volume = 0.8;
+        audio.play().catch((error) => {
+          console.error('Ezan çalma hatası:', error);
+          alert('Ezan sesi çalınamadı. Tarayıcı ayarlarından ses izni verin.');
+        });
+      } catch (error) {
+        console.error('Audio oluşturma hatası:', error);
+      }
+    }
+
+    function testNotification15min() {
+      if (Notification.permission !== 'granted') {
+        alert('Önce bildirim izni verin!');
+        return;
+      }
+
+      new Notification('15 dakika kaldı', {
+        body: '15 dakika sonra İftar vakti',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: 'test-15min',
+      });
+    }
+
+    function testAzanSound() {
+      try {
+        const audio = new Audio('/azan.mp3');
+        audio.volume = 0.8;
+        audio.play().catch((error) => {
+          console.error('Ezan çalma hatası:', error);
+          alert('Ezan sesi çalınamadı. Tarayıcı ayarlarından ses izni verin.');
+        });
+      } catch (error) {
+        console.error('Audio oluşturma hatası:', error);
+      }
+    }
+
+    // Initialize
+    updateStatus();
+  </script>
+</body>
+</html>

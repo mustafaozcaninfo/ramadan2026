@@ -1,0 +1,25 @@
+import type { MetadataRoute } from 'next';
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'Ramadan 2026 Doha - İftar & Sahur',
+    short_name: 'Ramadan 2026',
+    description: 'Doha, Qatar için Ramazan 2026 İftar ve Sahur takvimi',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#0f172a',
+    theme_color: '#10b981',
+    icons: [
+      {
+        src: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        src: '/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
+    ],
+  };
+}
