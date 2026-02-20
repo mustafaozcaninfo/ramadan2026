@@ -86,26 +86,81 @@ export function PrayerTimeCard({
   const isFasting = now >= todayFajrCompare && now < todayMaghribCompare;
   const isIftar = now >= todayMaghribCompare && !isAfterMidnight;
 
+  // Calculate time until next event for status description
+  const getTimeUntilNextEvent = () => {
+    if (isIftar) {
+      return null; // Already iftar time
+    }
+    if (isFasting) {
+      const diff = todayMaghribCompare.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      if (hours > 0) {
+        return locale === 'tr' 
+          ? `${hours} saat ${minutes} dakika sonra iftar`
+          : `${hours}h ${minutes}m until iftar`;
+      }
+      return locale === 'tr'
+        ? `${minutes} dakika sonra iftar`
+        : `${minutes}m until iftar`;
+    }
+    if (isBeforeSahur) {
+      const diff = todayFajrCompare.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      if (hours > 0) {
+        return locale === 'tr'
+          ? `${hours} saat ${minutes} dakika sonra sahur`
+          : `${hours}h ${minutes}m until suhoor`;
+      }
+      return locale === 'tr'
+        ? `${minutes} dakika sonra sahur`
+        : `${minutes}m until suhoor`;
+    }
+    return null;
+  };
+
   const getStatusBadge = () => {
+    const timeUntil = getTimeUntilNextEvent();
+    
     if (isIftar) {
       return (
-        <span className="inline-flex items-center rounded-full border-2 border-amber-500 bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-900 shadow-md dark:bg-amber-500/30 dark:text-amber-100 dark:border-amber-400">
-          {locale === 'tr' ? 'İftar Vakti' : 'Iftar Time'}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="inline-flex items-center rounded-full border-2 border-amber-500 bg-gradient-to-r from-amber-500/90 to-amber-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-amber-500/30">
+            {locale === 'tr' ? 'İftar Vakti' : 'Iftar Time'}
+          </span>
+          <span className="text-[10px] text-amber-200/80 font-medium">
+            {locale === 'tr' ? 'Oruç açma zamanı' : 'Time to break fast'}
+          </span>
+        </div>
       );
     }
     if (isFasting) {
       return (
-        <span className="inline-flex items-center rounded-full border-2 border-emerald-500 bg-emerald-800 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-md dark:bg-emerald-700 dark:border-emerald-400">
-          {locale === 'tr' ? 'Oruçlu' : 'Fasting'}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="inline-flex items-center rounded-full border-2 border-emerald-500 bg-gradient-to-r from-emerald-600/90 to-emerald-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/30">
+            {locale === 'tr' ? 'Oruçlu' : 'Fasting'}
+          </span>
+          {timeUntil && (
+            <span className="text-[10px] text-emerald-200/80 font-medium text-right">
+              {timeUntil}
+            </span>
+          )}
+        </div>
       );
     }
     if (isBeforeSahur) {
       return (
-        <span className="inline-flex items-center rounded-full border-2 border-slate-500 bg-slate-600 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-md dark:bg-slate-500 dark:border-slate-400">
-          {locale === 'tr' ? 'Sahur Öncesi' : 'Before Suhoor'}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="inline-flex items-center rounded-full border-2 border-slate-500 bg-gradient-to-r from-slate-600/90 to-slate-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-slate-500/30">
+            {locale === 'tr' ? 'Sahur Öncesi' : 'Before Suhoor'}
+          </span>
+          {timeUntil && (
+            <span className="text-[10px] text-slate-300/80 font-medium text-right">
+              {timeUntil}
+            </span>
+          )}
+        </div>
       );
     }
     return null;
@@ -175,25 +230,24 @@ export function PrayerTimeCard({
       <div className="absolute inset-0 bg-gradient-to-br from-qatar-maroon/10 via-transparent to-ramadan-green/10 pointer-events-none" aria-hidden />
 
       <CardHeader className="relative z-10 p-4 sm:p-5 pb-3 sm:pb-4">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-lg sm:text-xl bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent font-bold">
-              {locale === 'tr' ? 'Bugün' : 'Today'}
-            </CardTitle>
-            {ramadanDay !== null && (
-              <span
-                className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-qatar-maroon/40 text-white border border-qatar-maroon/60 shadow-md"
-                aria-label={locale === 'tr' ? `Ramazan ${ramadanDay}. gün` : `Ramadan day ${ramadanDay}`}
-              >
-                {locale === 'tr' ? `${ramadanDay}. Gün` : `Day ${ramadanDay}`}
-              </span>
-            )}
-          </div>
+        {/* Status Section - Prominent and informative */}
+        <div className="mb-4">
           {getStatusBadge()}
         </div>
-        <div className="text-xs sm:text-sm text-slate-200 mt-2 space-y-0.5">
-          <p className="font-medium">{gregorianDate}</p>
-          {hijriDate && <p className="text-ramadan-gold font-semibold">{hijriDate}</p>}
+        
+        {/* Title Section - Clean and minimal */}
+        <div className="flex items-center gap-2 mb-2">
+          <CardTitle className="text-base sm:text-lg bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent font-bold">
+            {locale === 'tr' ? 'Namaz Vakitleri' : 'Prayer Times'}
+          </CardTitle>
+          {ramadanDay !== null && (
+            <span
+              className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold bg-qatar-maroon/50 text-white border border-qatar-maroon/70 shadow-md"
+              aria-label={locale === 'tr' ? `Ramazan ${ramadanDay}. gün` : `Ramadan day ${ramadanDay}`}
+            >
+              {locale === 'tr' ? `${ramadanDay}. Gün` : `Day ${ramadanDay}`}
+            </span>
+          )}
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-5 pt-0 space-y-5 sm:space-y-6 relative z-10">
