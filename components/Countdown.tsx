@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { getTimeRemaining, parseTimeToDate } from '@/lib/prayer';
 import { motion } from 'framer-motion';
 
 interface CountdownProps {
-  targetTime: string; // HH:mm format
+  targetTime: string; // HH:mm format (fallback when targetDateTime is not provided)
+  targetDateTime?: Date; // Precise target Date (preferred for correct timezone/date handling)
   label: string;
   locale?: 'tr' | 'en';
   variant?: 'sahur' | 'iftar'; // For different color schemes
@@ -58,16 +58,30 @@ function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCard
   );
 }
 
-export function Countdown({ targetTime, label, locale = 'tr', variant = 'iftar' }: CountdownProps) {
-  const [timeRemaining, setTimeRemaining] = useState({ 
+export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', variant = 'iftar' }: CountdownProps) {
+  const [timeRemaining, setTimeRemaining] = useState({
     days: 0,
     hours: 0, 
     minutes: 0, 
     seconds: 0 
   });
 
-  // Memoize target date to avoid recalculation
-  const targetDate = useMemo(() => parseTimeToDate(targetTime), [targetTime]);
+  // Memoize target date to avoid recalculation.
+  // Prefer an explicit Date (with correct day & timezone) when provided.
+  const targetDate = useMemo(() => {
+    if (targetDateTime instanceof Date) {
+      return targetDateTime;
+    }
+    // Fallback: derive Date only from HH:mm (uses local timezone)
+    const [hours, minutes] = targetTime.split(':').map(Number);
+    const now = new Date();
+    const target = new Date();
+    target.setHours(hours ?? 0, minutes ?? 0, 0, 0);
+    if (target.getTime() < now.getTime()) {
+      target.setDate(target.getDate() + 1);
+    }
+    return target;
+  }, [targetTime, targetDateTime]);
 
   // Optimized update function
   const updateCountdown = useCallback(() => {

@@ -1,25 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrayerTimes, getDohaDateString } from '@/lib/prayer';
+import { timingsQuerySchema, getValidatedCityConfig } from '@/lib/api-validation';
+import { checkApiRateLimit } from '@/lib/rate-limit';
 
 /**
  * API Route for fetching prayer times
- * GET /api/timings?date=YYYY-MM-DD
- * If no date provided, returns today's times (Doha date)
+ * GET /api/timings?date=YYYY-MM-DD&city=CityName&country=CountryName
+ * If no date provided, returns today's times (Doha date).
+ * City/country default to Doha, Qatar.
  */
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const date = searchParams.get('date') || getDohaDateString();
-
-    // Validate date format
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const limitResult = await checkApiRateLimit(request, 'timings', 60, 60);
+    if (!limitResult.success) {
       return NextResponse.json(
-        { error: 'Invalid date format. Use YYYY-MM-DD' },
-        { status: 400 }
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': '60' } }
       );
     }
 
-    const data = await getPrayerTimes(date);
+    const searchParams = request.nextUrl.searchParams;
+    const parsed = timingsQuerySchema.safeParse({
+      date: searchParams.get('date') ?? undefined,
+      city: searchParams.get('city') ?? undefined,
+      country: searchParams.get('country') ?? undefined,
+    });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid query. Use date=YYYY-MM-DD, city and country optional.' },
+        { status: 400 }
+      );
+    }
+    const { date: dateParam, city, country } = parsed.data;
+    const date = dateParam ?? getDohaDateString();
+    const cityConfig = getValidatedCityConfig(city, country);
+
+    const data = await getPrayerTimes(date, cityConfig);
 
     return NextResponse.json(data, {
       headers: {

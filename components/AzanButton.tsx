@@ -5,6 +5,7 @@ import { Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/analytics';
 
 export function AzanButton() {
   const t = useTranslations('common');
@@ -47,6 +48,7 @@ export function AzanButton() {
 
   const handlePlay = () => {
     if (!audioRef.current) return;
+    trackEvent('azan_click');
 
     if (isPlaying) {
       audioRef.current.pause();

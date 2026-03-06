@@ -89,7 +89,7 @@ export function areNotificationsEnabled(): boolean {
  * Subscribe to Web Push and register with backend (for iOS 16.4+ PWA and others).
  * Call after notification permission is granted.
  */
-export async function subscribeToPush(locale: 'tr' | 'en'): Promise<boolean> {
+export async function subscribeToPush(locale: 'tr' | 'en', reminderIntervals?: number[]): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   if (!vapid) return false;
@@ -102,13 +102,15 @@ export async function subscribeToPush(locale: 'tr' | 'en'): Promise<boolean> {
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
     });
+    const body: { subscription: object; locale: string; reminderIntervals?: number[] } = {
+      subscription: subscription.toJSON(),
+      locale,
+    };
+    if (reminderIntervals?.length) body.reminderIntervals = reminderIntervals;
     const res = await fetch('/api/push-subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subscription: subscription.toJSON(),
-        locale,
-      }),
+      body: JSON.stringify(body),
     });
     return res.ok;
   } catch {
@@ -125,14 +127,14 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 }
 
 /**
- * Enable notifications and optionally set locale for notification text
+ * Enable notifications and optionally set locale and reminder intervals for notification text
  */
-export function enableNotifications(locale?: 'tr' | 'en'): void {
+export function enableNotifications(locale?: 'tr' | 'en', reminderIntervals?: number[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem('ramadan-notifications-enabled', 'true');
   syncNotificationSettingsToSW(true, locale);
   postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: true, locale });
-  if (locale) void subscribeToPush(locale);
+  if (locale) void subscribeToPush(locale, reminderIntervals);
 }
 
 /**

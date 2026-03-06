@@ -19,6 +19,8 @@
   },
   "menu": {
     "menu": "Menu",
+    "live": "Live",
+    "resources": "Resources",
     "about": "About",
     "shareApp": "Share App",
     "feedback": "Feedback"
@@ -27,8 +29,14 @@
     "title": "Settings",
     "language": "Language",
     "languageDescription": "Change application language",
+    "city": "City",
+    "cityDescription": "Prayer times city (saved in browser)",
     "notifications": "Notifications",
     "notificationsDescription": "Manage Suhoor and Iftar reminders",
+    "reminderIntervals": "Reminder times",
+    "reminderIntervalsDescription": "When to remind (before Suhoor and Iftar)",
+    "minutesBefore": "{count} min before",
+    "atPrayerTime": "At prayer time",
     "general": "General",
     "preferences": "Preferences"
   },
@@ -49,7 +57,9 @@
     "method": "Method",
     "dataSource": "Data Source",
     "version": "Version",
-    "versionNumber": "1.0.0"
+    "versionNumber": "1.0.0",
+    "privacyTitle": "Privacy",
+    "privacyBody": "We use anonymous analytics (e.g. page views and button clicks) to improve the app. No personal data is stored. When you sign in, your settings are stored in your account and synced across devices."
   },
   "home": {
     "title": "Ramadan 2026 Doha",
@@ -80,6 +90,23 @@
     "scrollToToday": "Go to Today",
     "expandAll": "Expand All",
     "collapseAll": "Collapse All"
+  },
+  "resources": {
+    "title": "Resources",
+    "subtitle": "Tasbih and dhikr lists",
+    "afterFajr": "After Fajr",
+    "afterMaghrib": "After Maghrib",
+    "generalDhikr": "General dhikr"
+  },
+  "live": {
+    "title": "QTV Live",
+    "subtitle": "Qatar Television live broadcasts",
+    "selectChannel": "Select Channel",
+    "channel1": "QTV 1",
+    "channel2": "QTV 2",
+    "source": "Source",
+    "sourceNote": "Official live streams from Qatar Television (www.qtv.qa)",
+    "back": "Back"
   },
   "notifications": {
     "permissionRequest": "Notification Permission Required",

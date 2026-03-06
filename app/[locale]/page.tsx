@@ -1,7 +1,10 @@
+import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { getTodayPrayerTimes, getRamadanDay, getPrayerTimes } from '@/lib/prayer';
+import { getCityConfigFromCookie } from '@/lib/cityCookie';
 import { PrayerTimeCard } from '@/components/PrayerTimeCard';
 import { DuaOfTheDay } from '@/components/DuaOfTheDay';
+import { DailyHatim } from '@/components/DailyHatim';
 import { AzanButton } from '@/components/AzanButton';
 import { Navigation } from '@/components/Navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -21,15 +24,16 @@ export default async function HomePage({
   const t = await getTranslations('home');
   const tCommon = await getTranslations('common');
 
-  // Get today's prayer times with error handling
+  const cookieStore = await cookies();
+  const cityConfig = getCityConfigFromCookie(cookieStore.get('ramadan-city')?.value);
+
   let prayerData;
   try {
-    prayerData = await getTodayPrayerTimes();
+    prayerData = await getTodayPrayerTimes(cityConfig);
   } catch (error) {
     console.error('Error fetching prayer times:', error);
-    // Fallback to first day of Ramadan if API fails
     const { getPrayerTimes } = await import('@/lib/prayer');
-    prayerData = await getPrayerTimes('2026-02-18');
+    prayerData = await getPrayerTimes('2026-02-18', cityConfig);
   }
 
   const timings = prayerData.data.timings;
@@ -41,21 +45,26 @@ export default async function HomePage({
   // Format dates with locale support
   const dateLocale = locale === 'tr' ? tr : enUS;
 
-  // Parse date from DD-MM-YYYY format or use readable date
+  // Parse date from DD-MM-YYYY format and also keep an ISO (YYYY-MM-DD) string
   let dateObj: Date;
+  let currentIsoDate = '';
   if (dateInfo.gregorian.date && dateInfo.gregorian.date.includes('-')) {
     const [day, month, year] = dateInfo.gregorian.date.split('-').map(Number);
     dateObj = new Date(year, month - 1, day);
+    currentIsoDate = `${year.toString().padStart(4, '0')}-${month
+      .toString()
+      .padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
   } else {
     // Fallback: use today's date
     dateObj = new Date();
+    currentIsoDate = dateObj.toISOString().split('T')[0];
   }
 
   // Get next day's prayer times (for correct next-day countdown)
   const tomorrowObj = new Date(dateObj);
   tomorrowObj.setDate(tomorrowObj.getDate() + 1);
   const tomorrowIso = tomorrowObj.toISOString().split('T')[0];
-  const nextDayData = await getPrayerTimes(tomorrowIso);
+  const nextDayData = await getPrayerTimes(tomorrowIso, cityConfig);
   const nextTimings = nextDayData.data.timings;
 
   // Format gregorian & hijri dates based on locale
@@ -79,7 +88,7 @@ export default async function HomePage({
         </div>
 
         {/* Header with animated crescent moon - Mobil optimizasyon */}
-        <div className="container mx-auto px-3 sm:px-4 pt-3 sm:pt-4 pb-4 sm:pb-6 relative z-10">
+        <div className="container mx-auto px-3 sm:px-4 pb-4 sm:pb-6 relative z-10 safe-area-inset-top">
           <div className="mb-4 sm:mb-6">
             {/* Top bar with date & menu */}
             <div className="flex items-start justify-between gap-3 mb-4">
@@ -152,17 +161,22 @@ export default async function HomePage({
             hijriDate={hijriDate}
             gregorianDate={gregorianDate}
             ramadanDay={ramadanDay}
+            currentDateIso={currentIsoDate}
+            nextDateIso={tomorrowIso}
             locale={locale as 'tr' | 'en'}
           />
 
           {/* Dua of the Day */}
           <DuaOfTheDay locale={locale as 'tr' | 'en'} />
 
+          {/* Daily Hatim (Juz of the day) */}
+          <DailyHatim ramadanDay={ramadanDay} locale={locale as 'tr' | 'en' | 'ar'} />
+
           {/* Azan Button */}
           <AzanButton />
 
-          {/* Calendar Link */}
-          <Link href="/calendar">
+          {/* Calendar Link - with auto-scroll to today */}
+          <Link href="/calendar?today=1">
             <Button variant="outline" className="w-full">
               <Calendar className="w-4 h-4 mr-2" />
               {tCommon('calendar')}

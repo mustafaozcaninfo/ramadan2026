@@ -3,19 +3,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NotificationButton } from '@/components/NotificationButton';
-import { Globe, Bell } from 'lucide-react';
+import { AuthSection } from '@/components/AuthSection';
+import { CitySelector } from '@/components/CitySelector';
+import { ReminderIntervalsSelector } from '@/components/ReminderIntervalsSelector';
+import { Globe, Bell, User, MapPin, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
+import { useFirestoreSettingsSync } from '@/lib/hooks/useFirestoreSettingsSync';
 
 interface SettingsPageClientProps {
-  locale: 'tr' | 'en';
+  locale: 'tr' | 'en' | 'ar';
 }
 
 export function SettingsPageClient({ locale }: SettingsPageClientProps) {
   const t = useTranslations('settings');
-  const tCommon = useTranslations('common');
+  useFirestoreSettingsSync(locale);
 
   const settingsSections = [
+    {
+      icon: User,
+      title: 'Account',
+      description: 'Sign in to sync settings across devices',
+      component: <AuthSection />,
+    },
     {
       icon: Globe,
       title: t('language'),
@@ -23,10 +33,22 @@ export function SettingsPageClient({ locale }: SettingsPageClientProps) {
       component: <LanguageSwitcher />,
     },
     {
+      icon: MapPin,
+      title: t('city'),
+      description: t('cityDescription'),
+      component: <CitySelector />,
+    },
+    {
       icon: Bell,
       title: t('notifications'),
       description: t('notificationsDescription'),
       component: <NotificationButton />,
+    },
+    {
+      icon: Clock,
+      title: t('reminderIntervals'),
+      description: t('reminderIntervalsDescription'),
+      component: <ReminderIntervalsSelector />,
     },
   ];
 

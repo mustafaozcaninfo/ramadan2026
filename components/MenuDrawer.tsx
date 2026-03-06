@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, Info, Share2, MessageSquare, Calendar, Home } from 'lucide-react';
+import { X, Settings, Info, Calendar, Home, Tv, BookOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import { ShareButton } from './ShareButton';
@@ -28,6 +28,18 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
       icon: Calendar,
       label: t('calendar'),
       href: '/calendar',
+      onClick: onClose,
+    },
+    {
+      icon: Tv,
+      label: tMenu('live') || (locale === 'tr' ? 'Canlı Yayın' : 'Live'),
+      href: '/live',
+      onClick: onClose,
+    },
+    {
+      icon: BookOpen,
+      label: tMenu('resources') || (locale === 'tr' ? 'Kaynaklar' : 'Resources'),
+      href: '/resources',
       onClick: onClose,
     },
     {

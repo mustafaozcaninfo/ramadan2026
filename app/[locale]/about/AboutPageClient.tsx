@@ -15,6 +15,7 @@ import {
   Calculator,
   Database,
   Package,
+  Shield,
 } from 'lucide-react';
 
 interface AboutPageClientProps {
@@ -181,6 +182,26 @@ export function AboutPageClient({ locale }: AboutPageClientProps) {
                 );
               })}
             </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Privacy */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-ramadan-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
+          <CardHeader className="relative z-10 p-4 sm:p-5 pb-3">
+            <CardTitle className="text-lg sm:text-xl font-bold text-slate-100 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-ramadan-green" aria-hidden />
+              {t('privacyTitle')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="relative z-10 p-4 sm:p-5 pt-0">
+            <p className="text-sm text-slate-300 leading-relaxed">{t('privacyBody')}</p>
           </CardContent>
         </Card>
       </motion.div>

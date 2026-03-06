@@ -9,6 +9,8 @@ import {
   disableNotifications,
   requestNotificationPermission,
 } from '@/lib/notifications';
+import { useAppStore } from '@/lib/store/useAppStore';
+import { trackEvent } from '@/lib/analytics';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
@@ -33,10 +35,16 @@ function isSafariOrIOS(): boolean {
 
 export function NotificationButton() {
   const t = useTranslations('notifications');
-  const locale = useLocale() as 'tr' | 'en';
+  const locale = useLocale() as 'tr' | 'en' | 'ar';
+  const user = useAppStore((s) => s.user);
+  const notificationsEnabledFromStore = useAppStore((s) => s.notificationsEnabled);
+  const setNotificationsEnabled = useAppStore((s) => s.setNotificationsEnabled);
+  const reminderIntervals = useAppStore((s) => s.reminderIntervals);
   const [enabled, setEnabled] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+
+  const effectiveEnabled = user ? notificationsEnabledFromStore : enabled;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -51,20 +59,25 @@ export function NotificationButton() {
       const permission = await requestNotificationPermission();
       if (permission.granted) {
         setPermissionGranted(true);
-        enableNotifications(locale);
+        enableNotifications(locale as 'tr' | 'en', reminderIntervals.length ? reminderIntervals : undefined);
         setEnabled(true);
+        setNotificationsEnabled(true);
+        trackEvent('notification_enabled');
         toast.success(t('enableReminders'));
       } else if (permission.denied) {
         toast.error(t('permissionRequestMessage'));
       }
     } else {
-      if (enabled) {
+      if (effectiveEnabled) {
         disableNotifications();
         setEnabled(false);
+        setNotificationsEnabled(false);
         toast.success(t('disableNotifications'));
       } else {
-        enableNotifications(locale);
+        enableNotifications(locale as 'tr' | 'en', reminderIntervals.length ? reminderIntervals : undefined);
         setEnabled(true);
+        setNotificationsEnabled(true);
+        trackEvent('notification_enabled');
         toast.success(t('enableReminders'));
       }
     }
@@ -74,11 +87,11 @@ export function NotificationButton() {
     <div className="space-y-1.5">
       <Button
         onClick={handleToggle}
-        variant={enabled && permissionGranted ? 'default' : 'outline'}
+        variant={effectiveEnabled && permissionGranted ? 'default' : 'outline'}
         className="w-full"
-        aria-label={enabled && permissionGranted ? t('disableNotifications') : t('enableReminders')}
+        aria-label={effectiveEnabled && permissionGranted ? t('disableNotifications') : t('enableReminders')}
       >
-        {enabled && permissionGranted ? (
+        {effectiveEnabled && permissionGranted ? (
           <>
             <Bell className="w-4 h-4 mr-2" />
             {t('disableNotifications')}
@@ -90,6 +103,11 @@ export function NotificationButton() {
           </>
         )}
       </Button>
+      {user && (
+        <p className="text-xs text-slate-400 text-center px-2" role="note">
+          Synced to your account
+        </p>
+      )}
       {isIOS && (
         <p className="text-xs text-slate-400 text-center px-2" role="note">
           {t('iosNote')}

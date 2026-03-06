@@ -1,18 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CalendarDayCard } from '@/components/CalendarDayCard';
 import { ExpandCollapseToggle } from '@/components/ExpandCollapseToggle';
-import { ScrollToToday } from '@/components/ScrollToToday';
 import type { AladhanResponse } from '@/lib/prayer';
 
 interface CalendarPageClientProps {
   prayerTimes: AladhanResponse[];
   startDate: Date;
   locale: 'tr' | 'en';
+  autoScrollToToday?: boolean;
 }
 
-export function CalendarPageClient({ prayerTimes, startDate, locale }: CalendarPageClientProps) {
+export function CalendarPageClient({
+  prayerTimes,
+  startDate,
+  locale,
+  autoScrollToToday,
+}: CalendarPageClientProps) {
   const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>({});
   const allExpanded = Object.values(expandedStates).every(Boolean) && Object.keys(expandedStates).length === prayerTimes.length;
 
@@ -34,6 +39,40 @@ export function CalendarPageClient({ prayerTimes, startDate, locale }: CalendarP
       [dayNumber]: !prev[dayNumber],
     }));
   };
+
+  // When navigated with ?today=1, automatically scroll to today's card on mount
+  useEffect(() => {
+    if (!autoScrollToToday) return;
+
+    const ramadanStartDate = new Date(startDate);
+    ramadanStartDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    const todayMidnight = new Date(today);
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    const diffTime = todayMidnight.getTime() - ramadanStartDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const todayDayNumber = diffDays + 1;
+
+    if (todayDayNumber < 1 || todayDayNumber > prayerTimes.length) {
+      return;
+    }
+
+    const todayCardId = `day-${todayDayNumber}`;
+    const todayCard = document.getElementById(todayCardId);
+
+    if (todayCard) {
+      todayCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      const cardDiv = todayCard.querySelector('div') as HTMLElement | null;
+      if (cardDiv) {
+        cardDiv.classList.add('ring-2', 'ring-ramadan-green', 'ring-opacity-75', 'transition-all');
+        setTimeout(() => {
+          cardDiv.classList.remove('ring-2', 'ring-ramadan-green', 'ring-opacity-75');
+        }, 2000);
+      }
+    }
+  }, [autoScrollToToday, startDate, prayerTimes.length]);
 
   return (
     <>

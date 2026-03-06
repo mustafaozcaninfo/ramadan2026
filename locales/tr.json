@@ -19,6 +19,8 @@
   },
   "menu": {
     "menu": "Menü",
+    "live": "Canlı Yayın",
+    "resources": "Kaynaklar",
     "about": "Hakkında",
     "shareApp": "Uygulamayı Paylaş",
     "feedback": "Geri Bildirim"
@@ -27,8 +29,14 @@
     "title": "Ayarlar",
     "language": "Dil",
     "languageDescription": "Uygulama dilini değiştirin",
+    "city": "Şehir",
+    "cityDescription": "Namaz vakitleri şehri (tarayıcıda saklanır)",
     "notifications": "Bildirimler",
     "notificationsDescription": "Sahur ve İftar hatırlatıcılarını yönetin",
+    "reminderIntervals": "Hatırlatma zamanları",
+    "reminderIntervalsDescription": "Ne zaman hatırlatılsın (Sahur ve İftar öncesi)",
+    "minutesBefore": "{count} dk önce",
+    "atPrayerTime": "Vakit anında",
     "general": "Genel",
     "preferences": "Tercihler"
   },
@@ -49,7 +57,9 @@
     "method": "Metod",
     "dataSource": "Veri Kaynağı",
     "version": "Sürüm",
-    "versionNumber": "1.0.0"
+    "versionNumber": "1.0.0",
+    "privacyTitle": "Gizlilik",
+    "privacyBody": "Uygulamayı iyileştirmek için anonim analitik (sayfa görüntülemeleri ve buton tıklamaları) kullanıyoruz. Kişisel veri saklanmaz. Giriş yaptığınızda ayarlarınız hesabınızda saklanır ve cihazlar arasında senkronize edilir."
   },
   "home": {
     "title": "Ramadan 2026 Doha",
@@ -80,6 +90,23 @@
     "scrollToToday": "Bugüne Git",
     "expandAll": "Tümünü Aç",
     "collapseAll": "Tümünü Kapat"
+  },
+  "resources": {
+    "title": "Kaynaklar",
+    "subtitle": "Tesbihat ve zikir listeleri",
+    "afterFajr": "Sabah namazı sonrası",
+    "afterMaghrib": "Akşam namazı sonrası",
+    "generalDhikr": "Genel zikir"
+  },
+  "live": {
+    "title": "QTV Canlı Yayın",
+    "subtitle": "Qatar Televizyonu canlı yayınları",
+    "selectChannel": "Kanal Seçin",
+    "channel1": "QTV 1",
+    "channel2": "QTV 2",
+    "source": "Kaynak",
+    "sourceNote": "Qatar Television (www.qtv.qa) resmi canlı yayınları",
+    "back": "Geri"
   },
   "notifications": {
     "permissionRequest": "Bildirim izni gerekli",

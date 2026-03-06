@@ -1,6 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { Analytics } from '@vercel/analytics/react';
 import { routing } from '@/lib/i18n/routing';
 import { Inter } from 'next/font/google';
 import '../globals.css';
@@ -54,7 +55,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className="dark">
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="dark">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -68,6 +69,7 @@ export default async function LocaleLayout({
           <Toaster position="top-center" theme="dark" />
           <SWRegister />
           <NotificationManager />
+          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>

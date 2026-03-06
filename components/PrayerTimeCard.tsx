@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Moon, Sun } from 'lucide-react';
-import { formatTimeRemaining, getTimeRemaining, parseTimeToDate, isIftarTime, isFastingTime } from '@/lib/prayer';
 import { Countdown } from './Countdown';
 import { motion } from 'framer-motion';
 
@@ -15,6 +14,8 @@ interface PrayerTimeCardProps {
   hijriDate: string;
   gregorianDate: string;
   ramadanDay: number | null; // Ramazan günü (1-30)
+  currentDateIso: string; // YYYY-MM-DD for today's Doha date
+  nextDateIso: string; // YYYY-MM-DD for next day's Doha date
   locale: 'tr' | 'en';
 }
 
@@ -27,34 +28,40 @@ export function PrayerTimeCard({
   hijriDate,
   gregorianDate,
   ramadanDay,
+  currentDateIso,
+  nextDateIso,
   locale,
 }: PrayerTimeCardProps) {
-  // Calculate current status based on today's times
+  // Calculate current status based on explicit Doha dates to avoid timezone drift
   const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  
-  // Parse prayer times
-  const [fajrHour, fajrMinute] = fajr.split(':').map(Number);
-  const [maghribHour, maghribMinute] = maghrib.split(':').map(Number);
-  
-  // Create comparison dates for today
-  const todayFajrCompare = new Date();
-  todayFajrCompare.setHours(fajrHour, fajrMinute, 0, 0);
-  
-  const todayMaghribCompare = new Date();
-  todayMaghribCompare.setHours(maghribHour, maghribMinute, 0, 0);
-  
-  // Has today's Sahur / Iftar passed?
-  const sahurHasPassedToday = now >= todayFajrCompare;
-  const iftarHasPassedToday = now >= todayMaghribCompare;
+
+  const makeDohaDateTime = (isoDate: string, time: string): Date => {
+    const [year, month, day] = isoDate.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    // Construct ISO string with explicit +03:00 offset for Doha
+    const yyyy = year.toString().padStart(4, '0');
+    const mm = (month ?? 1).toString().padStart(2, '0');
+    const dd = (day ?? 1).toString().padStart(2, '0');
+    const hh = (hours ?? 0).toString().padStart(2, '0');
+    const min = (minutes ?? 0).toString().padStart(2, '0');
+    return new Date(`${yyyy}-${mm}-${dd}T${hh}:${min}:00+03:00`);
+  };
+
+  const todayFajrDate = makeDohaDateTime(currentDateIso, fajr);
+  const todayMaghribDate = makeDohaDateTime(currentDateIso, maghrib);
+  const nextFajrDate = makeDohaDateTime(nextDateIso, nextFajr);
+  const nextMaghribDate = makeDohaDateTime(nextDateIso, nextMaghrib);
+
+  // Has today's Sahur / Iftar passed (in Doha time)?
+  const sahurHasPassedToday = now >= todayFajrDate;
+  const iftarHasPassedToday = now >= todayMaghribDate;
 
   // Determine which event is next (for card ordering)
-  const isSahurNext = now < todayFajrCompare || now >= todayMaghribCompare;
+  const isSahurNext = now < todayFajrDate || now >= todayMaghribDate;
 
-  // Countdown targets: if today's vakit geçtiyse, bir sonraki günün saatine göre
-  const sahurTargetTime = sahurHasPassedToday ? nextFajr : fajr;
-  const iftarTargetTime = iftarHasPassedToday ? nextMaghrib : maghrib;
+  // Countdown targets: if today's vakit geçtiyse, bir sonraki günün tam tarihine göre
+  const sahurTargetDate = sahurHasPassedToday ? nextFajrDate : todayFajrDate;
+  const iftarTargetDate = iftarHasPassedToday ? nextMaghribDate : todayMaghribDate;
 
   // Labels: belirt if it's for tomorrow
   const sahurLabel =
@@ -75,22 +82,22 @@ export function PrayerTimeCard({
         ? "Time until tomorrow's Iftar"
         : 'Time Remaining';
 
-  // Check if we're past midnight (00:00 - 04:49) - this is "Sahur Öncesi"
-  const isAfterMidnight = currentHour < fajrHour || (currentHour === fajrHour && currentMinute < fajrMinute);
+  // Check if we're past midnight relative to today's Fajr in Doha – this is \"Sahur Öncesi\"
+  const isAfterMidnight = now < todayFajrDate;
   
   // Status logic (Doha gününe göre; gece yarısı sonrası “sonraki gün” sayılır):
   // 1. Gece yarısı – Sahur: "Sahur Öncesi"
   // 2. Sahur – İftar: "Oruçlu"
   // 3. İftar – gece yarısı: "İftar Vakti"
   const isBeforeSahur = isAfterMidnight;
-  const isFasting = now >= todayFajrCompare && now < todayMaghribCompare;
-  const isIftar = now >= todayMaghribCompare && !isAfterMidnight;
+  const isFasting = now >= todayFajrDate && now < todayMaghribDate;
+  const isIftar = now >= todayMaghribDate && !isAfterMidnight;
 
   // Calculate fasting duration (how long we've been fasting today)
   const getFastingDuration = () => {
     if (isFasting) {
       // Currently fasting: calculate from Sahur time to now
-      const diff = now.getTime() - todayFajrCompare.getTime();
+      const diff = now.getTime() - todayFajrDate.getTime();
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       
@@ -105,7 +112,7 @@ export function PrayerTimeCard({
     }
     if (isIftar) {
       // Iftar time: calculate total fasting duration (Sahur to Iftar)
-      const diff = todayMaghribCompare.getTime() - todayFajrCompare.getTime();
+      const diff = todayMaghribDate.getTime() - todayFajrDate.getTime();
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       
@@ -187,7 +194,13 @@ export function PrayerTimeCard({
         {sahurHasPassedToday ? nextFajr : fajr}
       </div>
       <div className="flex-1">
-        <Countdown targetTime={sahurTargetTime} label={sahurLabel} locale={locale} variant="sahur" />
+        <Countdown
+          targetTime={sahurHasPassedToday ? nextFajr : fajr}
+          targetDateTime={sahurTargetDate}
+          label={sahurLabel}
+          locale={locale}
+          variant="sahur"
+        />
       </div>
       {/* Güneş Doğuşu: flex layout ile mobilde countdown altında, desktop'ta sağ altta */}
       <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-slate-400 sm:mt-4">
@@ -221,7 +234,13 @@ export function PrayerTimeCard({
         {iftarHasPassedToday ? nextMaghrib : maghrib}
       </div>
       <div className="relative z-10">
-        <Countdown targetTime={iftarTargetTime} label={iftarLabel} locale={locale} variant="iftar" />
+        <Countdown
+          targetTime={iftarHasPassedToday ? nextMaghrib : maghrib}
+          targetDateTime={iftarTargetDate}
+          label={iftarLabel}
+          locale={locale}
+          variant="iftar"
+        />
       </div>
     </motion.div>
   );

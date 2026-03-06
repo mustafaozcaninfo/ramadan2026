@@ -3,16 +3,19 @@
 import { Link } from '@/lib/i18n/routing';
 import { usePathname } from '@/lib/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { Home, Calendar } from 'lucide-react';
+import { Home, Calendar, Tv, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Navigation() {
   const t = useTranslations('common');
+  const tMenu = useTranslations('menu');
   const pathname = usePathname();
 
   const navItems = [
     { href: '/', label: t('appName'), icon: Home },
     { href: '/calendar', label: t('calendar'), icon: Calendar },
+    { href: '/live', label: tMenu('live'), icon: Tv },
+    { href: '/resources', label: tMenu('resources'), icon: BookOpen },
   ];
 
   return (

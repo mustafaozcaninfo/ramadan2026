@@ -202,7 +202,7 @@ export default function TestPage() {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="container mx-auto px-4 py-8 relative z-10 safe-area-inset-top">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent">

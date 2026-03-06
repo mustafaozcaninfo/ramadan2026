@@ -42,7 +42,19 @@ npm run build
 
 # Production sunucusunu başlat
 npm start
+
+# Unit ve integration testleri (Jest + React Testing Library)
+npm test
+
+# Testleri watch modunda çalıştır
+npm run test:watch
 ```
+
+## 🧪 Testler ve Erişilebilirlik
+
+- **Unit / integration**: `npm test` — Jest ile `lib/prayer`, Countdown, DuaOfTheDay ve diğer bileşenler test edilir.
+- **Erişilebilirlik**: Countdown ve ana bileşenlerde `jest-axe` ile otomatik a11y testleri çalışır; `npm test` içinde yer alır.
+- **Lighthouse**: Production build sonrası Lighthouse CI ile erişilebilirlik ve performans skorları almak için `lighthouserc.js` kullanılabilir (opsiyonel: `npx @lhci/cli@latest autorun`).
 
 ## 🎨 Gerekli Asset'ler
 

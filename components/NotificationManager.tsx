@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { areNotificationsEnabled, showNotification, setNotificationLocale } from '@/lib/notifications';
+import { areNotificationsEnabled, showNotification, setNotificationLocale, subscribeToPush } from '@/lib/notifications';
 import { parseTimeToDate } from '@/lib/prayer';
 import { useLocale } from 'next-intl';
+import { useAppStore } from '@/lib/store/useAppStore';
+import { SUPPORTED_CITIES } from '@/lib/prayer';
 
 const NOTIFICATION_STRINGS = {
   tr: {
@@ -43,10 +45,23 @@ function isSafariOrIOS(): boolean {
 export function NotificationManager() {
   const scheduledRef = useRef<Set<number>>(new Set());
   const locale = useLocale() as 'tr' | 'en';
+  const reminderIntervals = useAppStore((s) => s.reminderIntervals);
+  const city = useAppStore((s) => s.city);
+  const cityConfig = SUPPORTED_CITIES.find((c) => c.city === city) ?? SUPPORTED_CITIES[0];
 
   useEffect(() => {
     setNotificationLocale(locale);
   }, [locale]);
+
+  // Re-subscribe with updated reminderIntervals when they change (updates Redis)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!areNotificationsEnabled()) return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const loc: 'tr' | 'en' = (locale as string) === 'ar' ? 'tr' : (locale as 'tr' | 'en');
+    const intervals = reminderIntervals.length ? reminderIntervals : [15, 10, 5, 0];
+    void subscribeToPush(loc, intervals);
+  }, [reminderIntervals, locale]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -56,10 +71,13 @@ export function NotificationManager() {
 
     const scheduled = scheduledRef.current;
     const strings = NOTIFICATION_STRINGS[locale];
+    const intervals = reminderIntervals.length ? reminderIntervals : [0];
 
     const scheduleNotifications = async () => {
       try {
-        const res = await fetch('/api/timings');
+        const res = await fetch(
+          `/api/timings?city=${encodeURIComponent(cityConfig.city)}&country=${encodeURIComponent(cityConfig.country)}`
+        );
         if (!res.ok) return;
         const data = await res.json();
         const timings = data?.data?.timings;
@@ -73,12 +91,12 @@ export function NotificationManager() {
         scheduled.clear();
 
         const reminders = [
-          ...([15, 10, 5, 0].map((minutes) => ({
+          ...(intervals.map((minutes) => ({
             time: new Date(fajrTime.getTime() - minutes * 60 * 1000),
             minutes,
             type: 'fajr' as const,
           }))),
-          ...([15, 10, 5, 0].map((minutes) => ({
+          ...(intervals.map((minutes) => ({
             time: new Date(maghribTime.getTime() - minutes * 60 * 1000),
             minutes,
             type: 'maghrib' as const,
@@ -111,7 +129,7 @@ export function NotificationManager() {
       scheduled.forEach((id) => clearTimeout(id));
       scheduled.clear();
     };
-  }, [locale]);
+  }, [locale, reminderIntervals, city]);
 
   return null;
 }

@@ -1,9 +1,45 @@
 /**
  * Prayer times utilities
- * Uses local Ramadan 2026 data from PDF (Qatar Official Method)
+ * Uses local Ramadan 2026 data from PDF (Qatar Official Method) for Doha; Aladhan API for other cities.
  */
 
 import ramadanData from './ramadan-2026-data.json';
+
+export interface CityConfig {
+  city: string;
+  country: string;
+}
+
+export const SUPPORTED_CITIES: CityConfig[] = [
+  { city: 'Doha', country: 'Qatar' },
+  { city: 'Istanbul', country: 'Turkey' },
+  { city: 'London', country: 'United Kingdom' },
+  { city: 'Dubai', country: 'United Arab Emirates' },
+  { city: 'Riyadh', country: 'Saudi Arabia' },
+  { city: 'Cairo', country: 'Egypt' },
+];
+
+const DEFAULT_CITY: CityConfig = { city: 'Doha', country: 'Qatar' };
+const RAMADAN_START = '2026-02-18';
+const RAMADAN_END = '2026-03-19';
+
+function isDoha(config?: CityConfig): boolean {
+  if (!config) return true;
+  return config.city === 'Doha' && config.country === 'Qatar';
+}
+
+function isDateInRamadanRange(date: string): boolean {
+  return date >= RAMADAN_START && date <= RAMADAN_END;
+}
+
+function buildAladhanUrl(date: string, config: CityConfig): string {
+  const params = new URLSearchParams({
+    city: config.city,
+    country: config.country,
+    method: '10',
+  });
+  return `https://api.aladhan.com/v1/timingsByCity/${date}?${params.toString()}`;
+}
 
 export interface PrayerTimes {
   Fajr: string; // Sahur/İmsak
@@ -67,29 +103,26 @@ export interface AladhanResponse {
 }
 
 /**
- * Get prayer times for a specific date from local Ramadan data
+ * Get prayer times for a specific date.
+ * Uses local Ramadan 2026 data only for Doha when date is in range; otherwise Aladhan API.
  * @param date - Date string in format YYYY-MM-DD
- * @returns Prayer times for the date
+ * @param cityConfig - Optional city/country; default Doha, Qatar
  */
-export async function getPrayerTimes(date: string): Promise<AladhanResponse> {
-  // Find the day in Ramadan data
-  const dayData = (ramadanData as RamadanDayData[]).find(
-    (day) => day.date === date
-  );
+export async function getPrayerTimes(
+  date: string,
+  cityConfig: CityConfig = DEFAULT_CITY
+): Promise<AladhanResponse> {
+  const useLocal =
+    isDoha(cityConfig) && isDateInRamadanRange(date);
+  const dayData = useLocal
+    ? (ramadanData as RamadanDayData[]).find((day) => day.date === date)
+    : null;
 
   if (!dayData) {
-    // Fallback to API if date not found in Ramadan data
-    const response = await fetch(
-      `https://api.aladhan.com/v1/timingsByCity/${date}?city=Doha&country=Qatar&method=10`,
-      {
-        next: { revalidate: 60 * 60 * 24 },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch prayer times');
-    }
-
+    const response = await fetch(buildAladhanUrl(date, cityConfig), {
+      next: { revalidate: 60 * 60 * 24 },
+    });
+    if (!response.ok) throw new Error('Failed to fetch prayer times');
     return response.json();
   }
 
@@ -109,13 +142,10 @@ export async function getPrayerTimes(date: string): Promise<AladhanResponse> {
   };
 
   try {
-    const hijriResponse = await fetch(
-      `https://api.aladhan.com/v1/timingsByCity/${date}?city=Doha&country=Qatar&method=10`,
-      {
-        next: { revalidate: 60 * 60 * 24 * 365 }, // Cache for 1 year
-        signal: AbortSignal.timeout(5000), // 5 second timeout
-      }
-    );
+    const hijriResponse = await fetch(buildAladhanUrl(date, DEFAULT_CITY), {
+      next: { revalidate: 60 * 60 * 24 * 365 },
+      signal: AbortSignal.timeout(5000),
+    });
     if (hijriResponse.ok) {
       const hijriResult = await hijriResponse.json();
       hijriData = hijriResult.data.date.hijri;
@@ -179,12 +209,22 @@ export async function getPrayerTimes(date: string): Promise<AladhanResponse> {
 }
 
 /**
- * Get prayer times for today
- * If today is not in Ramadan, shows tomorrow's times (first day of Ramadan)
- * Uses local data if date is during Ramadan, otherwise falls back to API
+ * Get prayer times for today (Doha date).
+ * If today is not in Ramadan, shows tomorrow's times when using Doha.
+ * Uses local data for Doha when in range; otherwise Aladhan API.
  */
-export async function getTodayPrayerTimes(): Promise<AladhanResponse> {
+export async function getTodayPrayerTimes(
+  cityConfig: CityConfig = DEFAULT_CITY
+): Promise<AladhanResponse> {
   const today = getDohaDateString();
+
+  if (!isDoha(cityConfig)) {
+    const response = await fetch(buildAladhanUrl(today, cityConfig), {
+      next: { revalidate: 60 * 60 * 24 },
+    });
+    if (!response.ok) throw new Error('Failed to fetch prayer times');
+    return response.json();
+  }
 
   let dayData = (ramadanData as RamadanDayData[]).find(
     (day) => day.date === today
@@ -194,45 +234,31 @@ export async function getTodayPrayerTimes(): Promise<AladhanResponse> {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = getDohaDateString(tomorrow);
-    
     dayData = (ramadanData as RamadanDayData[]).find(
       (day) => day.date === tomorrowStr
     );
-    
-    // If tomorrow is in Ramadan, use tomorrow's data
-    if (dayData) {
-      return getPrayerTimes(tomorrowStr);
-    }
+    if (dayData) return getPrayerTimes(tomorrowStr, cityConfig);
   }
 
-  // If found in Ramadan data, use it
-  if (dayData) {
-    return getPrayerTimes(dayData.date);
-  }
+  if (dayData) return getPrayerTimes(dayData.date, cityConfig);
 
-  // Fallback to API for non-Ramadan dates
-  const response = await fetch(
-    `https://api.aladhan.com/v1/timingsByCity/${today}?city=Doha&country=Qatar&method=10`,
-    {
-      next: { revalidate: 60 * 60 * 24 },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch prayer times');
-  }
-
+  const response = await fetch(buildAladhanUrl(today, cityConfig), {
+    next: { revalidate: 60 * 60 * 24 },
+  });
+  if (!response.ok) throw new Error('Failed to fetch prayer times');
   return response.json();
 }
 
 /**
- * Get prayer times for the entire Ramadan month (18 Feb - 19 Mar 2026)
- * Uses local Ramadan 2026 data from PDF
+ * Get prayer times for the entire Ramadan month (18 Feb - 19 Mar 2026).
+ * Uses local data for Doha; otherwise fetches from API per day.
  */
-export async function getRamadanPrayerTimes(): Promise<AladhanResponse[]> {
-  // Use local Ramadan data directly
+export async function getRamadanPrayerTimes(
+  cityConfig: CityConfig = DEFAULT_CITY
+): Promise<AladhanResponse[]> {
+  const days = ramadanData as RamadanDayData[];
   return Promise.all(
-    (ramadanData as RamadanDayData[]).map((dayData) => getPrayerTimes(dayData.date))
+    days.map((dayData) => getPrayerTimes(dayData.date, cityConfig))
   );
 }
 

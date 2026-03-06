@@ -144,12 +144,16 @@ export async function GET(request: NextRequest) {
     const keys = await redis.keys(`${REDIS_PREFIX}*`);
     let sent = 0;
 
+    const defaultIntervals = [15, 10, 5, 0];
     for (const key of keys) {
       if (key.startsWith(`${REDIS_PREFIX}sent:`)) continue; // dedupe key'leri abonelik değil
       try {
         const raw = await redis.get<string>(key);
         if (!raw) continue;
-        const { subscription, locale } = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const { subscription, locale, reminderIntervals: subIntervals } = data;
+        const intervals = Array.isArray(subIntervals) && subIntervals.length ? subIntervals : defaultIntervals;
+        if (!intervals.includes(reminder.minutes)) continue; // Skip if this subscriber doesn't want this interval
         const loc = locale === 'en' ? 'en' : 'tr';
         const { title, body } = reminder.type === 'fajr'
           ? PAYLOADS[loc].fajr(reminder.minutes)
