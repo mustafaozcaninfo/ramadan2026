@@ -1,0 +1,228 @@
+[
+  {
+    "id": "weekly_balanced",
+    "title": {
+      "tr": "Haftalık Dengeli Program",
+      "en": "Weekly Balanced Program",
+      "ar": "برنامج أسبوعي متوازن"
+    },
+    "description": {
+      "tr": "Her güne kısa/orta/derin seviye dengeli dağılım.",
+      "en": "Balanced distribution of short/medium/deep practice for each day.",
+      "ar": "توزيع متوازن لمستويات قصيرة/متوسطة/عميقة لكل يوم."
+    },
+    "days": [
+      {
+        "day": "monday",
+        "itemSlugs": [
+          "morning_evening-subhanallah-1",
+          "morning_evening-alhamdulillah-2",
+          "morning_evening-allahuakbar-3",
+          "morning_evening-lailaha-4",
+          "morning_evening-astaghfirullah-5",
+          "morning_evening-salawat-6",
+          "morning_evening-hasbunallah-7",
+          "morning_evening-hawqala-8"
+        ]
+      },
+      {
+        "day": "tuesday",
+        "itemSlugs": [
+          "morning_evening-subhanallahiwabihamdihi-9",
+          "morning_evening-rabbiighfirli-10",
+          "post_prayer-subhanallah-1",
+          "post_prayer-alhamdulillah-2",
+          "post_prayer-allahuakbar-3",
+          "post_prayer-lailaha-4",
+          "post_prayer-astaghfirullah-5",
+          "post_prayer-salawat-6"
+        ]
+      },
+      {
+        "day": "wednesday",
+        "itemSlugs": [
+          "post_prayer-hasbunallah-7",
+          "post_prayer-hawqala-8",
+          "post_prayer-subhanallahiwabihamdihi-9",
+          "post_prayer-rabbiighfirli-10",
+          "daily_awrad-subhanallah-1",
+          "daily_awrad-alhamdulillah-2",
+          "daily_awrad-allahuakbar-3",
+          "daily_awrad-lailaha-4"
+        ]
+      },
+      {
+        "day": "thursday",
+        "itemSlugs": [
+          "daily_awrad-astaghfirullah-5",
+          "daily_awrad-salawat-6",
+          "daily_awrad-hasbunallah-7",
+          "daily_awrad-hawqala-8",
+          "daily_awrad-subhanallahiwabihamdihi-9",
+          "daily_awrad-rabbiighfirli-10",
+          "salawat-subhanallah-1",
+          "salawat-alhamdulillah-2"
+        ]
+      },
+      {
+        "day": "friday",
+        "itemSlugs": [
+          "salawat-subhanallah-1",
+          "salawat-alhamdulillah-2",
+          "salawat-allahuakbar-3",
+          "salawat-lailaha-4",
+          "salawat-astaghfirullah-5",
+          "salawat-salawat-6",
+          "salawat-hasbunallah-7",
+          "salawat-hawqala-8"
+        ]
+      },
+      {
+        "day": "saturday",
+        "itemSlugs": [
+          "salawat-allahuakbar-3",
+          "salawat-lailaha-4",
+          "salawat-astaghfirullah-5",
+          "salawat-salawat-6",
+          "salawat-hasbunallah-7",
+          "salawat-hawqala-8",
+          "salawat-subhanallahiwabihamdihi-9",
+          "salawat-rabbiighfirli-10"
+        ]
+      },
+      {
+        "day": "sunday",
+        "itemSlugs": [
+          "istighfar-subhanallah-1",
+          "istighfar-alhamdulillah-2",
+          "istighfar-allahuakbar-3",
+          "istighfar-lailaha-4",
+          "istighfar-astaghfirullah-5",
+          "istighfar-salawat-6",
+          "istighfar-hasbunallah-7",
+          "istighfar-hawqala-8"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "weekly_intense",
+    "title": {
+      "tr": "Haftalık Derinleşme Programı",
+      "en": "Weekly Deep Focus Program",
+      "ar": "برنامج أسبوعي للتعمق"
+    },
+    "description": {
+      "tr": "İleri seviye kullanıcılar için daha yüksek tekrar hedefleri.",
+      "en": "Higher repetition targets for advanced users.",
+      "ar": "أهداف تكرار أعلى للمستخدمين المتقدمين."
+    },
+    "days": [
+      {
+        "day": "monday",
+        "itemSlugs": [
+          "morning_evening-hawqala-8",
+          "morning_evening-subhanallahiwabihamdihi-9",
+          "morning_evening-rabbiighfirli-10",
+          "post_prayer-hawqala-8",
+          "post_prayer-subhanallahiwabihamdihi-9",
+          "post_prayer-rabbiighfirli-10",
+          "daily_awrad-hawqala-8",
+          "daily_awrad-subhanallahiwabihamdihi-9",
+          "daily_awrad-rabbiighfirli-10",
+          "salawat-hawqala-8"
+        ]
+      },
+      {
+        "day": "tuesday",
+        "itemSlugs": [
+          "salawat-subhanallahiwabihamdihi-9",
+          "salawat-rabbiighfirli-10",
+          "istighfar-hawqala-8",
+          "istighfar-subhanallahiwabihamdihi-9",
+          "istighfar-rabbiighfirli-10",
+          "quranic_dhikr-hawqala-8",
+          "quranic_dhikr-subhanallahiwabihamdihi-9",
+          "quranic_dhikr-rabbiighfirli-10",
+          "daily_awrad-hawqala-63",
+          "quranic_dhikr-allahuakbar-66"
+        ]
+      },
+      {
+        "day": "wednesday",
+        "itemSlugs": [
+          "daily_awrad-salawat-69",
+          "quranic_dhikr-alhamdulillah-72",
+          "daily_awrad-astaghfirullah-75",
+          "quranic_dhikr-subhanallah-78",
+          "daily_awrad-lailaha-81",
+          "quranic_dhikr-hawqala-84",
+          "daily_awrad-allahuakbar-87",
+          "quranic_dhikr-salawat-90",
+          "daily_awrad-alhamdulillah-93",
+          "quranic_dhikr-astaghfirullah-96"
+        ]
+      },
+      {
+        "day": "thursday",
+        "itemSlugs": [
+          "daily_awrad-subhanallah-99",
+          "quranic_dhikr-lailaha-102",
+          "daily_awrad-hawqala-105",
+          "quranic_dhikr-allahuakbar-108",
+          "daily_awrad-salawat-111",
+          "quranic_dhikr-alhamdulillah-114",
+          "daily_awrad-astaghfirullah-117",
+          "quranic_dhikr-subhanallah-120",
+          "daily_awrad-lailaha-123",
+          "quranic_dhikr-hawqala-126"
+        ]
+      },
+      {
+        "day": "friday",
+        "itemSlugs": [
+          "salawat-subhanallah-1",
+          "salawat-alhamdulillah-2",
+          "salawat-allahuakbar-3",
+          "salawat-lailaha-4",
+          "salawat-astaghfirullah-5",
+          "salawat-salawat-6",
+          "salawat-hasbunallah-7",
+          "salawat-hawqala-8",
+          "salawat-subhanallahiwabihamdihi-9",
+          "salawat-rabbiighfirli-10"
+        ]
+      },
+      {
+        "day": "saturday",
+        "itemSlugs": [
+          "daily_awrad-allahuakbar-129",
+          "quranic_dhikr-salawat-132",
+          "daily_awrad-alhamdulillah-135",
+          "quranic_dhikr-astaghfirullah-138",
+          "daily_awrad-subhanallah-141",
+          "quranic_dhikr-lailaha-144",
+          "daily_awrad-hawqala-147",
+          "quranic_dhikr-allahuakbar-150",
+          "daily_awrad-salawat-153",
+          "quranic_dhikr-alhamdulillah-156"
+        ]
+      },
+      {
+        "day": "sunday",
+        "itemSlugs": [
+          "daily_awrad-astaghfirullah-159",
+          "quranic_dhikr-subhanallah-162",
+          "daily_awrad-lailaha-165",
+          "quranic_dhikr-hawqala-168",
+          "daily_awrad-allahuakbar-171",
+          "quranic_dhikr-salawat-174",
+          "daily_awrad-alhamdulillah-177",
+          "quranic_dhikr-astaghfirullah-180",
+          "daily_awrad-subhanallah-183",
+          "quranic_dhikr-lailaha-186"
+        ]
+      }
+    ]
+  }
+]

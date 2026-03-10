@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { areNotificationsEnabled, showNotification, setNotificationLocale, subscribeToPush } from '@/lib/notifications';
-import { parseTimeToDate } from '@/lib/prayer';
+import {
+  areNotificationsEnabled,
+  showNotification,
+  setNotificationLocale,
+  subscribeToPush,
+  normalizeNotificationLocale,
+} from '@/lib/notifications';
 import { useLocale } from 'next-intl';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { SUPPORTED_CITIES } from '@/lib/prayer';
@@ -20,6 +25,12 @@ const NOTIFICATION_STRINGS = {
     maghribTitle: (m: number) => (m === 0 ? 'Iftar Time!' : `${m} min remaining`),
     maghribBody: (m: number) => (m === 0 ? 'Iftar time has started' : `${m} minutes until Iftar`),
   },
+  ar: {
+    fajrTitle: (m: number) => (m === 0 ? 'وقت السحور!' : `متبقي ${m} دقيقة`),
+    fajrBody: (m: number) => (m === 0 ? 'بدأ وقت السحور' : `متبقي ${m} دقيقة على السحور`),
+    maghribTitle: (m: number) => (m === 0 ? 'وقت الإفطار!' : `متبقي ${m} دقيقة`),
+    maghribBody: (m: number) => (m === 0 ? 'بدأ وقت الإفطار' : `متبقي ${m} دقيقة على الإفطار`),
+  },
 };
 
 function isSafariOrIOS(): boolean {
@@ -36,6 +47,56 @@ function isSafariOrIOS(): boolean {
   );
 }
 
+function getCityDateParts(timeZone: string, d: Date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(d);
+  const year = Number(parts.find((p) => p.type === 'year')?.value ?? '0');
+  const month = Number(parts.find((p) => p.type === 'month')?.value ?? '1');
+  const day = Number(parts.find((p) => p.type === 'day')?.value ?? '1');
+  return { year, month, day };
+}
+
+function getOffsetMsAtTimeZone(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(date);
+  const year = Number(parts.find((p) => p.type === 'year')?.value ?? '0');
+  const month = Number(parts.find((p) => p.type === 'month')?.value ?? '1');
+  const day = Number(parts.find((p) => p.type === 'day')?.value ?? '1');
+  const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? '0');
+  const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? '0');
+  const second = Number(parts.find((p) => p.type === 'second')?.value ?? '0');
+  const asUtc = Date.UTC(year, month - 1, day, hour, minute, second);
+  return asUtc - date.getTime();
+}
+
+function cityDateTimeToDate(timeZone: string, year: number, month: number, day: number, hh: number, mm: number): Date {
+  // Convert "city local datetime" -> actual Date (UTC) by solving timezone offset.
+  let utcMs = Date.UTC(year, month - 1, day, hh, mm, 0);
+  for (let i = 0; i < 2; i++) {
+    const offsetMs = getOffsetMsAtTimeZone(new Date(utcMs), timeZone);
+    utcMs = Date.UTC(year, month - 1, day, hh, mm, 0) - offsetMs;
+  }
+  return new Date(utcMs);
+}
+
+function parseTimeInCity(timeStr: string, timeZone: string): Date {
+  const [hh, mm] = timeStr.split(':').map(Number);
+  const { year, month, day } = getCityDateParts(timeZone);
+  return cityDateTimeToDate(timeZone, year, month, day, hh ?? 0, mm ?? 0);
+}
+
 /**
  * Client-side notification scheduler for Safari/iOS.
  * Safari/iOS does not run Service Workers in background (even in standalone/PWA mode),
@@ -44,24 +105,24 @@ function isSafariOrIOS(): boolean {
  */
 export function NotificationManager() {
   const scheduledRef = useRef<Set<number>>(new Set());
-  const locale = useLocale() as 'tr' | 'en';
+  const locale = useLocale() as 'tr' | 'en' | 'ar';
+  const normalizedLocale = normalizeNotificationLocale(locale);
   const reminderIntervals = useAppStore((s) => s.reminderIntervals);
   const city = useAppStore((s) => s.city);
   const cityConfig = SUPPORTED_CITIES.find((c) => c.city === city) ?? SUPPORTED_CITIES[0];
 
   useEffect(() => {
-    setNotificationLocale(locale);
-  }, [locale]);
+    setNotificationLocale(normalizedLocale);
+  }, [normalizedLocale]);
 
   // Re-subscribe with updated reminderIntervals when they change (updates Redis)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!areNotificationsEnabled()) return;
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const loc: 'tr' | 'en' = (locale as string) === 'ar' ? 'tr' : (locale as 'tr' | 'en');
     const intervals = reminderIntervals.length ? reminderIntervals : [15, 10, 5, 0];
-    void subscribeToPush(loc, intervals);
-  }, [reminderIntervals, locale]);
+    void subscribeToPush(normalizedLocale, intervals);
+  }, [reminderIntervals, normalizedLocale]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -70,7 +131,7 @@ export function NotificationManager() {
     if (!isSafariOrIOS()) return;
 
     const scheduled = scheduledRef.current;
-    const strings = NOTIFICATION_STRINGS[locale];
+    const strings = NOTIFICATION_STRINGS[normalizedLocale];
     const intervals = reminderIntervals.length ? reminderIntervals : [0];
 
     const scheduleNotifications = async () => {
@@ -83,8 +144,9 @@ export function NotificationManager() {
         const timings = data?.data?.timings;
         if (!timings?.Fajr || !timings?.Maghrib) return;
 
-        const fajrTime = parseTimeToDate(timings.Fajr);
-        const maghribTime = parseTimeToDate(timings.Maghrib);
+        const cityTz = cityConfig.timezone ?? 'Asia/Qatar';
+        const fajrTime = parseTimeInCity(timings.Fajr, cityTz);
+        const maghribTime = parseTimeInCity(timings.Maghrib, cityTz);
         const now = new Date();
 
         scheduled.forEach((id) => clearTimeout(id));
@@ -129,7 +191,7 @@ export function NotificationManager() {
       scheduled.forEach((id) => clearTimeout(id));
       scheduled.clear();
     };
-  }, [locale, reminderIntervals, city]);
+  }, [normalizedLocale, reminderIntervals, cityConfig.city, cityConfig.country, cityConfig.timezone]);
 
   return null;
 }

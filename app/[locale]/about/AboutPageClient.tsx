@@ -19,12 +19,13 @@ import {
 } from 'lucide-react';
 
 interface AboutPageClientProps {
-  locale: 'tr' | 'en';
+  locale: 'tr' | 'en' | 'ar';
+  selectedCityLabel: string;
+  methodLabel: string;
 }
 
-export function AboutPageClient({ locale }: AboutPageClientProps) {
+export function AboutPageClient({ locale, selectedCityLabel, methodLabel }: AboutPageClientProps) {
   const t = useTranslations('about');
-  const tCommon = useTranslations('common');
 
   const features = [
     {
@@ -73,13 +74,13 @@ export function AboutPageClient({ locale }: AboutPageClientProps) {
     {
       icon: MapPin,
       label: t('location'),
-      value: tCommon('location'),
+      value: selectedCityLabel,
       iconClass: 'text-ramadan-green bg-ramadan-green/20',
     },
     {
       icon: Calculator,
       label: t('method'),
-      value: tCommon('officialQatarMethod'),
+      value: methodLabel,
       iconClass: 'text-ramadan-gold bg-ramadan-gold/20',
     },
     {
@@ -108,7 +109,7 @@ export function AboutPageClient({ locale }: AboutPageClientProps) {
           <div className="absolute inset-0 bg-gradient-to-br from-ramadan-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
 
           <CardHeader className="relative z-10 p-4 sm:p-5 pb-3">
-            <CardTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent">
+            <CardTitle className="text-lg sm:text-xl font-bold text-amber-100 drop-shadow-[0_1px_6px_rgba(0,0,0,0.65)]">
               {t('features')}
             </CardTitle>
           </CardHeader>

@@ -24,12 +24,12 @@ export function ExpandCollapseToggle({ allExpanded, onToggle, className }: Expan
       {allExpanded ? (
         <>
           <ChevronUp className="w-4 h-4 mr-2" />
-          {t('collapseAll') || (typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Tümünü Kapat' : 'Collapse All')}
+          {t('collapseAll')}
         </>
       ) : (
         <>
           <ChevronDown className="w-4 h-4 mr-2" />
-          {t('expandAll') || (typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Tümünü Aç' : 'Expand All')}
+          {t('expandAll')}
         </>
       )}
     </Button>

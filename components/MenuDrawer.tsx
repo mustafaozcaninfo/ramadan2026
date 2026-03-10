@@ -2,20 +2,26 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, Info, Calendar, Home, Tv, BookOpen } from 'lucide-react';
+import { X, Settings, Info, Calendar, Home, Tv, BookOpen, Activity } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import { ShareButton } from './ShareButton';
+import { useAppStore } from '@/lib/store/useAppStore';
+import { SUPPORTED_CITIES } from '@/lib/prayer';
 
 interface MenuDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  locale: 'tr' | 'en';
+  locale: 'tr' | 'en' | 'ar';
 }
 
 export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
   const t = useTranslations('common');
   const tMenu = useTranslations('menu');
+  const tHome = useTranslations('home');
+  const city = useAppStore((s) => s.city);
+  const cityConfig = SUPPORTED_CITIES.find((c) => c.city === city) ?? SUPPORTED_CITIES[0];
+  const cityLabel = `${cityConfig.city}, ${cityConfig.country}`;
 
   const menuItems = [
     {
@@ -32,13 +38,13 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
     },
     {
       icon: Tv,
-      label: tMenu('live') || (locale === 'tr' ? 'Canlı Yayın' : 'Live'),
+      label: tMenu('live'),
       href: '/live',
       onClick: onClose,
     },
     {
       icon: BookOpen,
-      label: tMenu('resources') || (locale === 'tr' ? 'Kaynaklar' : 'Resources'),
+      label: tMenu('resources'),
       href: '/resources',
       onClick: onClose,
     },
@@ -50,17 +56,21 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
     },
     {
       icon: Info,
-      label: tMenu('about') || (locale === 'tr' ? 'Hakkında' : 'About'),
+      label: tMenu('about'),
       href: '/about',
+      onClick: onClose,
+    },
+    {
+      icon: Activity,
+      label: tMenu('ops'),
+      href: '/ops',
       onClick: onClose,
     },
   ];
 
   const shareData = {
     title: t('appName'),
-    text: locale === 'tr' 
-      ? 'Ramazan 2026 Doha - İftar ve Sahur Takvimi'
-      : 'Ramadan 2026 Doha - Iftar & Suhoor Schedule',
+    text: `${t('appName')} - ${tHome('subtitle')}`,
     url: typeof window !== 'undefined' ? window.location.origin : '',
   };
 
@@ -88,18 +98,18 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
             className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-l border-slate-700/50 shadow-2xl z-50 safe-area-inset-top safe-area-inset-bottom overflow-y-auto"
             role="dialog"
             aria-modal="true"
-            aria-label={tMenu('menu') || 'Menu'}
+            aria-label={tMenu('menu')}
           >
             {/* Header */}
             <div className="sticky top-0 bg-gradient-to-b from-slate-900 to-slate-800/95 backdrop-blur-md border-b border-slate-700/50 z-10 px-4 py-4 sm:py-5">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent">
-                  {tMenu('menu') || (locale === 'tr' ? 'Menü' : 'Menu')}
+                <h2 className="text-xl font-bold text-amber-50 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                  {tMenu('menu')}
                 </h2>
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ramadan-green focus-visible:ring-offset-2"
-                  aria-label={locale === 'tr' ? 'Menüyü kapat' : 'Close menu'}
+                  aria-label={tMenu('close')}
                 >
                   <X className="w-5 h-5 text-slate-300" />
                 </button>
@@ -146,7 +156,7 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
                 className="space-y-3"
               >
                 <h3 className="text-sm font-semibold text-slate-300 mb-3">
-                  {tMenu('shareApp') || (locale === 'tr' ? 'Uygulamayı Paylaş' : 'Share App')}
+                  {tMenu('shareApp')}
                 </h3>
                 <ShareButton
                   title={shareData.title}
@@ -167,7 +177,7 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
               >
                 <p className="mb-2">{t('appName')}</p>
                 <p className="text-slate-500">
-                  {t('location')} – {t('officialQatarMethod')}
+                  {cityLabel} – {t('officialQatarMethod')}
                 </p>
               </motion.div>
             </div>

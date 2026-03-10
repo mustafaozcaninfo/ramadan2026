@@ -70,10 +70,10 @@ export function ScrollToToday({ targetId, className, startDate }: ScrollToTodayP
       variant="outline"
       size="sm"
       className={className}
-      aria-label={t('scrollToToday') || 'Scroll to today'}
+      aria-label={t('scrollToToday')}
     >
       <Calendar className="w-4 h-4 mr-2" />
-      {t('scrollToToday') || (typeof window !== 'undefined' && navigator.language.startsWith('tr') ? "Bugüne Git" : 'Go to Today')}
+      {t('scrollToToday')}
     </Button>
   );
 }

@@ -4,16 +4,16 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navigation } from '@/components/Navigation';
+import { MenuButton } from '@/components/MenuButton';
 
 const LivePlayer = dynamic(
   () => import('@/components/LivePlayer').then((m) => ({ default: m.LivePlayer })),
-  { ssr: false, loading: () => <div className="min-h-[220px] sm:min-h-[280px] flex items-center justify-center bg-slate-800/60 text-slate-400">Loading...</div> }
+  { ssr: false, loading: () => <div className="min-h-[220px] sm:min-h-[280px] flex items-center justify-center bg-slate-800/60 text-slate-400">...</div> }
 );
-import { Link } from '@/lib/i18n/routing';
-import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
-import { ArrowLeft, Tv, Radio, ExternalLink } from 'lucide-react';
+import { Tv, Radio, ExternalLink } from 'lucide-react';
+import { useAppStore } from '@/lib/store/useAppStore';
 
 const CHANNELS = [
   {
@@ -32,11 +32,13 @@ const CHANNELS = [
 
 export default function LivePage() {
   const t = useTranslations('live');
-  const locale = useLocale() as 'tr' | 'en';
+  const locale = useLocale() as 'tr' | 'en' | 'ar';
   const [selectedChannel, setSelectedChannel] = useState<(typeof CHANNELS)[number]>(CHANNELS[0]);
+  const liveAutoplay = useAppStore((s) => s.liveAutoplay);
+  const setLiveAutoplay = useAppStore((s) => s.setLiveAutoplay);
 
   return (
-    <main className="min-h-screen bg-qatar-gradient pb-20 safe-area-inset-bottom relative overflow-hidden">
+    <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl" />
@@ -51,24 +53,14 @@ export default function LivePage() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between mb-6"
         >
-          <Link href="/">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-11 w-11 rounded-xl border border-slate-700/60 bg-slate-900/50 hover:bg-slate-800/80 hover:border-ramadan-green/50"
-              aria-label={t('back')}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <div className="flex flex-col items-center">
-            <h1 className="flex items-center gap-2 text-xl sm:text-2xl font-bold bg-gradient-to-r from-ramadan-green via-ramadan-gold to-qatar-maroon bg-clip-text text-transparent drop-shadow-lg">
+          <div className="flex flex-col items-start">
+            <h1 className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-amber-50 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
               <Tv className="w-6 h-6 text-ramadan-gold shrink-0" />
               {t('title')}
             </h1>
             <p className="mt-1 text-xs text-slate-400 hidden sm:block">{t('subtitle')}</p>
           </div>
-          <div className="w-11" />
+          <MenuButton locale={locale} />
         </motion.div>
 
         <div className="max-w-2xl mx-auto space-y-5">
@@ -112,6 +104,22 @@ export default function LivePage() {
                 );
               })}
             </div>
+
+            <div className="mt-4 rounded-xl border border-slate-700/60 bg-slate-900/40 p-3">
+              <button
+                type="button"
+                onClick={() => setLiveAutoplay(!liveAutoplay)}
+                aria-pressed={liveAutoplay}
+                className={`w-full rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  liveAutoplay
+                    ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-200'
+                    : 'border-slate-600/70 bg-slate-800/60 text-slate-300'
+                }`}
+              >
+                {liveAutoplay ? t('autoplayOn') : t('autoplayOff')}
+              </button>
+              <p className="mt-2 text-xs text-slate-400">{t('autoplayDescription')}</p>
+            </div>
           </motion.div>
 
           {/* Player */}
@@ -127,6 +135,7 @@ export default function LivePage() {
                 src={selectedChannel.src}
                 channelName={t(selectedChannel.nameKey)}
                 locale={locale}
+                autoPlayEnabled={liveAutoplay}
                 className="min-h-[220px] sm:min-h-[280px]"
               />
             </AnimatePresence>

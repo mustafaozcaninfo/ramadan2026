@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface CopyButtonProps {
   text: string;
@@ -13,15 +14,16 @@ interface CopyButtonProps {
 
 export function CopyButton({ text, label, className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
+  const t = useTranslations('ui');
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      toast.success(label || 'Copied to clipboard');
+      toast.success(label || t('copied'));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error('Failed to copy');
+      toast.error(t('copyFailed'));
     }
   };
 
@@ -31,17 +33,17 @@ export function CopyButton({ text, label, className }: CopyButtonProps) {
       variant="ghost"
       size="sm"
       className={className}
-      aria-label={label || 'Copy to clipboard'}
+      aria-label={label || t('copy')}
     >
       {copied ? (
         <>
           <Check className="w-4 h-4 mr-2" />
-          {typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Kopyalandı' : 'Copied'}
+          {t('copied')}
         </>
       ) : (
         <>
           <Copy className="w-4 h-4 mr-2" />
-          {typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Kopyala' : 'Copy'}
+          {t('copy')}
         </>
       )}
     </Button>

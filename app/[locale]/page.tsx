@@ -11,7 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MenuButton } from '@/components/MenuButton';
 import { Link } from '@/lib/i18n/routing';
 import { Button } from '@/components/ui/button';
-import { Calendar } from 'lucide-react';
+import { Calendar, Settings, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr, enUS } from 'date-fns/locale';
 
@@ -21,19 +21,21 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations('home');
+  const tHome = await getTranslations('home');
   const tCommon = await getTranslations('common');
 
   const cookieStore = await cookies();
   const cityConfig = getCityConfigFromCookie(cookieStore.get('ramadan-city')?.value);
 
   let prayerData;
+  let usedFallbackData = false;
   try {
     prayerData = await getTodayPrayerTimes(cityConfig);
   } catch (error) {
     console.error('Error fetching prayer times:', error);
     const { getPrayerTimes } = await import('@/lib/prayer');
     prayerData = await getPrayerTimes('2026-02-18', cityConfig);
+    usedFallbackData = true;
   }
 
   const timings = prayerData.data.timings;
@@ -77,26 +79,32 @@ export default async function HomePage({
     ? `${dateInfo.hijri.day} ${dateInfo.hijri.month.en} ${dateInfo.hijri.year} AH`
     : '';
 
+  const selectedCityLabel = `${cityConfig.city}, ${cityConfig.country}`;
+  const methodLabel = cityConfig.city === 'Doha' && cityConfig.country === 'Qatar'
+    ? tCommon('officialQatarMethod')
+    : tCommon('cityBasedMethod');
+  const heroTitle = tHome('todayPrayerTitle');
+  const heroSubtitle = tHome('todayPrayerSubtitle');
+  const goTodayLabel = tHome('goToday');
+  const quickSettingsLabel = tHome('quickSettings');
+  const fallbackNotice = tHome('fallbackDataNotice');
+
   return (
     <ErrorBoundary>
-      <main className="min-h-screen bg-qatar-gradient pb-20 safe-area-inset-bottom relative overflow-hidden">
-        {/* Decorative background elements - Daha belirgin */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-ramadan-gold rounded-full blur-3xl"></div>
+      <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
+        <div className="absolute inset-0 opacity-25">
+          <div className="absolute -top-20 -left-20 w-[28rem] h-[28rem] bg-ramadan-green rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-20 -right-20 w-[28rem] h-[28rem] bg-qatar-maroon rounded-full blur-3xl"></div>
         </div>
 
-        {/* Header with animated crescent moon - Mobil optimizasyon */}
         <div className="container mx-auto px-3 sm:px-4 pb-4 sm:pb-6 relative z-10 safe-area-inset-top">
-          <div className="mb-4 sm:mb-6">
-            {/* Top bar with date & menu */}
-            <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="mb-5 sm:mb-7">
+            <div className="flex items-start justify-between gap-3 mb-5">
               <div className="text-left">
                 <p className="text-[11px] sm:text-xs uppercase tracking-[0.25em] text-slate-300">
-                  {locale === 'tr' ? 'Bugün' : 'Today'}
+                  {tHome('todayLabel')}
                 </p>
-                <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-ramadan-green via-ramadan-gold to-qatar-maroon bg-clip-text text-transparent drop-shadow-lg">
+                <h1 className="mt-1 text-2xl sm:text-3xl md:text-4xl font-bold text-amber-50 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
                   {gregorianDate}
                 </h1>
                 {hijriDate && (
@@ -106,104 +114,118 @@ export default async function HomePage({
                 )}
                 {ramadanDay !== null && (
                   <p className="mt-2 inline-flex items-center rounded-full bg-slate-800/70 border border-slate-600/60 px-3 py-1 text-[11px] sm:text-xs font-semibold text-slate-100 shadow-ramadan-glow">
-                    {locale === 'tr' ? `Ramazan ${ramadanDay}. Gün` : `Ramadan Day ${ramadanDay}`}
+                    {tHome('ramadanDay', { day: ramadanDay })}
                   </p>
                 )}
               </div>
-              <MenuButton locale={locale as 'tr' | 'en'} />
+              <MenuButton locale={locale as 'tr' | 'en' | 'ar'} />
             </div>
 
-            {/* Hero banner with Ramadan image */}
             <div
-              className="relative overflow-hidden rounded-2xl border border-ramadan-gold/40 bg-slate-900/60 shadow-2xl shadow-black/40"
+              className="relative overflow-hidden rounded-2xl border border-ramadan-gold/40 bg-slate-900/70 shadow-2xl shadow-black/40 backdrop-blur-sm"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.6) 40%, rgba(15,23,42,0.9) 100%), url('/ramadan-bg.jpg')",
+                  "linear-gradient(135deg, rgba(15,23,42,0.94) 0%, rgba(15,23,42,0.64) 45%, rgba(15,23,42,0.9) 100%), url('/ramadan-bg.jpg')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
             >
-              <div className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs sm:text-sm font-medium text-amber-200 uppercase tracking-[0.2em]">
-                    {locale === 'tr' ? 'Ramazan 2026' : 'Ramadan 2026'}
+              <div className="px-4 sm:px-6 py-5 sm:py-6 flex items-start justify-between gap-4">
+                <div className="max-w-xl">
+                  <p className="text-[11px] sm:text-xs font-medium text-amber-200 uppercase tracking-[0.22em]">
+                    {tHome('ramadanYear')}
                   </p>
-                  <p className="mt-1 text-lg sm:text-2xl font-semibold text-amber-100 drop-shadow-md">
-                    {locale === 'tr' ? 'Ramazan-ı Şerif Mübarek Olsun' : 'Ramadan Kareem'}
+                  <p className="mt-2 text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100 drop-shadow-md">
+                    {heroTitle}
                   </p>
-                  <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 text-[11px] sm:text-xs text-slate-100 border border-amber-300/40">
+                  <p className="mt-2 text-sm text-slate-200/90">
+                    {heroSubtitle}
+                  </p>
+                  <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 text-[11px] sm:text-xs text-slate-100 border border-amber-300/40">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-ramadan-glow" />
-                    {tCommon('location')}
+                    {selectedCityLabel}
                   </p>
                 </div>
-                <div className="hidden sm:flex flex-col items-end text-right text-xs text-slate-100/90">
-                  <span className="text-[11px] uppercase tracking-[0.2em] text-amber-200">
-                    {locale === 'tr' ? 'İftar & Sahur' : 'Iftar & Suhoor'}
+                <div className="hidden sm:flex flex-col items-end text-right text-xs text-slate-100/90 gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-ramadan-gold/40 bg-black/25 px-3 py-1 text-[11px] uppercase tracking-[0.15em] text-amber-200">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {tHome('iftarSahurBadge')}
                   </span>
-                  <span className="mt-1 text-sm font-semibold">
-                    {locale === 'tr'
-                      ? 'Resmi Qatar Metodu'
-                      : 'Official Qatar Method'}
-                  </span>
+                  <span className="text-sm font-semibold">{methodLabel}</span>
                 </div>
               </div>
             </div>
+
+            <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <Link href="/calendar?today=1" aria-label={goTodayLabel}>
+                <Button className="w-full bg-ramadan-green hover:bg-emerald-500 text-white">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {goTodayLabel}
+                </Button>
+              </Link>
+              <Link href="/settings" aria-label={quickSettingsLabel}>
+                <Button variant="outline" className="w-full border-slate-500/80 bg-slate-900/35 hover:bg-slate-800/80">
+                  <Settings className="w-4 h-4 mr-2" />
+                  {quickSettingsLabel}
+                </Button>
+              </Link>
+            </div>
+
+            {usedFallbackData && (
+              <div
+                className="mt-3 rounded-xl border border-amber-400/40 bg-amber-500/10 px-3 py-2.5 text-xs sm:text-sm text-amber-100"
+                role="status"
+                aria-live="polite"
+              >
+                {fallbackNotice}
+              </div>
+            )}
           </div>
 
-        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
-          {/* Prayer Times Card */}
-          <PrayerTimeCard
-            fajr={timings.Fajr}
-            maghrib={timings.Maghrib}
-            nextFajr={nextTimings.Fajr}
-            nextMaghrib={nextTimings.Maghrib}
-            sunrise={timings.Sunrise}
-            hijriDate={hijriDate}
-            gregorianDate={gregorianDate}
-            ramadanDay={ramadanDay}
-            currentDateIso={currentIsoDate}
-            nextDateIso={tomorrowIso}
-            locale={locale as 'tr' | 'en'}
-          />
+          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
+            <PrayerTimeCard
+              fajr={timings.Fajr}
+              dhuhr={timings.Dhuhr}
+              asr={timings.Asr}
+              maghrib={timings.Maghrib}
+              isha={timings.Isha}
+              nextFajr={nextTimings.Fajr}
+              nextMaghrib={nextTimings.Maghrib}
+              sunrise={timings.Sunrise}
+              hijriDate={hijriDate}
+              gregorianDate={gregorianDate}
+              ramadanDay={ramadanDay}
+              currentDateIso={currentIsoDate}
+              nextDateIso={tomorrowIso}
+              locale={locale as 'tr' | 'en' | 'ar'}
+            />
 
-          {/* Dua of the Day */}
-          <DuaOfTheDay locale={locale as 'tr' | 'en'} />
+            <DailyHatim ramadanDay={ramadanDay} locale={locale as 'tr' | 'en' | 'ar'} />
 
-          {/* Daily Hatim (Juz of the day) */}
-          <DailyHatim ramadanDay={ramadanDay} locale={locale as 'tr' | 'en' | 'ar'} />
+            <AzanButton />
 
-          {/* Azan Button */}
-          <AzanButton />
+            <DuaOfTheDay locale={locale as 'tr' | 'en' | 'ar'} />
 
-          {/* Calendar Link - with auto-scroll to today */}
-          <Link href="/calendar?today=1">
-            <Button variant="outline" className="w-full">
-              <Calendar className="w-4 h-4 mr-2" />
-              {tCommon('calendar')}
-            </Button>
-          </Link>
-
-          {/* Footer Info - Kompakt */}
-          <div className="text-center text-xs text-slate-300 pt-4 border-t border-slate-600/50">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700/50">
-              <p className="text-ramadan-green font-medium">{tCommon('officialQatarMethod')}</p>
+            <div className="text-center text-xs text-slate-300 pt-4 border-t border-slate-600/50">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700/50">
+                <p className="text-ramadan-green font-medium">{selectedCityLabel} • {methodLabel}</p>
+              </div>
+              <p className="mt-3 text-slate-300/85">
+                {tCommon('source')}:{' '}
+                <a
+                  href="https://aladhan.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ramadan-green hover:text-ramadan-gold transition-colors font-medium"
+                >
+                  Aladhan API
+                </a>
+              </p>
             </div>
-            <p className="mt-3 text-slate-500">
-              {tCommon('source')}:{' '}
-              <a
-                href="https://aladhan.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-ramadan-green hover:text-ramadan-gold transition-colors font-medium"
-              >
-                Aladhan API
-              </a>
-            </p>
           </div>
         </div>
-      </div>
-      <Navigation />
-    </main>
+        <Navigation />
+      </main>
     </ErrorBoundary>
   );
 }

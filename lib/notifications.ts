@@ -8,6 +8,15 @@ export interface NotificationPermission {
   default: boolean;
 }
 
+export type NotificationLocale = 'tr' | 'en' | 'ar';
+export type PushLocale = 'tr' | 'en' | 'ar';
+
+export function normalizeNotificationLocale(locale?: NotificationLocale | string): PushLocale {
+  if (locale === 'en') return 'en';
+  if (locale === 'ar') return 'ar';
+  return 'tr';
+}
+
 /**
  * Request notification permission
  */
@@ -89,13 +98,14 @@ export function areNotificationsEnabled(): boolean {
  * Subscribe to Web Push and register with backend (for iOS 16.4+ PWA and others).
  * Call after notification permission is granted.
  */
-export async function subscribeToPush(locale: 'tr' | 'en', reminderIntervals?: number[]): Promise<boolean> {
+export async function subscribeToPush(locale: NotificationLocale | PushLocale, reminderIntervals?: number[]): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   const vapid = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   if (!vapid) return false;
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
 
   try {
+    const pushLocale = normalizeNotificationLocale(locale);
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
     const subscription = sub ?? await reg.pushManager.subscribe({
@@ -104,7 +114,7 @@ export async function subscribeToPush(locale: 'tr' | 'en', reminderIntervals?: n
     });
     const body: { subscription: object; locale: string; reminderIntervals?: number[] } = {
       subscription: subscription.toJSON(),
-      locale,
+      locale: pushLocale,
     };
     if (reminderIntervals?.length) body.reminderIntervals = reminderIntervals;
     const res = await fetch('/api/push-subscribe', {
@@ -129,12 +139,13 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 /**
  * Enable notifications and optionally set locale and reminder intervals for notification text
  */
-export function enableNotifications(locale?: 'tr' | 'en', reminderIntervals?: number[]): void {
+export function enableNotifications(locale?: NotificationLocale | PushLocale, reminderIntervals?: number[]): void {
   if (typeof window === 'undefined') return;
+  const pushLocale = locale ? normalizeNotificationLocale(locale) : undefined;
   localStorage.setItem('ramadan-notifications-enabled', 'true');
-  syncNotificationSettingsToSW(true, locale);
-  postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: true, locale });
-  if (locale) void subscribeToPush(locale, reminderIntervals);
+  syncNotificationSettingsToSW(true, pushLocale);
+  postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: true, locale: pushLocale });
+  if (pushLocale) void subscribeToPush(pushLocale, reminderIntervals);
 }
 
 /**
@@ -150,8 +161,9 @@ export function disableNotifications(): void {
 /**
  * Set locale for notification text (TR/EN). Persists to IndexedDB and notifies SW.
  */
-export function setNotificationLocale(locale: 'tr' | 'en'): void {
+export function setNotificationLocale(locale: NotificationLocale | PushLocale): void {
   if (typeof window === 'undefined' || !('indexedDB' in window)) return;
+  const pushLocale = normalizeNotificationLocale(locale);
   const request = indexedDB.open('ramadan-app', 1);
   request.onupgradeneeded = (event) => {
     const db = (event.target as IDBOpenDBRequest).result;
@@ -162,12 +174,12 @@ export function setNotificationLocale(locale: 'tr' | 'en'): void {
   request.onsuccess = (event) => {
     const db = (event.target as IDBOpenDBRequest).result;
     const tx = db.transaction('settings', 'readwrite');
-    tx.objectStore('settings').put(locale, 'notificationLocale');
+    tx.objectStore('settings').put(pushLocale, 'notificationLocale');
   };
-  postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: areNotificationsEnabled(), locale });
+  postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: areNotificationsEnabled(), locale: pushLocale });
 }
 
-function postMessageToSW(msg: { type: string; enabled?: boolean; locale?: 'tr' | 'en' }): void {
+function postMessageToSW(msg: { type: string; enabled?: boolean; locale?: PushLocale }): void {
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage(msg);
   }
@@ -176,7 +188,7 @@ function postMessageToSW(msg: { type: string; enabled?: boolean; locale?: 'tr' |
 /**
  * Sync notification settings to Service Worker via IndexedDB
  */
-function syncNotificationSettingsToSW(enabled: boolean, locale?: 'tr' | 'en'): void {
+function syncNotificationSettingsToSW(enabled: boolean, locale?: PushLocale): void {
   if (typeof window === 'undefined' || !('indexedDB' in window)) return;
   const request = indexedDB.open('ramadan-app', 1);
   request.onupgradeneeded = (event) => {

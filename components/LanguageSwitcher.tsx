@@ -2,12 +2,13 @@
 
 import { useRouter, usePathname } from '@/lib/i18n/routing';
 import { Globe } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 export function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
+  const tCommon = useTranslations('common');
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = event.target.value;
@@ -20,7 +21,7 @@ export function LanguageSwitcher() {
     <div className="inline-flex items-center gap-2 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg px-3 py-2 min-h-[44px]">
       <Globe className="w-4 h-4 text-ramadan-green" />
       <label className="sr-only" htmlFor="language-switcher">
-        Language
+        {tCommon('language')}
       </label>
       <select
         id="language-switcher"

@@ -1,13 +1,16 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Clock3 } from 'lucide-react';
 import { Countdown } from './Countdown';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface PrayerTimeCardProps {
   fajr: string; // Sahur
+  dhuhr: string;
+  asr: string;
   maghrib: string; // İftar
+  isha: string;
   nextFajr: string; // Bir sonraki gün Sahur
   nextMaghrib: string; // Bir sonraki gün İftar
   sunrise: string;
@@ -16,12 +19,15 @@ interface PrayerTimeCardProps {
   ramadanDay: number | null; // Ramazan günü (1-30)
   currentDateIso: string; // YYYY-MM-DD for today's Doha date
   nextDateIso: string; // YYYY-MM-DD for next day's Doha date
-  locale: 'tr' | 'en';
+  locale: 'tr' | 'en' | 'ar';
 }
 
 export function PrayerTimeCard({
   fajr,
+  dhuhr,
+  asr,
   maghrib,
+  isha,
   nextFajr,
   nextMaghrib,
   sunrise,
@@ -32,6 +38,10 @@ export function PrayerTimeCard({
   nextDateIso,
   locale,
 }: PrayerTimeCardProps) {
+  const reduceMotion = useReducedMotion();
+  const L = (trText: string, enText: string, arText: string) =>
+    locale === 'tr' ? trText : locale === 'ar' ? arText : enText;
+
   // Calculate current status based on explicit Doha dates to avoid timezone drift
   const now = new Date();
 
@@ -48,7 +58,10 @@ export function PrayerTimeCard({
   };
 
   const todayFajrDate = makeDohaDateTime(currentDateIso, fajr);
+  const todayDhuhrDate = makeDohaDateTime(currentDateIso, dhuhr);
+  const todayAsrDate = makeDohaDateTime(currentDateIso, asr);
   const todayMaghribDate = makeDohaDateTime(currentDateIso, maghrib);
+  const todayIshaDate = makeDohaDateTime(currentDateIso, isha);
   const nextFajrDate = makeDohaDateTime(nextDateIso, nextFajr);
   const nextMaghribDate = makeDohaDateTime(nextDateIso, nextMaghrib);
 
@@ -63,24 +76,59 @@ export function PrayerTimeCard({
   const sahurTargetDate = sahurHasPassedToday ? nextFajrDate : todayFajrDate;
   const iftarTargetDate = iftarHasPassedToday ? nextMaghribDate : todayMaghribDate;
 
+  type PrayerSlot = {
+    key: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+    date: Date;
+    time: string;
+    labelTr: string;
+    labelEn: string;
+  };
+
+  const prayerSlots: PrayerSlot[] = [
+    { key: 'fajr', date: todayFajrDate, time: fajr, labelTr: 'İmsak', labelEn: 'Fajr' },
+    { key: 'dhuhr', date: todayDhuhrDate, time: dhuhr, labelTr: 'Öğle', labelEn: 'Dhuhr' },
+    { key: 'asr', date: todayAsrDate, time: asr, labelTr: 'İkindi', labelEn: 'Asr' },
+    { key: 'maghrib', date: todayMaghribDate, time: maghrib, labelTr: 'Akşam', labelEn: 'Maghrib' },
+    { key: 'isha', date: todayIshaDate, time: isha, labelTr: 'Yatsı', labelEn: 'Isha' },
+    { key: 'fajr', date: nextFajrDate, time: nextFajr, labelTr: 'İmsak', labelEn: 'Fajr' },
+  ];
+
+  const nextPrayer =
+    prayerSlots.find((slot) => slot.date.getTime() > now.getTime()) ?? prayerSlots[0];
+  const nextEventName =
+    locale === 'tr'
+      ? `Sıradaki Vakit: ${nextPrayer.labelTr}`
+      : locale === 'ar'
+        ? `الوقت القادم: ${nextPrayer.labelEn}`
+        : `Next Prayer: ${nextPrayer.labelEn}`;
+  const nextEventTime = nextPrayer.time;
+
   // Labels: belirt if it's for tomorrow
   const sahurLabel =
     locale === 'tr'
       ? sahurHasPassedToday
         ? 'Yarınki Sahura Kalan Süre'
         : 'Kalan Süre'
-      : sahurHasPassedToday
-        ? "Time until tomorrow's Suhoor"
-        : 'Time Remaining';
+      : locale === 'ar'
+        ? sahurHasPassedToday
+          ? 'الوقت المتبقي لسحور الغد'
+          : 'الوقت المتبقي'
+        : sahurHasPassedToday
+          ? "Time until tomorrow's Suhoor"
+          : 'Time Remaining';
 
   const iftarLabel =
     locale === 'tr'
       ? iftarHasPassedToday
         ? 'Yarınki İftara Kalan Süre'
         : 'Kalan Süre'
-      : iftarHasPassedToday
-        ? "Time until tomorrow's Iftar"
-        : 'Time Remaining';
+      : locale === 'ar'
+        ? iftarHasPassedToday
+          ? 'الوقت المتبقي لإفطار الغد'
+          : 'الوقت المتبقي'
+        : iftarHasPassedToday
+          ? "Time until tomorrow's Iftar"
+          : 'Time Remaining';
 
   // Check if we're past midnight relative to today's Fajr in Doha – this is \"Sahur Öncesi\"
   const isAfterMidnight = now < todayFajrDate;
@@ -104,11 +152,15 @@ export function PrayerTimeCard({
       if (hours > 0) {
         return locale === 'tr'
           ? `Bugün ${hours} saat ${minutes} dakika oruç tutuldu`
-          : `Fasted ${hours}h ${minutes}m today`;
+          : locale === 'ar'
+            ? `صمت اليوم ${hours}س ${minutes}د`
+            : `Fasted ${hours}h ${minutes}m today`;
       }
       return locale === 'tr'
         ? `Bugün ${minutes} dakika oruç tutuldu`
-        : `Fasted ${minutes}m today`;
+        : locale === 'ar'
+          ? `صمت اليوم ${minutes}د`
+          : `Fasted ${minutes}m today`;
     }
     if (isIftar) {
       // Iftar time: calculate total fasting duration (Sahur to Iftar)
@@ -119,11 +171,15 @@ export function PrayerTimeCard({
       if (hours > 0) {
         return locale === 'tr'
           ? `Bugün ${hours} saat ${minutes} dakika oruç tutuldu`
-          : `Fasted ${hours}h ${minutes}m today`;
+          : locale === 'ar'
+            ? `صمت اليوم ${hours}س ${minutes}د`
+            : `Fasted ${hours}h ${minutes}m today`;
       }
       return locale === 'tr'
         ? `Bugün ${minutes} dakika oruç tutuldu`
-        : `Fasted ${minutes}m today`;
+        : locale === 'ar'
+          ? `صمت اليوم ${minutes}د`
+          : `Fasted ${minutes}m today`;
     }
     return null;
   };
@@ -135,7 +191,7 @@ export function PrayerTimeCard({
       return (
         <div className="flex flex-col items-end gap-1">
           <span className="inline-flex items-center rounded-full border-2 border-amber-500 bg-gradient-to-r from-amber-500/90 to-amber-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-amber-500/30">
-            {locale === 'tr' ? 'İftar Vakti' : 'Iftar Time'}
+            {L('İftar Vakti', 'Iftar Time', 'وقت الإفطار')}
           </span>
           {fastingDuration && (
             <span className="text-[10px] text-amber-200/80 font-medium text-right">
@@ -149,7 +205,7 @@ export function PrayerTimeCard({
       return (
         <div className="flex flex-col items-end gap-1">
           <span className="inline-flex items-center rounded-full border-2 border-emerald-500 bg-gradient-to-r from-emerald-600/90 to-emerald-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-500/30">
-            {locale === 'tr' ? 'Oruçlu' : 'Fasting'}
+            {L('Oruçlu', 'Fasting', 'صائم')}
           </span>
           {fastingDuration && (
             <span className="text-[10px] text-emerald-200/80 font-medium text-right">
@@ -163,10 +219,10 @@ export function PrayerTimeCard({
       return (
         <div className="flex flex-col items-end gap-1">
           <span className="inline-flex items-center rounded-full border-2 border-slate-500 bg-gradient-to-r from-slate-600/90 to-slate-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-slate-500/30">
-            {locale === 'tr' ? 'Sahur Öncesi' : 'Before Suhoor'}
+            {L('Sahur Öncesi', 'Before Suhoor', 'قبل السحور')}
           </span>
           <span className="text-[10px] text-slate-300/80 font-medium text-right">
-            {locale === 'tr' ? 'Henüz oruç başlamadı' : 'Fasting has not started yet'}
+            {L('Henüz oruç başlamadı', 'Fasting has not started yet', 'لم يبدأ الصيام بعد')}
           </span>
         </div>
       );
@@ -177,9 +233,9 @@ export function PrayerTimeCard({
   // Sahur card - Güneş Doğuşu sahur ile alakalı (Fajr sonrası) sağ alt köşede
   const sahurCard = (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
+      transition={{ delay: 0.08, duration: 0.28, ease: 'easeOut' }}
       className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 rounded-xl p-4 sm:p-5 border border-blue-500/60 shadow-lg shadow-blue-500/30 backdrop-blur-sm hover:border-blue-400/80 transition-all duration-300 relative flex flex-col"
     >
       <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
@@ -187,7 +243,7 @@ export function PrayerTimeCard({
           <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-300" />
         </div>
         <h3 className="font-semibold text-base sm:text-lg text-slate-100">
-          {locale === 'tr' ? 'Sahur Vakti' : 'Suhoor Time'}
+          {L('Sahur Vakti', 'Suhoor Time', 'وقت السحور')}
         </h3>
       </div>
       <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 tabular-nums drop-shadow-lg">
@@ -206,7 +262,7 @@ export function PrayerTimeCard({
       <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-slate-400 sm:mt-4">
         <Sun className="w-3.5 h-3.5 shrink-0 text-amber-400/80" aria-hidden />
         <span className="truncate">
-          {locale === 'tr' ? 'Güneş Doğuşu' : 'Sunrise'}: <span className="text-slate-200 font-semibold tabular-nums">{sunrise}</span>
+          {L('Güneş Doğuşu', 'Sunrise', 'الشروق')}: <span className="text-slate-200 font-semibold tabular-nums">{sunrise}</span>
         </span>
       </div>
     </motion.div>
@@ -215,9 +271,9 @@ export function PrayerTimeCard({
   // Iftar card - Daha canlı ve kompakt
   const iftarCard = (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
+      transition={{ delay: 0.14, duration: 0.28, ease: 'easeOut' }}
       className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 rounded-xl p-4 sm:p-5 border border-ramadan-gold/60 shadow-lg shadow-ramadan-gold/40 backdrop-blur-sm hover:border-ramadan-gold/80 transition-all duration-300 relative overflow-hidden"
     >
       {/* Gold glow effect - Daha belirgin */}
@@ -227,7 +283,7 @@ export function PrayerTimeCard({
           <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-ramadan-gold" />
         </div>
         <h3 className="font-semibold text-base sm:text-lg text-slate-100">
-          {locale === 'tr' ? 'İftar Vakti' : 'Iftar Time'}
+          {L('İftar Vakti', 'Iftar Time', 'وقت الإفطار')}
         </h3>
       </div>
       <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-ramadan-gold mb-2 sm:mb-3 tabular-nums drop-shadow-lg relative z-10">
@@ -251,15 +307,25 @@ export function PrayerTimeCard({
 
       <CardHeader className="relative z-10 p-4 sm:p-5 pb-3 sm:pb-4">
         {/* Status Section - Prominent and informative */}
-        <div className="mb-4">
+        <div className="mb-3">
           {getStatusBadge()}
         </div>
         
         {/* Title Section - Clean and minimal */}
-        <div className="mb-2">
-          <CardTitle className="text-base sm:text-lg bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent font-bold">
-            {locale === 'tr' ? 'Namaz Vakitleri' : 'Prayer Times'}
+        <div className="mb-2 space-y-2">
+          <CardTitle className="text-base sm:text-lg text-amber-100 font-bold drop-shadow-[0_1px_6px_rgba(0,0,0,0.65)]">
+            {L('Namaz Vakitleri', 'Prayer Times', 'مواقيت الصلاة')}
           </CardTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="inline-flex items-center gap-2 rounded-lg border border-slate-500/50 bg-slate-900/35 px-3 py-2 text-xs sm:text-sm text-slate-100">
+              <Clock3 className="w-4 h-4 text-ramadan-gold" />
+              <span>{nextEventName}</span>
+              <span className="font-bold tabular-nums text-ramadan-gold">{nextEventTime}</span>
+            </div>
+            <div className="inline-flex items-center rounded-lg border border-slate-500/50 bg-slate-900/35 px-3 py-2 text-[11px] sm:text-xs text-slate-200">
+              {hijriDate || gregorianDate}
+            </div>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-5 pt-0 space-y-5 sm:space-y-6 relative z-10">

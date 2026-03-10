@@ -22,7 +22,7 @@ export function Navigation() {
     <nav 
       className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/98 via-slate-900/95 to-slate-900/90 backdrop-blur-md border-t border-slate-700/50 z-50 safe-area-inset-bottom shadow-2xl shadow-black/20"
       role="navigation"
-      aria-label={t('navigation') || 'Main navigation'}
+      aria-label={t('navigation')}
     >
       <div className="container mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-around py-2 sm:py-3">

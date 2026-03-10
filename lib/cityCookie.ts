@@ -7,7 +7,7 @@ export const RAMADAN_CITY_COOKIE = 'ramadan-city';
  * Parse cookie value "city:country" into CityConfig. Used by server.
  */
 export function getCityConfigFromCookie(cookieValue: string | undefined): CityConfig {
-  if (!cookieValue) return { city: 'Doha', country: 'Qatar' };
+  if (!cookieValue) return SUPPORTED_CITIES[0];
   try {
     const decoded = decodeURIComponent(cookieValue.trim());
     const [city, country] = decoded.split(':');
@@ -21,5 +21,5 @@ export function getCityConfigFromCookie(cookieValue: string | undefined): CityCo
   } catch {
     // ignore
   }
-  return { city: 'Doha', country: 'Qatar' };
+  return SUPPORTED_CITIES[0];
 }

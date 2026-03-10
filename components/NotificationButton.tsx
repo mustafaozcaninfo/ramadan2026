@@ -8,6 +8,7 @@ import {
   enableNotifications,
   disableNotifications,
   requestNotificationPermission,
+  normalizeNotificationLocale,
 } from '@/lib/notifications';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { trackEvent } from '@/lib/analytics';
@@ -35,6 +36,7 @@ function isSafariOrIOS(): boolean {
 
 export function NotificationButton() {
   const t = useTranslations('notifications');
+  const tSettings = useTranslations('settings');
   const locale = useLocale() as 'tr' | 'en' | 'ar';
   const user = useAppStore((s) => s.user);
   const notificationsEnabledFromStore = useAppStore((s) => s.notificationsEnabled);
@@ -55,11 +57,12 @@ export function NotificationButton() {
   }, []);
 
   const handleToggle = async () => {
+    const notificationLocale = normalizeNotificationLocale(locale);
     if (!permissionGranted) {
       const permission = await requestNotificationPermission();
       if (permission.granted) {
         setPermissionGranted(true);
-        enableNotifications(locale as 'tr' | 'en', reminderIntervals.length ? reminderIntervals : undefined);
+        enableNotifications(notificationLocale, reminderIntervals.length ? reminderIntervals : undefined);
         setEnabled(true);
         setNotificationsEnabled(true);
         trackEvent('notification_enabled');
@@ -74,7 +77,7 @@ export function NotificationButton() {
         setNotificationsEnabled(false);
         toast.success(t('disableNotifications'));
       } else {
-        enableNotifications(locale as 'tr' | 'en', reminderIntervals.length ? reminderIntervals : undefined);
+        enableNotifications(notificationLocale, reminderIntervals.length ? reminderIntervals : undefined);
         setEnabled(true);
         setNotificationsEnabled(true);
         trackEvent('notification_enabled');
@@ -105,7 +108,7 @@ export function NotificationButton() {
       </Button>
       {user && (
         <p className="text-xs text-slate-400 text-center px-2" role="note">
-          Synced to your account
+          {tSettings('syncedAccount')}
         </p>
       )}
       {isIOS && (

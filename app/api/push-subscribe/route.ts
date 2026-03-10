@@ -14,7 +14,7 @@ function getRedis(): Redis | null {
 
 /**
  * POST /api/push-subscribe
- * Body: { subscription: PushSubscriptionJSON, locale?: 'tr' | 'en' }
+ * Body: { subscription: PushSubscriptionJSON, locale?: 'tr' | 'en' | 'ar' }
  * Stores subscription for Web Push (iOS 16.4+ PWA, Chrome, etc.)
  */
 export async function POST(request: NextRequest) {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const { subscription, locale: localeParam, reminderIntervals } = parsed.data;
-    const locale = localeParam === 'en' ? 'en' : 'tr';
+    const locale = localeParam === 'en' ? 'en' : localeParam === 'ar' ? 'ar' : 'tr';
     const intervals = reminderIntervals?.length ? reminderIntervals : [15, 10, 5, 0];
 
     const key = `${REDIS_PREFIX}${encodeURIComponent(subscription.endpoint)}`;

@@ -10,6 +10,7 @@ import {
 import {
   enableNotifications,
   disableNotifications,
+  normalizeNotificationLocale,
 } from '@/lib/notifications';
 
 /**
@@ -21,8 +22,10 @@ export function useFirestoreSettingsSync(locale: string) {
   const user = useAppStore((s) => s.user);
   const notificationsEnabled = useAppStore((s) => s.notificationsEnabled);
   const reminderIntervals = useAppStore((s) => s.reminderIntervals);
+  const liveAutoplay = useAppStore((s) => s.liveAutoplay);
   const setNotificationsEnabled = useAppStore((s) => s.setNotificationsEnabled);
   const setReminderIntervals = useAppStore((s) => s.setReminderIntervals);
+  const setLiveAutoplay = useAppStore((s) => s.setLiveAutoplay);
   const loadedRef = useRef(false);
 
   // Load from Firestore when user appears
@@ -44,10 +47,13 @@ export function useFirestoreSettingsSync(locale: string) {
             const intervals = Array.isArray(data.reminderIntervals) && data.reminderIntervals.length
               ? data.reminderIntervals
               : undefined;
-            enableNotifications(locale as 'tr' | 'en', intervals);
+            enableNotifications(normalizeNotificationLocale(locale), intervals);
           } else {
             disableNotifications();
           }
+        }
+        if (typeof data.liveAutoplay === 'boolean') {
+          setLiveAutoplay(data.liveAutoplay);
         }
       }
       loadedRef.current = true;
@@ -55,7 +61,7 @@ export function useFirestoreSettingsSync(locale: string) {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, setNotificationsEnabled, setReminderIntervals, locale]);
+  }, [user?.uid, setNotificationsEnabled, setReminderIntervals, setLiveAutoplay, locale]);
 
   // Persist to Firestore when user is set and store changes (debounced)
   useEffect(() => {
@@ -64,8 +70,9 @@ export function useFirestoreSettingsSync(locale: string) {
       saveUserSettings(user.uid, {
         notificationsEnabled,
         reminderIntervals,
+        liveAutoplay,
       });
     }, 500);
     return () => clearTimeout(t);
-  }, [user?.uid, notificationsEnabled, reminderIntervals]);
+  }, [user?.uid, notificationsEnabled, reminderIntervals, liveAutoplay]);
 }

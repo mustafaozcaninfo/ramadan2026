@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface CountdownProps {
   targetTime: string; // HH:mm format (fallback when targetDateTime is not provided)
   targetDateTime?: Date; // Precise target Date (preferred for correct timezone/date handling)
   label: string;
-  locale?: 'tr' | 'en';
+  locale?: 'tr' | 'en' | 'ar';
   variant?: 'sahur' | 'iftar'; // For different color schemes
 }
 
@@ -19,6 +19,7 @@ interface CountdownCardProps {
 }
 
 function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCardProps) {
+  const reduceMotion = useReducedMotion();
   const gradientClass = variant === 'sahur' 
     ? 'bg-gradient-to-br from-blue-500/40 via-blue-600/50 to-blue-700/60 dark:from-blue-600/50 dark:via-blue-700/60 dark:to-blue-800/70'
     : 'bg-gradient-to-br from-ramadan-gold/40 via-ramadan-gold/50 to-ramadan-gold/60 dark:from-ramadan-gold/50 dark:via-ramadan-gold/60 dark:to-ramadan-gold/70';
@@ -30,13 +31,17 @@ function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCard
   const textColor = variant === 'sahur' ? 'text-blue-100' : 'text-ramadan-gold';
 
   // Visual indicator when time is very close (less than 1 hour)
-  const isLowTime = (label.toLowerCase().includes('minute') || label.toLowerCase().includes('dakika')) && value < 5;
+  const isLowTime =
+    (label.toLowerCase().includes('minute') ||
+      label.toLowerCase().includes('dakika') ||
+      label.includes('دقيقة')) &&
+    value < 5;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 16, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: index * 0.1, duration: 0.3 }}
+      transition={{ delay: index * 0.06, duration: 0.24, ease: 'easeOut' }}
       className={`flex flex-col items-center justify-center ${gradientClass} ${borderClass} rounded-2xl p-4 sm:p-5 md:p-6 flex-1 max-w-[100px] sm:max-w-[120px] border-2 shadow-lg shadow-black/20 backdrop-blur-sm hover:scale-105 transition-all duration-300 ${isLowTime ? 'ring-2 ring-red-400/50 ring-opacity-75' : ''}`}
       role="timer"
       aria-label={`${value} ${label}`}
@@ -44,9 +49,9 @@ function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCard
     >
       <motion.div
         key={value}
-        initial={{ scale: 1.1, opacity: 0.7 }}
+        initial={reduceMotion ? { scale: 1, opacity: 1 } : { scale: 1.08, opacity: 0.74 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
         className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold ${textColor} font-mono tabular-nums mb-1 sm:mb-2 drop-shadow-lg`}
       >
         {value.toString().padStart(2, '0')}
@@ -59,6 +64,7 @@ function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCard
 }
 
 export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', variant = 'iftar' }: CountdownProps) {
+  const reduceMotion = useReducedMotion();
   const [timeRemaining, setTimeRemaining] = useState({
     days: 0,
     hours: 0, 
@@ -120,9 +126,12 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
     return () => clearInterval(interval);
   }, [updateCountdown]);
 
-  const labels = locale === 'tr' 
-    ? ['Gün', 'Saat', 'Dakika', 'Saniye']
-    : ['Days', 'Hours', 'Minutes', 'Seconds'];
+  const labels =
+    locale === 'tr'
+      ? ['Gün', 'Saat', 'Dakika', 'Saniye']
+      : locale === 'ar'
+        ? ['يوم', 'ساعة', 'دقيقة', 'ثانية']
+        : ['Days', 'Hours', 'Minutes', 'Seconds'];
 
   // Show days only if > 0, otherwise show hours, minutes, seconds
   const showDays = timeRemaining.days > 0;
@@ -146,9 +155,8 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
   useEffect(() => {
     if (isZero && typeof window !== 'undefined') {
       // Announce when countdown reaches zero
-      const announcement = locale === 'tr' 
-        ? 'Süre doldu!'
-        : 'Time is up!';
+      const announcement =
+        locale === 'tr' ? 'Süre doldu!' : locale === 'ar' ? 'انتهى الوقت!' : 'Time is up!';
       
       // Create a live region for announcement
       const announcementEl = document.createElement('div');
@@ -161,9 +169,9 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
       
       setTimeout(() => {
         document.body.removeChild(announcementEl);
-      }, 1000);
+      }, reduceMotion ? 100 : 1000);
     }
-  }, [isZero, locale]);
+  }, [isZero, locale, reduceMotion]);
 
   return (
     <div className="w-full" role="timer" aria-live="polite" aria-atomic="false" aria-label={label || undefined}>

@@ -13,32 +13,55 @@ export function AzanButton() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const loadingTimeoutRef = useRef<number | null>(null);
+
+  const clearLoadingTimeout = () => {
+    if (loadingTimeoutRef.current !== null) {
+      window.clearTimeout(loadingTimeoutRef.current);
+      loadingTimeoutRef.current = null;
+    }
+  };
 
   useEffect(() => {
     // Create audio element
     const audio = new Audio('/azan.mp3');
     audio.loop = false;
-    audio.preload = 'auto';
-    
-    // Error handling
-    audio.addEventListener('error', () => {
-      setError('Failed to load audio');
-      setIsLoading(false);
-      toast.error(t('azan') + ' - ' + (typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Ses yüklenemedi' : 'Audio failed to load'));
-    });
+    audio.preload = 'metadata';
 
-    audio.addEventListener('loadstart', () => {
-      setIsLoading(true);
+    const handleError = () => {
+      setError(t('azanLoadError'));
+      setIsLoading(false);
+      clearLoadingTimeout();
+      toast.error(`${t('azan')} - ${t('azanLoadError')}`);
+    };
+
+    const handleReady = () => {
       setError(null);
-    });
-
-    audio.addEventListener('canplay', () => {
       setIsLoading(false);
-    });
+      clearLoadingTimeout();
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+    };
+
+    // Ready events are inconsistent between browsers; listen to a few.
+    audio.addEventListener('canplay', handleReady);
+    audio.addEventListener('canplaythrough', handleReady);
+    audio.addEventListener('loadeddata', handleReady);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('ended', handleEnded);
 
     audioRef.current = audio;
+    audio.load();
 
     return () => {
+      clearLoadingTimeout();
+      audio.removeEventListener('canplay', handleReady);
+      audio.removeEventListener('canplaythrough', handleReady);
+      audio.removeEventListener('loadeddata', handleReady);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('ended', handleEnded);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -51,32 +74,43 @@ export function AzanButton() {
     trackEvent('azan_click');
 
     if (isPlaying) {
+      clearLoadingTimeout();
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setIsPlaying(false);
+      setIsLoading(false);
     } else {
+      setError(null);
+      setIsLoading(true);
+
+      clearLoadingTimeout();
+      loadingTimeoutRef.current = window.setTimeout(() => {
+        setIsLoading(false);
+      }, 8000);
+
       const playPromise = audioRef.current.play();
       
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
             setIsPlaying(true);
-            audioRef.current!.onended = () => {
-              setIsPlaying(false);
-            };
+            setIsLoading(false);
+            clearLoadingTimeout();
           })
-          .catch((err) => {
-            setError('Failed to play audio');
+          .catch(() => {
+            setError(t('azanPlayError'));
             setIsPlaying(false);
-            toast.error(t('azan') + ' - ' + (typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Çalınamadı' : 'Failed to play'));
+            setIsLoading(false);
+            clearLoadingTimeout();
+            toast.error(`${t('azan')} - ${t('azanPlayError')}`);
           });
       }
     }
   };
 
   const ariaLabel = isPlaying 
-    ? (typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Ezan çalıyor, durdurmak için tıklayın' : 'Azan is playing, click to stop')
-    : (typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Ezan çalmak için tıklayın' : 'Click to play Azan');
+    ? t('azanClickToStop')
+    : t('azanClickToPlay');
 
   return (
     <Button
@@ -90,12 +124,12 @@ export function AzanButton() {
       {isLoading ? (
         <>
           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          {typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Yükleniyor...' : 'Loading...'}
+          {t('loading')}
         </>
       ) : isPlaying ? (
         <>
           <VolumeX className="w-4 h-4 mr-2" />
-          {t('azan')} ({typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Durdur' : 'Stop'})
+          {t('azan')} ({t('stop')})
         </>
       ) : (
         <>

@@ -8,7 +8,7 @@ import type { AladhanResponse } from '@/lib/prayer';
 interface CalendarPageClientProps {
   prayerTimes: AladhanResponse[];
   startDate: Date;
-  locale: 'tr' | 'en';
+  locale: 'tr' | 'en' | 'ar';
   autoScrollToToday?: boolean;
 }
 

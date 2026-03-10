@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Ramadan 2026 Doha - İftar & Sahur',
-    short_name: 'Ramadan 2026',
-    description: 'Doha, Qatar için Ramazan 2026 İftar ve Sahur takvimi',
+    name: 'Iftar & Sahur | الإفطار والسحور',
+    short_name: 'Iftar Sahur',
+    description: 'Multilingual iftar and suhoor prayer-time app',
     start_url: '/',
     display: 'standalone',
     background_color: '#0f172a',

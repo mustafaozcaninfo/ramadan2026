@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface ShareButtonProps {
   title: string;
@@ -12,6 +13,8 @@ interface ShareButtonProps {
 }
 
 export function ShareButton({ title, text, url, className }: ShareButtonProps) {
+  const t = useTranslations('ui');
+
   const handleShare = async () => {
     const shareData = {
       title,
@@ -26,20 +29,12 @@ export function ShareButton({ title, text, url, className }: ShareButtonProps) {
         // Fallback: copy to clipboard
         const shareText = `${title}\n\n${text}\n\n${shareData.url}`;
         await navigator.clipboard.writeText(shareText);
-        toast.success(
-          typeof window !== 'undefined' && navigator.language.startsWith('tr')
-            ? 'Paylaşım metni kopyalandı'
-            : 'Share text copied to clipboard'
-        );
+        toast.success(t('shareTextCopied'));
       }
     } catch (err) {
       // User cancelled or error occurred
       if ((err as Error).name !== 'AbortError') {
-        toast.error(
-          typeof window !== 'undefined' && navigator.language.startsWith('tr')
-            ? 'Paylaşım başarısız'
-            : 'Share failed'
-        );
+        toast.error(t('shareFailed'));
       }
     }
   };
@@ -50,10 +45,10 @@ export function ShareButton({ title, text, url, className }: ShareButtonProps) {
       variant="ghost"
       size="sm"
       className={className}
-      aria-label={typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Paylaş' : 'Share'}
+      aria-label={t('share')}
     >
       <Share2 className="w-4 h-4 mr-2" />
-      {typeof window !== 'undefined' && navigator.language.startsWith('tr') ? 'Paylaş' : 'Share'}
+      {t('share')}
     </Button>
   );
 }

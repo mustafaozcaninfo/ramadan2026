@@ -8,18 +8,25 @@ import ramadanData from './ramadan-2026-data.json';
 export interface CityConfig {
   city: string;
   country: string;
+  timezone?: string;
+  method?: string;
 }
 
 export const SUPPORTED_CITIES: CityConfig[] = [
-  { city: 'Doha', country: 'Qatar' },
-  { city: 'Istanbul', country: 'Turkey' },
-  { city: 'London', country: 'United Kingdom' },
-  { city: 'Dubai', country: 'United Arab Emirates' },
-  { city: 'Riyadh', country: 'Saudi Arabia' },
-  { city: 'Cairo', country: 'Egypt' },
+  { city: 'Doha', country: 'Qatar', timezone: 'Asia/Qatar', method: '10' }, // Qatar
+  { city: 'Istanbul', country: 'Turkey', timezone: 'Europe/Istanbul', method: '13' }, // Diyanet
+  { city: 'London', country: 'United Kingdom', timezone: 'Europe/London', method: '3' }, // MWL
+  { city: 'Dubai', country: 'United Arab Emirates', timezone: 'Asia/Dubai', method: '8' }, // Gulf Region
+  { city: 'Riyadh', country: 'Saudi Arabia', timezone: 'Asia/Riyadh', method: '4' }, // Umm Al-Qura
+  { city: 'Cairo', country: 'Egypt', timezone: 'Africa/Cairo', method: '5' }, // Egyptian
 ];
 
-const DEFAULT_CITY: CityConfig = { city: 'Doha', country: 'Qatar' };
+const DEFAULT_CITY: CityConfig = {
+  city: 'Doha',
+  country: 'Qatar',
+  timezone: 'Asia/Qatar',
+  method: '10',
+};
 const RAMADAN_START = '2026-02-18';
 const RAMADAN_END = '2026-03-19';
 
@@ -32,13 +39,31 @@ function isDateInRamadanRange(date: string): boolean {
   return date >= RAMADAN_START && date <= RAMADAN_END;
 }
 
+function toAladhanDate(isoDate: string): string {
+  const m = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return isoDate;
+  const [, year, month, day] = m;
+  return `${day}-${month}-${year}`;
+}
+
 function buildAladhanUrl(date: string, config: CityConfig): string {
+  const aladhanDate = toAladhanDate(date);
   const params = new URLSearchParams({
     city: config.city,
     country: config.country,
-    method: '10',
+    method: config.method ?? DEFAULT_CITY.method ?? '10',
   });
-  return `https://api.aladhan.com/v1/timingsByCity/${date}?${params.toString()}`;
+  return `https://api.aladhan.com/v1/timingsByCity/${aladhanDate}?${params.toString()}`;
+}
+
+function getCityDateString(config: CityConfig, d: Date = new Date()): string {
+  try {
+    return d.toLocaleDateString('en-CA', {
+      timeZone: config.timezone ?? DEFAULT_CITY.timezone,
+    });
+  } catch {
+    return d.toISOString().split('T')[0];
+  }
 }
 
 export interface PrayerTimes {
@@ -216,7 +241,7 @@ export async function getPrayerTimes(
 export async function getTodayPrayerTimes(
   cityConfig: CityConfig = DEFAULT_CITY
 ): Promise<AladhanResponse> {
-  const today = getDohaDateString();
+  const today = getCityDateString(cityConfig);
 
   if (!isDoha(cityConfig)) {
     const response = await fetch(buildAladhanUrl(today, cityConfig), {

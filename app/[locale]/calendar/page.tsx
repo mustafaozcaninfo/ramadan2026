@@ -9,6 +9,7 @@ import { Navigation } from '@/components/Navigation';
 import { ScrollToToday } from '@/components/ScrollToToday';
 import { Link } from '@/lib/i18n/routing';
 import { CalendarCardSkeleton } from '@/components/LoadingSkeleton';
+import { MenuButton } from '@/components/MenuButton';
 
 const CalendarPageClient = dynamic(() => import('./CalendarPageClient').then((m) => ({ default: m.CalendarPageClient })), {
   loading: () => (
@@ -34,6 +35,12 @@ export default async function CalendarPage({
 
   const cookieStore = await cookies();
   const cityConfig = getCityConfigFromCookie(cookieStore.get('ramadan-city')?.value);
+  const selectedCityLabel = `${cityConfig.city}, ${cityConfig.country}`;
+  const isTr = locale === 'tr';
+  const isAr = locale === 'ar';
+  const methodLabel = cityConfig.city === 'Doha' && cityConfig.country === 'Qatar'
+    ? tCommon('officialQatarMethod')
+    : tCommon('cityBasedMethod');
 
   let prayerTimes: Awaited<ReturnType<typeof getRamadanPrayerTimes>>;
   try {
@@ -47,7 +54,7 @@ export default async function CalendarPage({
   const autoScrollToToday = resolvedSearchParams?.today === '1';
 
   return (
-    <main className="min-h-screen bg-qatar-gradient pb-20 safe-area-inset-bottom relative overflow-hidden">
+    <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl" />
@@ -55,14 +62,19 @@ export default async function CalendarPage({
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 pb-4 sm:pb-6 relative z-10 safe-area-inset-top">
-        <div className="text-center mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-ramadan-green via-ramadan-gold to-qatar-maroon bg-clip-text text-transparent mb-2 sm:mb-3 drop-shadow-lg">
-            {t('title')}
-          </h1>
-          <div className="mt-2 sm:mt-3 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-qatar-maroon/30 backdrop-blur-sm rounded-full border border-qatar-maroon/40 shadow-lg">
-            <p className="text-white text-xs sm:text-sm font-semibold">
-              {tCommon('location')} – {tCommon('officialQatarMethod')}
-            </p>
+        <div className="mb-4 sm:mb-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-50 mb-2 sm:mb-3 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
+                {t('title')}
+              </h1>
+              <div className="mt-2 sm:mt-3 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-qatar-maroon/30 backdrop-blur-sm rounded-full border border-qatar-maroon/40 shadow-lg">
+                <p className="text-white text-xs sm:text-sm font-semibold">
+                  {selectedCityLabel} – {methodLabel}
+                </p>
+              </div>
+            </div>
+            <MenuButton locale={locale as 'tr' | 'en' | 'ar'} />
           </div>
         </div>
 
@@ -75,26 +87,24 @@ export default async function CalendarPage({
           {prayerTimes.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-slate-300 mb-4">
-                {locale === 'tr'
-                  ? 'Takvim yüklenirken bir sorun oluştu.'
-                  : 'An error occurred while loading the calendar.'}
+                {t('loadError')}
               </p>
               <Button asChild>
-                <Link href="/calendar">{locale === 'tr' ? 'Yeniden Dene' : 'Retry'}</Link>
+                <Link href="/calendar">{t('retry')}</Link>
               </Button>
             </div>
           ) : (
             <CalendarPageClient
               prayerTimes={prayerTimes}
               startDate={startDate}
-              locale={locale as 'tr' | 'en'}
+              locale={locale as 'tr' | 'en' | 'ar'}
               autoScrollToToday={autoScrollToToday}
             />
           )}
 
           <div className="text-center text-xs sm:text-sm text-slate-300 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-600/50">
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-700/50 backdrop-blur-sm rounded-lg border border-slate-600/50 mb-2 sm:mb-3 shadow-md">
-              <p className="text-ramadan-green font-medium">{tCommon('officialQatarMethod')}</p>
+              <p className="text-ramadan-green font-medium">{selectedCityLabel} • {methodLabel}</p>
             </div>
             <p className="text-slate-400">
               {tCommon('source')}:{' '}

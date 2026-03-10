@@ -1,0 +1,112 @@
+[
+  {
+    "id": "quran_2_152",
+    "kind": "quran",
+    "reference": "Qur'an 2:152",
+    "grade": "sahih",
+    "note": {
+      "tr": "Beni anın ki Ben de sizi anayım.",
+      "en": "Remember Me and I will remember you.",
+      "ar": "فَاذْكُرُونِي أَذْكُرْكُمْ"
+    }
+  },
+  {
+    "id": "quran_3_191",
+    "kind": "quran",
+    "reference": "Qur'an 3:191",
+    "grade": "sahih",
+    "note": {
+      "tr": "Ayakta, otururken ve yatarken Allah'ı zikredenler.",
+      "en": "Those who remember Allah standing, sitting, and lying.",
+      "ar": "الَّذِينَ يَذْكُرُونَ اللَّهَ قِيَامًا وَقُعُودًا"
+    }
+  },
+  {
+    "id": "muslim_2726",
+    "kind": "hadith",
+    "reference": "Sahih Muslim 2726",
+    "grade": "sahih",
+    "note": {
+      "tr": "Sübhanallahi ve bihamdihi zikri.",
+      "en": "Dhikr: Subhanallahi wa bihamdihi.",
+      "ar": "ذكر سبحان الله وبحمده."
+    }
+  },
+  {
+    "id": "bukhari_6405",
+    "kind": "hadith",
+    "reference": "Sahih al-Bukhari 6405",
+    "grade": "sahih",
+    "note": {
+      "tr": "İki hafif ama mizanda ağır söz.",
+      "en": "Two light phrases heavy on the scale.",
+      "ar": "كلمتان خفيفتان على اللسان ثقيلتان في الميزان."
+    }
+  },
+  {
+    "id": "muslim_2691",
+    "kind": "hadith",
+    "reference": "Sahih Muslim 2691",
+    "grade": "sahih",
+    "note": {
+      "tr": "Zikir halkası ve meleklerin kuşatması.",
+      "en": "Gatherings of remembrance are surrounded by angels.",
+      "ar": "مجالس الذكر تحفها الملائكة."
+    }
+  },
+  {
+    "id": "tirmidhi_3477",
+    "kind": "hadith",
+    "reference": "Jami' at-Tirmidhi 3477",
+    "grade": "hasan",
+    "note": {
+      "tr": "La havle ve la kuvvete illa billah zikri.",
+      "en": "No might nor power except with Allah.",
+      "ar": "لا حول ولا قوة إلا بالله."
+    }
+  },
+  {
+    "id": "abu_dawud_1522",
+    "kind": "hadith",
+    "reference": "Sunan Abi Dawud 1522",
+    "grade": "sahih",
+    "note": {
+      "tr": "İstiğfarın fazileti.",
+      "en": "Virtue of seeking forgiveness.",
+      "ar": "فضل الاستغفار."
+    }
+  },
+  {
+    "id": "muslim_2708",
+    "kind": "hadith",
+    "reference": "Sahih Muslim 2708",
+    "grade": "sahih",
+    "note": {
+      "tr": "Allah'a hamd ve tesbih.",
+      "en": "Praising and glorifying Allah.",
+      "ar": "التسبيح والتحميد."
+    }
+  },
+  {
+    "id": "nasai_1299",
+    "kind": "hadith",
+    "reference": "Sunan an-Nasa'i 1299",
+    "grade": "sahih",
+    "note": {
+      "tr": "Salavat getirmenin fazileti.",
+      "en": "Virtue of sending blessings upon the Prophet.",
+      "ar": "فضل الصلاة على النبي ﷺ."
+    }
+  },
+  {
+    "id": "classical_hizb",
+    "kind": "classical",
+    "reference": "Classical Wird Tradition",
+    "grade": "accepted",
+    "note": {
+      "tr": "Ulema tarafından tavsiye edilen günlük evrad tertibi.",
+      "en": "Daily awrad arrangement recommended by scholars.",
+      "ar": "ترتيب الأوراد اليومي الموصى به من العلماء."
+    }
+  }
+]

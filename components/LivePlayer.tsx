@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Hls from 'hls.js';
 import { RotateCcw, PictureInPicture2, Maximize2 } from 'lucide-react';
 
@@ -8,7 +8,8 @@ interface LivePlayerProps {
   src: string;
   channelName: string;
   className?: string;
-  locale?: 'tr' | 'en';
+  locale?: 'tr' | 'en' | 'ar';
+  autoPlayEnabled?: boolean;
 }
 
 export function LivePlayer({
@@ -16,6 +17,7 @@ export function LivePlayer({
   channelName,
   className = '',
   locale = 'tr',
+  autoPlayEnabled = false,
 }: LivePlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +26,7 @@ export function LivePlayer({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPiPSupported, setIsPiPSupported] = useState(false);
 
-  const t = {
+  const t = useMemo(() => ({
     tr: {
       loading: 'Yayın yükleniyor...',
       buffering: 'Tamponlanıyor...',
@@ -33,6 +35,8 @@ export function LivePlayer({
       retry: 'Tekrar Dene',
       pip: 'Küçük pencere',
       fullscreen: 'Tam ekran',
+      liveLabel: 'Canlı yayın',
+      broadcastLabel: `${channelName} canlı yayını`,
     },
     en: {
       loading: 'Loading stream...',
@@ -42,8 +46,37 @@ export function LivePlayer({
       retry: 'Retry',
       pip: 'Picture-in-picture',
       fullscreen: 'Fullscreen',
+      liveLabel: 'Live stream',
+      broadcastLabel: `${channelName} live broadcast`,
     },
-  }[locale];
+    ar: {
+      loading: 'جارٍ تحميل البث...',
+      buffering: 'جارٍ التخزين المؤقت...',
+      error: 'تعذر تحميل البث',
+      networkError: 'خطأ في الشبكة',
+      retry: 'إعادة المحاولة',
+      pip: 'نافذة عائمة',
+      fullscreen: 'ملء الشاشة',
+      liveLabel: 'بث مباشر',
+      broadcastLabel: `البث المباشر ${channelName}`,
+    },
+  }[locale]), [locale, channelName]);
+
+  const attemptAutoPlay = useCallback(async (video: HTMLVideoElement) => {
+    if (!autoPlayEnabled) return;
+    try {
+      await video.play();
+      return;
+    } catch {
+      // Browser policy can block unmuted autoplay; retry muted.
+      video.muted = true;
+      try {
+        await video.play();
+      } catch {
+        // Ignore; user can start manually via controls.
+      }
+    }
+  }, [autoPlayEnabled]);
 
   const initPlayer = useCallback(
     () => {
@@ -71,7 +104,7 @@ export function LivePlayer({
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setStatus('playing');
+        void attemptAutoPlay(video);
         setErrorMessage(null);
       });
 
@@ -94,7 +127,7 @@ export function LivePlayer({
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = src;
       video.addEventListener('loadedmetadata', () => {
-        setStatus('playing');
+        void attemptAutoPlay(video);
         setErrorMessage(null);
       });
       video.addEventListener('waiting', () => setStatus('buffering'));
@@ -108,7 +141,7 @@ export function LivePlayer({
       setErrorMessage(t.error);
     }
   },
-    [src, locale]
+    [src, t, attemptAutoPlay]
   );
 
   useEffect(() => {
@@ -164,13 +197,13 @@ export function LivePlayer({
       {(status === 'playing' || status === 'buffering') && (
         <div
           className="absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-full bg-red-600/95 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm"
-          aria-label="Canlı yayın"
+          aria-label={t.liveLabel}
         >
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
           </span>
-          LIVE
+          {locale === 'tr' ? 'CANLI' : locale === 'ar' ? 'مباشر' : 'LIVE'}
         </div>
       )}
 
@@ -180,7 +213,8 @@ export function LivePlayer({
         controls
         playsInline
         muted={false}
-        aria-label={`${channelName} canlı yayını`}
+        autoPlay={autoPlayEnabled}
+        aria-label={t.broadcastLabel}
       />
 
       {/* Loading state */}

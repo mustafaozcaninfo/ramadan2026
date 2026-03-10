@@ -20,14 +20,14 @@ export const pushSubscribeBodySchema = z.object({
     }),
     expirationTime: z.number().nullable().optional(),
   }),
-  locale: z.enum(['tr', 'en']).optional(),
+  locale: z.enum(['tr', 'en', 'ar']).optional(),
   reminderIntervals: z.array(z.number().int().min(0).max(60)).optional(),
 });
 
 export type PushSubscribeBody = z.infer<typeof pushSubscribeBodySchema>;
 
 export function getValidatedCityConfig(city?: string, country?: string) {
-  if (!city || !country) return { city: 'Doha', country: 'Qatar' };
+  if (!city || !country) return SUPPORTED_CITIES[0];
   const found = SUPPORTED_CITIES.find((c) => c.city === city && c.country === country);
-  return found ?? { city: 'Doha', country: 'Qatar' };
+  return found ?? SUPPORTED_CITIES[0];
 }

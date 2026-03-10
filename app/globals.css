@@ -21,6 +21,10 @@
   --input: 217.2 32.6% 17.5%;
   --ring: 142 76% 36%;
   --radius: 0.75rem; /* Slightly more rounded for luxury feel */
+  --motion-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-fast: 180ms;
+  --motion-base: 320ms;
+  --motion-slow: 520ms;
 }
 
 @theme inline {
@@ -81,6 +85,20 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Loading skeleton animation */
 @keyframes pulse {
   0%, 100% {
@@ -137,7 +155,15 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
+}
+
+@media (min-width: 1024px) {
+  .bg-qatar-gradient,
+  .bg-ramadan-gradient,
+  .bg-luxury-gradient {
+    background-attachment: fixed;
+  }
 }
 
 .bg-ramadan-gradient {
@@ -148,6 +174,11 @@ body {
 .bg-luxury-gradient {
   background-image: linear-gradient(135deg, #8B1538 0%, #10b981 25%, #fbbf24 50%, #1e293b 80%, #334155 100%);
   background-attachment: fixed;
+}
+
+/* Bottom-safe page shell for fixed mobile nav + iOS safe area */
+.page-with-nav {
+  padding-bottom: calc(7.25rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Custom shadow utilities */
@@ -174,4 +205,9 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.95);
+  outline-offset: 2px;
 }

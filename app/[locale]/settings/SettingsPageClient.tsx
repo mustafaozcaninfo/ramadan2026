@@ -22,8 +22,8 @@ export function SettingsPageClient({ locale }: SettingsPageClientProps) {
   const settingsSections = [
     {
       icon: User,
-      title: 'Account',
-      description: 'Sign in to sync settings across devices',
+      title: t('account'),
+      description: t('accountDescription'),
       component: <AuthSection />,
     },
     {

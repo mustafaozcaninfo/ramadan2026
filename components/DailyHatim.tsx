@@ -1,6 +1,7 @@
 'use client';
 
 import { BookOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface DailyHatimProps {
   ramadanDay: number | null;
@@ -8,15 +9,11 @@ export interface DailyHatimProps {
 }
 
 export function DailyHatim({ ramadanDay, locale }: DailyHatimProps) {
+  const tHome = useTranslations('home');
   if (ramadanDay === null || ramadanDay < 1 || ramadanDay > 30) return null;
 
   const juz = ramadanDay;
-  const label =
-    locale === 'tr'
-      ? `Bugünkü hatim: Cüz ${juz}`
-      : locale === 'ar'
-        ? `حزب اليوم: الجزء ${juz}`
-        : `Today’s reading: Juz ${juz}`;
+  const label = tHome('todaysReading', { juz });
 
   return (
     <div
@@ -29,10 +26,10 @@ export function DailyHatim({ ramadanDay, locale }: DailyHatimProps) {
       </div>
       <div>
         <p className="text-xs uppercase tracking-wider text-slate-400">
-          {locale === 'tr' ? 'Günlük hatim' : locale === 'ar' ? 'حزب اليوم' : 'Daily reading'}
+          {tHome('dailyKhatm')}
         </p>
         <p className="font-semibold text-slate-100">
-          {locale === 'tr' ? `Cüz ${juz}` : locale === 'ar' ? `الجزء ${juz}` : `Juz ${juz}`}
+          {tHome('juz', { juz })}
         </p>
       </div>
     </div>

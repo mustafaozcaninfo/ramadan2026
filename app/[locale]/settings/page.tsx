@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { Navigation } from '@/components/Navigation';
 import { SettingsPageClient } from './SettingsPageClient';
+import { MenuButton } from '@/components/MenuButton';
 
 export default async function SettingsPage({
   params,
@@ -9,10 +10,9 @@ export default async function SettingsPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations('settings');
-  const tCommon = await getTranslations('common');
 
   return (
-    <main className="min-h-screen bg-qatar-gradient pb-20 safe-area-inset-bottom relative overflow-hidden">
+    <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl"></div>
@@ -21,19 +21,23 @@ export default async function SettingsPage({
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 pb-4 sm:pb-6 relative z-10 safe-area-inset-top">
-        {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-ramadan-green via-ramadan-gold to-qatar-maroon bg-clip-text text-transparent mb-2 sm:mb-3 drop-shadow-lg">
-            {t('title')}
-          </h1>
-          <p className="text-sm sm:text-base text-slate-300">
-            {t('preferences')}
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-50 mb-2 sm:mb-3 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
+                {t('title')}
+              </h1>
+              <p className="text-sm sm:text-base text-slate-300">
+                {t('preferences')}
+              </p>
+            </div>
+            <MenuButton locale={locale as 'tr' | 'en' | 'ar'} />
+          </div>
         </div>
 
         {/* Settings Content */}
         <div className="max-w-2xl mx-auto">
-          <SettingsPageClient locale={locale as 'tr' | 'en'} />
+          <SettingsPageClient locale={locale as 'tr' | 'en' | 'ar'} />
         </div>
       </div>
       <Navigation />

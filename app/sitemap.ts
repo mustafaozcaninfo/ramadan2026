@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     '',
     '/calendar',
+    '/ops',
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = [];

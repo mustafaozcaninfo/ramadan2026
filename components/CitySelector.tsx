@@ -50,14 +50,14 @@ export function CitySelector() {
     <div className="space-y-2">
       <label htmlFor="city-select" className="text-sm font-medium text-slate-300 flex items-center gap-2">
         <MapPin className="w-4 h-4 text-ramadan-green" aria-hidden />
-        {t('language') ? 'City' : 'Şehir'}
+        {t('cityLabel')}
       </label>
       <select
         id="city-select"
         value={`${currentConfig.city}:${currentConfig.country}`}
         onChange={handleChange}
         className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-ramadan-green min-h-[44px]"
-        aria-label={t('language') ? 'Select city for prayer times' : 'Namaz vakitleri için şehir seçin'}
+        aria-label={t('selectCity')}
       >
         {SUPPORTED_CITIES.map((c) => (
           <option key={`${c.city}-${c.country}`} value={`${c.city}:${c.country}`}>

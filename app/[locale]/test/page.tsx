@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Navigation } from '@/components/Navigation';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
+import { MenuButton } from '@/components/MenuButton';
 import { 
   Bell, 
   BellOff, 
@@ -15,17 +17,245 @@ import {
   AlertCircle, 
   Volume2,
   Smartphone,
+  Activity,
   Wifi,
-  WifiOff
+  WifiOff,
+  ClipboardCopy,
+  RefreshCw
 } from 'lucide-react';
 import { areNotificationsEnabled, enableNotifications, disableNotifications, type NotificationPermission } from '@/lib/notifications';
 
 export default function TestPage() {
   const t = useTranslations('notifications');
+  const locale = useLocale() as 'tr' | 'en' | 'ar';
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(null);
   const [serviceWorkerStatus, setServiceWorkerStatus] = useState<'checking' | 'registered' | 'not-supported' | 'error'>('checking');
   const [testResult, setTestResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [hasNotificationApi, setHasNotificationApi] = useState(false);
+  const [hasPushManager, setHasPushManager] = useState(false);
+  const [hasSwController, setHasSwController] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [lastCheckedAt, setLastCheckedAt] = useState<string>('');
+  const copy = {
+    tr: {
+      browserUnsupported: '❌ Bu tarayıcı bildirimleri desteklemiyor',
+      permissionGranted: '✅ Bildirim izni verildi!',
+      permissionDenied: '❌ Bildirim izni reddedildi',
+      errorPrefix: '❌ Hata',
+      grantPermissionFirst: '⚠️ Önce bildirim izni verin!',
+      notificationSent: '✅ Bildirim gönderildi!',
+      azanPlaying: '🔊 Ezan çalıyor...',
+      azanEnded: '✅ Ezan bitti',
+      azanCannotPlayDetailed: '⚠️ Ezan sesi çalınamadı (bazı tarayıcılar ses izni gerektirir)',
+      azanCannotPlay: '⚠️ Ezan sesi çalınamadı',
+      notificationSendFailed: '❌ Bildirim gönderilemedi',
+      azanPlayFailed: '❌ Ezan çalınamadı',
+      fifteenTitle: '15 dakika kaldı',
+      fifteenBody: '15 dakika sonra İftar vakti - Test bildirimi',
+      fifteenSent: '✅ 15 dakika bildirimi gönderildi!',
+      notificationsOff: '🔕 Bildirimler kapatıldı',
+      notificationsOn: '🔔 Bildirimler açıldı',
+      headerTitle: '🔔 Test Sayfası',
+      headerSubtitle: 'Notification ve Service Worker doğrulama paneli',
+      permissionCard: 'Bildirim İzni',
+      permissionAllowed: 'İzin Verildi',
+      permissionRejected: 'Reddedildi',
+      permissionPending: 'Bekleniyor',
+      serviceWorker: 'Service Worker',
+      swActive: 'Aktif',
+      swChecking: 'Kontrol Ediliyor...',
+      swUnsupported: 'Desteklenmiyor',
+      settingsTitle: 'Bildirim Ayarları',
+      notificationsLabel: 'Bildirimler',
+      on: 'Açık',
+      off: 'Kapalı',
+      disableBtn: 'Bildirimleri Kapat',
+      enableBtn: 'Bildirimleri Aç',
+      testButtonsTitle: 'Test Butonları',
+      askPermission: 'Bildirim İzni İste',
+      sendNow: 'Şimdi Bildirim Gönder (Ezan ile)',
+      test15: '15 Dakika Bildirimi Test',
+      testAzan: 'Sadece Ezan Sesi Test',
+      resultTitle: 'Test Sonucu',
+      infoTitle: 'ℹ️ Nasıl Çalışıyor?',
+      info15: '• 15 dakika önce: “15 dakika kaldı” bildirimi',
+      info10: '• 10 dakika önce: “10 dakika kaldı” bildirimi',
+      info5: '• 5 dakika önce: “5 dakika kaldı” bildirimi',
+      infoNow: '• Tam zamanında: “Sahur Vakti!” / “İftar Vakti!” bildirimi + ezan sesi',
+      iphoneNote: '📱 iPhone test: Uygulamayı ana ekrana ekleyin ve bildirim izni verin.',
+      overviewTitle: 'Genel Durum',
+      overviewSubtitle: 'Canlı capability görünümü ve hızlı teşhis araçları',
+      capabilityTitle: 'Yetenek Durumu',
+      quickActionsTitle: 'Hızlı Aksiyonlar',
+      refreshDiagnostics: 'Durumu Yenile',
+      quickHealthCheck: 'Hızlı Sağlık Kontrolü',
+      copyDiagnostics: 'Tanı JSON Kopyala',
+      diagnosticsCopied: '✅ Tanı verisi kopyalandı',
+      diagnosticsCopyFailed: '❌ Tanı verisi kopyalanamadı',
+      diagnosticsRefreshed: '✅ Durum yenilendi',
+      capNotificationApi: 'Notification API',
+      capPushApi: 'PushManager',
+      capServiceWorker: 'Service Worker',
+      capSwController: 'SW Controller',
+      capOnline: 'Ağ Durumu',
+      capStandalone: 'PWA Standalone',
+      lastChecked: 'Son kontrol',
+      supported: 'Destekleniyor',
+      unsupported: 'Desteklenmiyor',
+      controlled: 'Bağlı',
+      notControlled: 'Bağlı değil',
+      online: 'Çevrimiçi',
+      offline: 'Çevrimdışı',
+      enabledState: 'Açık',
+      disabledState: 'Kapalı',
+    },
+    en: {
+      browserUnsupported: '❌ This browser does not support notifications',
+      permissionGranted: '✅ Notification permission granted!',
+      permissionDenied: '❌ Notification permission denied',
+      errorPrefix: '❌ Error',
+      grantPermissionFirst: '⚠️ Please grant notification permission first!',
+      notificationSent: '✅ Notification sent!',
+      azanPlaying: '🔊 Azan is playing...',
+      azanEnded: '✅ Azan ended',
+      azanCannotPlayDetailed: '⚠️ Could not play azan sound (some browsers require audio permission)',
+      azanCannotPlay: '⚠️ Could not play azan sound',
+      notificationSendFailed: '❌ Failed to send notification',
+      azanPlayFailed: '❌ Failed to play azan',
+      fifteenTitle: '15 minutes remaining',
+      fifteenBody: '15 minutes until Iftar - Test notification',
+      fifteenSent: '✅ 15-minute notification sent!',
+      notificationsOff: '🔕 Notifications disabled',
+      notificationsOn: '🔔 Notifications enabled',
+      headerTitle: '🔔 Test Page',
+      headerSubtitle: 'Notification and Service Worker verification panel',
+      permissionCard: 'Notification Permission',
+      permissionAllowed: 'Granted',
+      permissionRejected: 'Denied',
+      permissionPending: 'Pending',
+      serviceWorker: 'Service Worker',
+      swActive: 'Active',
+      swChecking: 'Checking...',
+      swUnsupported: 'Not supported',
+      settingsTitle: 'Notification Settings',
+      notificationsLabel: 'Notifications',
+      on: 'On',
+      off: 'Off',
+      disableBtn: 'Disable Notifications',
+      enableBtn: 'Enable Notifications',
+      testButtonsTitle: 'Test Buttons',
+      askPermission: 'Request Notification Permission',
+      sendNow: 'Send Notification Now (with Azan)',
+      test15: 'Test 15-Min Notification',
+      testAzan: 'Test Azan Sound Only',
+      resultTitle: 'Test Result',
+      infoTitle: 'ℹ️ How it works',
+      info15: '• 15 min before: “15 minutes remaining” notification',
+      info10: '• 10 min before: “10 minutes remaining” notification',
+      info5: '• 5 min before: “5 minutes remaining” notification',
+      infoNow: '• On time: “Suhoor Time!” / “Iftar Time!” notification + azan sound',
+      iphoneNote: '📱 iPhone test: Add app to Home Screen and grant notification permission.',
+      overviewTitle: 'Overview',
+      overviewSubtitle: 'Live capability status and quick diagnostic tools',
+      capabilityTitle: 'Capability Status',
+      quickActionsTitle: 'Quick Actions',
+      refreshDiagnostics: 'Refresh Status',
+      quickHealthCheck: 'Quick Health Check',
+      copyDiagnostics: 'Copy Diagnostics JSON',
+      diagnosticsCopied: '✅ Diagnostics copied',
+      diagnosticsCopyFailed: '❌ Failed to copy diagnostics',
+      diagnosticsRefreshed: '✅ Status refreshed',
+      capNotificationApi: 'Notification API',
+      capPushApi: 'PushManager',
+      capServiceWorker: 'Service Worker',
+      capSwController: 'SW Controller',
+      capOnline: 'Network',
+      capStandalone: 'PWA Standalone',
+      lastChecked: 'Last checked',
+      supported: 'Supported',
+      unsupported: 'Unsupported',
+      controlled: 'Controlled',
+      notControlled: 'Not controlled',
+      online: 'Online',
+      offline: 'Offline',
+      enabledState: 'On',
+      disabledState: 'Off',
+    },
+    ar: {
+      browserUnsupported: '❌ هذا المتصفح لا يدعم الإشعارات',
+      permissionGranted: '✅ تم منح إذن الإشعارات!',
+      permissionDenied: '❌ تم رفض إذن الإشعارات',
+      errorPrefix: '❌ خطأ',
+      grantPermissionFirst: '⚠️ الرجاء منح إذن الإشعارات أولاً!',
+      notificationSent: '✅ تم إرسال الإشعار!',
+      azanPlaying: '🔊 يتم تشغيل الأذان...',
+      azanEnded: '✅ انتهى الأذان',
+      azanCannotPlayDetailed: '⚠️ تعذر تشغيل صوت الأذان (قد تتطلب بعض المتصفحات إذن الصوت)',
+      azanCannotPlay: '⚠️ تعذر تشغيل صوت الأذان',
+      notificationSendFailed: '❌ تعذر إرسال الإشعار',
+      azanPlayFailed: '❌ تعذر تشغيل الأذان',
+      fifteenTitle: 'متبقي 15 دقيقة',
+      fifteenBody: 'متبقي 15 دقيقة على الإفطار - إشعار اختبار',
+      fifteenSent: '✅ تم إرسال إشعار 15 دقيقة!',
+      notificationsOff: '🔕 تم إيقاف الإشعارات',
+      notificationsOn: '🔔 تم تفعيل الإشعارات',
+      headerTitle: '🔔 صفحة الاختبار',
+      headerSubtitle: 'لوحة التحقق من الإشعارات وService Worker',
+      permissionCard: 'إذن الإشعارات',
+      permissionAllowed: 'مسموح',
+      permissionRejected: 'مرفوض',
+      permissionPending: 'قيد الانتظار',
+      serviceWorker: 'Service Worker',
+      swActive: 'نشط',
+      swChecking: 'جارٍ التحقق...',
+      swUnsupported: 'غير مدعوم',
+      settingsTitle: 'إعدادات الإشعارات',
+      notificationsLabel: 'الإشعارات',
+      on: 'مفعّل',
+      off: 'متوقف',
+      disableBtn: 'إيقاف الإشعارات',
+      enableBtn: 'تفعيل الإشعارات',
+      testButtonsTitle: 'أزرار الاختبار',
+      askPermission: 'طلب إذن الإشعارات',
+      sendNow: 'إرسال إشعار الآن (مع الأذان)',
+      test15: 'اختبار إشعار 15 دقيقة',
+      testAzan: 'اختبار صوت الأذان فقط',
+      resultTitle: 'نتيجة الاختبار',
+      infoTitle: 'ℹ️ كيف يعمل',
+      info15: '• قبل 15 دقيقة: إشعار “متبقي 15 دقيقة”',
+      info10: '• قبل 10 دقائق: إشعار “متبقي 10 دقائق”',
+      info5: '• قبل 5 دقائق: إشعار “متبقي 5 دقائق”',
+      infoNow: '• عند الوقت: إشعار “وقت السحور!” / “وقت الإفطار!” + صوت الأذان',
+      iphoneNote: '📱 لاختبار iPhone: أضف التطبيق للشاشة الرئيسية واسمح بالإشعارات.',
+      overviewTitle: 'نظرة عامة',
+      overviewSubtitle: 'عرض حي للقدرات وأدوات تشخيص سريعة',
+      capabilityTitle: 'حالة القدرات',
+      quickActionsTitle: 'إجراءات سريعة',
+      refreshDiagnostics: 'تحديث الحالة',
+      quickHealthCheck: 'فحص صحة سريع',
+      copyDiagnostics: 'نسخ تشخيص JSON',
+      diagnosticsCopied: '✅ تم نسخ التشخيص',
+      diagnosticsCopyFailed: '❌ تعذر نسخ التشخيص',
+      diagnosticsRefreshed: '✅ تم تحديث الحالة',
+      capNotificationApi: 'واجهة Notification',
+      capPushApi: 'PushManager',
+      capServiceWorker: 'Service Worker',
+      capSwController: 'SW Controller',
+      capOnline: 'الشبكة',
+      capStandalone: 'وضع PWA',
+      lastChecked: 'آخر فحص',
+      supported: 'مدعوم',
+      unsupported: 'غير مدعوم',
+      controlled: 'مرتبط',
+      notControlled: 'غير مرتبط',
+      online: 'متصل',
+      offline: 'غير متصل',
+      enabledState: 'مفعّل',
+      disabledState: 'متوقف',
+    },
+  }[locale];
 
   useEffect(() => {
     // Check notification permission
@@ -57,11 +287,117 @@ export default function TestPage() {
     } else {
       setServiceWorkerStatus('not-supported');
     }
+    setIsOnline(typeof navigator !== 'undefined' ? navigator.onLine : true);
+    setHasNotificationApi(typeof window !== 'undefined' && 'Notification' in window);
+    setHasPushManager(typeof window !== 'undefined' && 'PushManager' in window);
+    setHasSwController(
+      typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller
+    );
+    setIsStandalone(
+      typeof window !== 'undefined' &&
+        (window.matchMedia?.('(display-mode: standalone)').matches ||
+          (window.navigator as any).standalone === true)
+    );
+    setLastCheckedAt(new Date().toLocaleTimeString());
+
+    const onOnline = () => setIsOnline(true);
+    const onOffline = () => setIsOnline(false);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
   }, []);
+
+  const refreshDiagnostics = async () => {
+    setIsLoading(true);
+    try {
+      const nextOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+      const nextHasNotificationApi = typeof window !== 'undefined' && 'Notification' in window;
+      const nextHasPushManager = typeof window !== 'undefined' && 'PushManager' in window;
+      const nextHasSwController =
+        typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller;
+      const nextIsStandalone =
+        typeof window !== 'undefined' &&
+        (window.matchMedia?.('(display-mode: standalone)').matches ||
+          (window.navigator as any).standalone === true);
+      setIsOnline(nextOnline);
+      setHasNotificationApi(nextHasNotificationApi);
+      setHasPushManager(nextHasPushManager);
+      setHasSwController(nextHasSwController);
+      setIsStandalone(nextIsStandalone);
+      let nextSwStatus: 'checking' | 'registered' | 'not-supported' | 'error' = serviceWorkerStatus;
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          nextSwStatus = registration ? 'registered' : 'not-supported';
+          setServiceWorkerStatus(nextSwStatus);
+        } catch {
+          nextSwStatus = 'error';
+          setServiceWorkerStatus('error');
+        }
+      } else {
+        nextSwStatus = 'not-supported';
+        setServiceWorkerStatus(nextSwStatus);
+      }
+      setLastCheckedAt(new Date().toLocaleTimeString());
+      setTestResult(
+        [
+          copy.diagnosticsRefreshed,
+          `• Notification API: ${nextHasNotificationApi ? copy.supported : copy.unsupported}`,
+          `• PushManager: ${nextHasPushManager ? copy.supported : copy.unsupported}`,
+          `• Service Worker: ${nextSwStatus}`,
+          `• ${copy.capOnline}: ${nextOnline ? copy.online : copy.offline}`,
+        ].join('\n')
+      );
+    } catch (error) {
+      setTestResult(`${copy.errorPrefix}: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const runQuickHealthCheck = () => {
+    const checks = [
+      { ok: hasNotificationApi, label: copy.capNotificationApi },
+      { ok: hasPushManager, label: copy.capPushApi },
+      { ok: serviceWorkerStatus === 'registered', label: copy.capServiceWorker },
+      { ok: hasSwController, label: copy.capSwController },
+      { ok: isOnline, label: copy.capOnline },
+    ];
+    const summary = checks
+      .map((c) => `${c.ok ? '✅' : '❌'} ${c.label}`)
+      .join('\n');
+    setTestResult(summary);
+  };
+
+  const copyDiagnostics = async () => {
+    try {
+      const payload = {
+        checkedAt: new Date().toISOString(),
+        locale,
+        notificationPermission,
+        notificationsEnabled: areNotificationsEnabled(),
+        serviceWorkerStatus,
+        hasSwController,
+        hasNotificationApi,
+        hasPushManager,
+        isOnline,
+        isStandalone,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'n/a',
+      };
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      setTestResult(copy.diagnosticsCopied);
+    } catch {
+      setTestResult(copy.diagnosticsCopyFailed);
+    }
+  };
 
   const requestPermission = async () => {
     if (!('Notification' in window)) {
-      setTestResult('❌ Bu tarayıcı bildirimleri desteklemiyor');
+      setTestResult(copy.browserUnsupported);
       return;
     }
 
@@ -75,12 +411,12 @@ export default function TestPage() {
       });
       
       if (permission === 'granted') {
-        setTestResult('✅ Bildirim izni verildi!');
+        setTestResult(copy.permissionGranted);
       } else {
-        setTestResult('❌ Bildirim izni reddedildi');
+        setTestResult(copy.permissionDenied);
       }
     } catch (error) {
-      setTestResult(`❌ Hata: ${error}`);
+      setTestResult(`${copy.errorPrefix}: ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +424,7 @@ export default function TestPage() {
 
   const testNotificationNow = async () => {
     if (!('Notification' in window) || Notification.permission !== 'granted') {
-      setTestResult('⚠️ Önce bildirim izni verin!');
+      setTestResult(copy.grantPermissionFirst);
       return;
     }
 
@@ -97,15 +433,15 @@ export default function TestPage() {
 
     try {
       // Send notification
-      const notification = new Notification('İftar Vakti!', {
-        body: 'İftar vakti geldi - Test bildirimi',
+      const notification = new Notification(t('titleMaghribNow'), {
+        body: t('bodyMaghribNow'),
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         tag: 'test-iftar-now',
         requireInteraction: false,
       });
 
-      setTestResult('✅ Bildirim gönderildi!');
+      setTestResult(copy.notificationSent);
 
       // Play azan sound
       try {
@@ -113,23 +449,23 @@ export default function TestPage() {
         audio.volume = 0.8;
         
         audio.onplay = () => {
-          setTestResult((prev) => prev + '\n🔊 Ezan çalıyor...');
+          setTestResult((prev) => prev + `\n${copy.azanPlaying}`);
         };
         
         audio.onended = () => {
-          setTestResult((prev) => prev + '\n✅ Ezan bitti');
+          setTestResult((prev) => prev + `\n${copy.azanEnded}`);
         };
         
         audio.onerror = () => {
-          setTestResult((prev) => prev + '\n⚠️ Ezan sesi çalınamadı (bazı tarayıcılar ses izni gerektirir)');
+          setTestResult((prev) => prev + `\n${copy.azanCannotPlayDetailed}`);
         };
         
         await audio.play();
       } catch (error) {
-        setTestResult((prev) => prev + '\n⚠️ Ezan sesi çalınamadı');
+        setTestResult((prev) => prev + `\n${copy.azanCannotPlay}`);
       }
     } catch (error) {
-      setTestResult(`❌ Bildirim gönderilemedi: ${error}`);
+      setTestResult(`${copy.notificationSendFailed}: ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -137,21 +473,21 @@ export default function TestPage() {
 
   const testNotification15min = async () => {
     if (!('Notification' in window) || Notification.permission !== 'granted') {
-      setTestResult('⚠️ Önce bildirim izni verin!');
+      setTestResult(copy.grantPermissionFirst);
       return;
     }
 
     setIsLoading(true);
     try {
-      new Notification('15 dakika kaldı', {
-        body: '15 dakika sonra İftar vakti - Test bildirimi',
+      new Notification(copy.fifteenTitle, {
+        body: copy.fifteenBody,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         tag: 'test-15min',
       });
-      setTestResult('✅ 15 dakika bildirimi gönderildi!');
+      setTestResult(copy.fifteenSent);
     } catch (error) {
-      setTestResult(`❌ Bildirim gönderilemedi: ${error}`);
+      setTestResult(`${copy.notificationSendFailed}: ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -165,20 +501,20 @@ export default function TestPage() {
       audio.volume = 0.8;
       
       audio.onplay = () => {
-        setTestResult('🔊 Ezan çalıyor...');
+        setTestResult(copy.azanPlaying);
       };
       
       audio.onended = () => {
-        setTestResult('✅ Ezan bitti');
+        setTestResult(copy.azanEnded);
       };
       
       audio.onerror = () => {
-        setTestResult('⚠️ Ezan sesi çalınamadı');
+        setTestResult(copy.azanCannotPlay);
       };
       
       await audio.play();
     } catch (error) {
-      setTestResult(`❌ Ezan çalınamadı: ${error}`);
+      setTestResult(`${copy.azanPlayFailed}: ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -187,15 +523,15 @@ export default function TestPage() {
   const toggleNotifications = () => {
     if (areNotificationsEnabled()) {
       disableNotifications();
-      setTestResult('🔕 Bildirimler kapatıldı');
+      setTestResult(copy.notificationsOff);
     } else {
       enableNotifications();
-      setTestResult('🔔 Bildirimler açıldı');
+      setTestResult(copy.notificationsOn);
     }
   };
 
   return (
-    <main className="min-h-screen bg-qatar-gradient pb-20 safe-area-inset-bottom relative overflow-hidden">
+    <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl"></div>
@@ -204,14 +540,94 @@ export default function TestPage() {
 
       <div className="container mx-auto px-4 py-8 relative z-10 safe-area-inset-top">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-ramadan-green to-ramadan-gold bg-clip-text text-transparent">
-            🔔 Test Sayfası
-          </h1>
-          <LanguageSwitcher />
+        <div className="flex justify-between items-start mb-6 gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-amber-50 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
+              {copy.headerTitle}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              {copy.headerSubtitle}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <MenuButton locale={locale} />
+          </div>
         </div>
 
         <div className="max-w-2xl mx-auto space-y-4">
+          <Card className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-slate-700/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="w-5 h-5 text-ramadan-green" />
+                {copy.overviewTitle}
+              </CardTitle>
+              <p className="text-sm text-slate-400">{copy.overviewSubtitle}</p>
+              <p className="text-xs text-slate-500">
+                {copy.lastChecked}: {lastCheckedAt || '—'}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-300">{copy.capabilityTitle}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">{copy.capNotificationApi}</span>
+                  <Badge className={hasNotificationApi ? 'bg-emerald-600' : 'bg-red-600'}>
+                    {hasNotificationApi ? copy.supported : copy.unsupported}
+                  </Badge>
+                </div>
+                <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">{copy.capPushApi}</span>
+                  <Badge className={hasPushManager ? 'bg-emerald-600' : 'bg-red-600'}>
+                    {hasPushManager ? copy.supported : copy.unsupported}
+                  </Badge>
+                </div>
+                <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">{copy.capServiceWorker}</span>
+                  <Badge className={serviceWorkerStatus === 'registered' ? 'bg-emerald-600' : 'bg-red-600'}>
+                    {serviceWorkerStatus === 'registered' ? copy.enabledState : copy.disabledState}
+                  </Badge>
+                </div>
+                <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">{copy.capSwController}</span>
+                  <Badge className={hasSwController ? 'bg-emerald-600' : 'bg-yellow-600'}>
+                    {hasSwController ? copy.controlled : copy.notControlled}
+                  </Badge>
+                </div>
+                <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300 flex items-center gap-1">
+                    {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+                    {copy.capOnline}
+                  </span>
+                  <Badge className={isOnline ? 'bg-emerald-600' : 'bg-red-600'}>
+                    {isOnline ? copy.online : copy.offline}
+                  </Badge>
+                </div>
+                <div className="rounded-lg border border-slate-700/70 bg-slate-900/40 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">{copy.capStandalone}</span>
+                  <Badge className={isStandalone ? 'bg-emerald-600' : 'bg-slate-600'}>
+                    {isStandalone ? copy.enabledState : copy.disabledState}
+                  </Badge>
+                </div>
+              </div>
+              <h3 className="pt-2 text-sm font-semibold text-slate-300">{copy.quickActionsTitle}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <Button onClick={refreshDiagnostics} variant="outline" className="w-full" disabled={isLoading}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {copy.refreshDiagnostics}
+                </Button>
+                <Button onClick={runQuickHealthCheck} variant="outline" className="w-full" disabled={isLoading}>
+                  <Activity className="w-4 h-4 mr-2" />
+                  {copy.quickHealthCheck}
+                </Button>
+                <Button onClick={copyDiagnostics} variant="outline" className="w-full" disabled={isLoading}>
+                  <ClipboardCopy className="w-4 h-4 mr-2" />
+                  {copy.copyDiagnostics}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Status Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Notification Permission Status */}
@@ -219,24 +635,24 @@ export default function TestPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold text-slate-300 flex items-center gap-2">
                   <Bell className="w-4 h-4" />
-                  Bildirim İzni
+                  {copy.permissionCard}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {notificationPermission?.granted ? (
                   <Badge className="bg-ramadan-green text-white">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
-                    İzin Verildi
+                    {copy.permissionAllowed}
                   </Badge>
                 ) : notificationPermission?.denied ? (
                   <Badge className="bg-red-600 text-white">
                     <XCircle className="w-3 h-3 mr-1" />
-                    Reddedildi
+                    {copy.permissionRejected}
                   </Badge>
                 ) : (
                   <Badge className="bg-yellow-600 text-white">
                     <AlertCircle className="w-3 h-3 mr-1" />
-                    Bekleniyor
+                    {copy.permissionPending}
                   </Badge>
                 )}
               </CardContent>
@@ -247,24 +663,24 @@ export default function TestPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold text-slate-300 flex items-center gap-2">
                   <Smartphone className="w-4 h-4" />
-                  Service Worker
+                  {copy.serviceWorker}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {serviceWorkerStatus === 'registered' ? (
                   <Badge className="bg-ramadan-green text-white">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Aktif
+                    {copy.swActive}
                   </Badge>
                 ) : serviceWorkerStatus === 'checking' ? (
                   <Badge className="bg-yellow-600 text-white">
                     <AlertCircle className="w-3 h-3 mr-1" />
-                    Kontrol Ediliyor...
+                    {copy.swChecking}
                   </Badge>
                 ) : (
                   <Badge className="bg-red-600 text-white">
                     <XCircle className="w-3 h-3 mr-1" />
-                    Desteklenmiyor
+                    {copy.swUnsupported}
                   </Badge>
                 )}
               </CardContent>
@@ -274,13 +690,13 @@ export default function TestPage() {
           {/* Notification Settings */}
           <Card className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-slate-700/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Bildirim Ayarları</CardTitle>
+              <CardTitle className="text-lg">{copy.settingsTitle}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Bildirimler</span>
+                <span className="text-slate-300">{copy.notificationsLabel}</span>
                 <Badge className={areNotificationsEnabled() ? 'bg-ramadan-green' : 'bg-slate-600'}>
-                  {areNotificationsEnabled() ? 'Açık' : 'Kapalı'}
+                  {areNotificationsEnabled() ? copy.on : copy.off}
                 </Badge>
               </div>
               <Button
@@ -292,12 +708,12 @@ export default function TestPage() {
                 {areNotificationsEnabled() ? (
                   <>
                     <BellOff className="w-4 h-4 mr-2" />
-                    Bildirimleri Kapat
+                    {copy.disableBtn}
                   </>
                 ) : (
                   <>
                     <Bell className="w-4 h-4 mr-2" />
-                    Bildirimleri Aç
+                    {copy.enableBtn}
                   </>
                 )}
               </Button>
@@ -307,7 +723,7 @@ export default function TestPage() {
           {/* Test Buttons */}
           <Card className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-slate-700/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Test Butonları</CardTitle>
+              <CardTitle className="text-lg">{copy.testButtonsTitle}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button
@@ -317,7 +733,7 @@ export default function TestPage() {
                 disabled={isLoading || notificationPermission?.granted}
               >
                 <Bell className="w-4 h-4 mr-2" />
-                Bildirim İzni İste
+                {copy.askPermission}
               </Button>
 
               <Button
@@ -327,7 +743,7 @@ export default function TestPage() {
                 disabled={isLoading || !notificationPermission?.granted}
               >
                 <Bell className="w-4 h-4 mr-2" />
-                Şimdi Bildirim Gönder (Ezan ile)
+                {copy.sendNow}
               </Button>
 
               <Button
@@ -337,7 +753,7 @@ export default function TestPage() {
                 disabled={isLoading || !notificationPermission?.granted}
               >
                 <Bell className="w-4 h-4 mr-2" />
-                15 Dakika Bildirimi Test
+                {copy.test15}
               </Button>
 
               <Button
@@ -347,7 +763,7 @@ export default function TestPage() {
                 disabled={isLoading}
               >
                 <Volume2 className="w-4 h-4 mr-2" />
-                Sadece Ezan Sesi Test
+                {copy.testAzan}
               </Button>
             </CardContent>
           </Card>
@@ -356,7 +772,7 @@ export default function TestPage() {
           {testResult && (
             <Card className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-slate-700/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Test Sonucu</CardTitle>
+                <CardTitle className="text-lg">{copy.resultTitle}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-sm text-slate-300 whitespace-pre-line">
@@ -369,15 +785,15 @@ export default function TestPage() {
           {/* Info Card */}
           <Card className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-slate-700/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg">ℹ️ Nasıl Çalışıyor?</CardTitle>
+              <CardTitle className="text-lg">{copy.infoTitle}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-slate-300 space-y-2">
-              <p>• <strong>15 dakika önce:</strong> &ldquo;15 dakika kaldı&rdquo; bildirimi</p>
-              <p>• <strong>10 dakika önce:</strong> &ldquo;10 dakika kaldı&rdquo; bildirimi</p>
-              <p>• <strong>5 dakika önce:</strong> &ldquo;5 dakika kaldı&rdquo; bildirimi</p>
-              <p>• <strong>Tam zamanında:</strong> &ldquo;Sahur Vakti!&rdquo; / &ldquo;İftar Vakti!&rdquo; bildirimi + <strong>Ezan sesi çalar</strong></p>
+              <p>{copy.info15}</p>
+              <p>{copy.info10}</p>
+              <p>{copy.info5}</p>
+              <p>{copy.infoNow}</p>
               <p className="pt-2 text-xs text-slate-400">
-                📱 iPhone&apos;da test için: Uygulamayı home screen&apos;e ekleyin ve bildirim izni verin.
+                {copy.iphoneNote}
               </p>
             </CardContent>
           </Card>

@@ -12,7 +12,11 @@ export type AnalyticsEventName =
   | 'notification_enabled'
   | 'calendar_today_click'
   | 'live_channel_select'
-  | 'settings_language_change';
+  | 'settings_language_change'
+  | 'resource_open'
+  | 'resource_repeat'
+  | 'resource_favorite_toggle'
+  | 'resource_focus_mode_toggle';
 
 export function trackEvent(name: AnalyticsEventName, props?: Record<string, string | number>) {
   if (typeof window === 'undefined') return;

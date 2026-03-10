@@ -30,22 +30,43 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const lang =
+        typeof document !== 'undefined'
+          ? (document.documentElement.lang || 'tr').split('-')[0]
+          : 'tr';
+      const copy =
+        lang === 'en'
+          ? {
+              title: 'Something went wrong',
+              body: 'An error occurred while loading the app. Please refresh the page.',
+              refresh: 'Refresh Page',
+            }
+          : lang === 'ar'
+            ? {
+                title: 'حدث خطأ',
+                body: 'حدثت مشكلة أثناء تحميل التطبيق. يرجى تحديث الصفحة.',
+                refresh: 'تحديث الصفحة',
+              }
+            : {
+                title: 'Bir Hata Oluştu',
+                body: 'Uygulama yüklenirken bir sorun oluştu. Lütfen sayfayı yenileyin.',
+                refresh: 'Sayfayı Yenile',
+              };
+
       return (
         this.props.fallback || (
           <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
             <div className="text-center max-w-md">
               <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-2">Bir Hata Oluştu</h2>
-              <p className="text-slate-400 mb-6">
-                Uygulama yüklenirken bir sorun oluştu. Lütfen sayfayı yenileyin.
-              </p>
+              <h2 className="text-2xl font-bold text-white mb-2">{copy.title}</h2>
+              <p className="text-slate-400 mb-6">{copy.body}</p>
               <Button
                 onClick={() => {
                   this.setState({ hasError: false });
                   window.location.reload();
                 }}
               >
-                Sayfayı Yenile
+                {copy.refresh}
               </Button>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { format, isToday } from 'date-fns';
-import { tr, enUS } from 'date-fns/locale';
+import { tr, enUS, arSA } from 'date-fns/locale';
 import {
   Moon,
   Sun,
@@ -62,7 +62,7 @@ const colorClasses: Record<string, { border: string; text: string; bg: string }>
 interface CalendarDayCardProps {
   day: AladhanResponse;
   dayNumber: number;
-  locale: 'tr' | 'en';
+  locale: 'tr' | 'en' | 'ar';
   date: Date;
   expanded?: boolean;
   onToggle?: () => void;
@@ -70,11 +70,12 @@ interface CalendarDayCardProps {
 
 export function CalendarDayCard({ day, dayNumber, locale, date, expanded: controlledExpanded, onToggle }: CalendarDayCardProps) {
   const t = useTranslations('calendar');
+  const tCommon = useTranslations('common');
   const [internalExpanded, setInternalExpanded] = useState(false);
-  const dateLocale = locale === 'tr' ? tr : enUS;
+  const dateLocale = locale === 'tr' ? tr : locale === 'ar' ? arSA : enUS;
   const isTodayDate = isToday(date);
   const timings = day.data.timings;
-  const dua = getDuaByDay(dayNumber, locale);
+  const dua = getDuaByDay(dayNumber, locale === 'ar' ? 'en' : locale);
 
   // Use controlled expanded state if provided, otherwise use internal state
   const expanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
@@ -104,11 +105,11 @@ export function CalendarDayCard({ day, dayNumber, locale, date, expanded: contro
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <p className={`text-base sm:text-lg font-bold ${isTodayDate ? 'text-ramadan-green' : 'text-slate-100'}`}>
-                {locale === 'tr' ? `${dayNumber}. Gün` : `Day ${dayNumber}`}
+                {t('dayNumber', { day: dayNumber })}
               </p>
               {isTodayDate && (
                 <span className="inline-flex items-center rounded-full border-2 border-emerald-500 bg-emerald-800 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white shadow-md dark:bg-emerald-700 dark:border-emerald-400">
-                  {locale === 'tr' ? 'Bugün' : 'Today'}
+                  {tCommon('today')}
                 </span>
               )}
             </div>
@@ -209,14 +210,18 @@ export function CalendarDayCard({ day, dayNumber, locale, date, expanded: contro
                   <BookOpen className="w-4 h-4" aria-hidden />
                   {t('dayDua')}
                 </h4>
-                <h5 className="font-semibold text-slate-100 mb-2">{dua.title}</h5>
+                <h5 className="font-semibold text-slate-100 mb-2">{locale === 'ar' ? t('dayDua') : dua.title}</h5>
                 <div className="bg-slate-800/60 rounded-lg p-3 mb-2 border border-slate-600/50">
                   <p className="text-lg sm:text-xl text-right leading-relaxed text-ramadan-green font-arabic" lang="ar">
                     {dua.arabic}
                   </p>
                 </div>
-                <p className="text-xs text-slate-400 italic mb-1.5">{dua.transliteration}</p>
-                <p className="text-sm text-slate-200 leading-relaxed">{dua.translation}</p>
+                {locale !== 'ar' ? (
+                  <>
+                    <p className="text-xs text-slate-400 italic mb-1.5">{dua.transliteration}</p>
+                    <p className="text-sm text-slate-200 leading-relaxed">{dua.translation}</p>
+                  </>
+                ) : null}
               </motion.div>
             </div>
           </motion.div>

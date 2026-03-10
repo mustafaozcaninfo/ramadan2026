@@ -29,6 +29,16 @@ const PAYLOADS = {
       body: m === 0 ? 'Iftar time has started' : `${m} minutes until Iftar`,
     }),
   },
+  ar: {
+    fajr: (m: number) => ({
+      title: m === 0 ? 'وقت السحور!' : `متبقي ${m} دقيقة`,
+      body: m === 0 ? 'بدأ وقت السحور' : `متبقي ${m} دقيقة على السحور`,
+    }),
+    maghrib: (m: number) => ({
+      title: m === 0 ? 'وقت الإفطار!' : `متبقي ${m} دقيقة`,
+      body: m === 0 ? 'بدأ وقت الإفطار' : `متبقي ${m} دقيقة على الإفطار`,
+    }),
+  },
 };
 
 function getRedis(): Redis | null {
@@ -76,15 +86,18 @@ export async function GET(request: NextRequest) {
       let sent = 0;
       const testPayload = (locale: string) =>
         locale === 'en'
-          ? { title: 'Test – Notifications working', body: 'Ramadan 2026 Doha' }
-          : { title: 'Test – Bildirimler çalışıyor', body: 'Ramadan 2026 Doha' };
+          ? { title: 'Test – Notifications working', body: 'Iftar Sahur' }
+          : locale === 'ar'
+            ? { title: 'اختبار – الإشعارات تعمل', body: 'الإفطار والسحور' }
+            : { title: 'Test – Bildirimler çalışıyor', body: 'İftar Sahur' };
       for (const key of keys) {
         if (key.startsWith(`${REDIS_PREFIX}sent:`)) continue;
         try {
           const raw = await redis.get<string>(key);
           if (!raw) continue;
           const { subscription, locale } = typeof raw === 'string' ? JSON.parse(raw) : raw;
-          const { title, body } = testPayload(locale === 'en' ? 'en' : 'tr');
+          const normalizedLocale = locale === 'en' ? 'en' : locale === 'ar' ? 'ar' : 'tr';
+          const { title, body } = testPayload(normalizedLocale);
           await webPush.sendNotification(
             { endpoint: subscription.endpoint, keys: subscription.keys },
             JSON.stringify({ title, body }),
@@ -154,7 +167,7 @@ export async function GET(request: NextRequest) {
         const { subscription, locale, reminderIntervals: subIntervals } = data;
         const intervals = Array.isArray(subIntervals) && subIntervals.length ? subIntervals : defaultIntervals;
         if (!intervals.includes(reminder.minutes)) continue; // Skip if this subscriber doesn't want this interval
-        const loc = locale === 'en' ? 'en' : 'tr';
+        const loc = locale === 'en' ? 'en' : locale === 'ar' ? 'ar' : 'tr';
         const { title, body } = reminder.type === 'fajr'
           ? PAYLOADS[loc].fajr(reminder.minutes)
           : PAYLOADS[loc].maghrib(reminder.minutes);

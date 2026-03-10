@@ -17,7 +17,7 @@ declare const self: ServiceWorkerGlobalScope;
 let notificationCheckInterval: number | null = null;
 let lastNotificationTimes: Set<string> = new Set();
 let notificationsEnabledCache: boolean | null = null;
-let notificationLocaleCache: 'tr' | 'en' | null = null;
+let notificationLocaleCache: 'tr' | 'en' | 'ar' | null = null;
 
 /** Today's date in Doha (YYYY-MM-DD) for correct day */
 function getDohaDateString(): string {
@@ -84,7 +84,7 @@ async function areNotificationsEnabled(): Promise<boolean> {
 /**
  * Get notification locale from IndexedDB (default 'tr')
  */
-async function getNotificationLocale(): Promise<'tr' | 'en'> {
+async function getNotificationLocale(): Promise<'tr' | 'en' | 'ar'> {
   if (notificationLocaleCache !== null) return notificationLocaleCache;
   try {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -98,14 +98,14 @@ async function getNotificationLocale(): Promise<'tr' | 'en'> {
         }
       };
     });
-    const locale = await new Promise<'tr' | 'en'>((resolve) => {
+    const locale = await new Promise<'tr' | 'en' | 'ar'>((resolve) => {
       const transaction = db.transaction('settings', 'readonly');
       const store = transaction.objectStore('settings');
       const request = store.get('notificationLocale');
       request.onsuccess = () => {
         const v = request.result;
         db.close();
-        resolve(v === 'en' ? 'en' : 'tr');
+        resolve(v === 'en' ? 'en' : v === 'ar' ? 'ar' : 'tr');
       };
       request.onerror = () => {
         db.close();
@@ -162,6 +162,12 @@ const NOTIFICATION_STRINGS = {
     fajrBody: (m: number) => (m === 0 ? 'Suhoor time has started' : `${m} minutes until Suhoor`),
     maghribTitle: (m: number) => (m === 0 ? 'Iftar Time!' : `${m} min remaining`),
     maghribBody: (m: number) => (m === 0 ? 'Iftar time has started' : `${m} minutes until Iftar`),
+  },
+  ar: {
+    fajrTitle: (m: number) => (m === 0 ? 'وقت السحور!' : `متبقي ${m} دقيقة`),
+    fajrBody: (m: number) => (m === 0 ? 'بدأ وقت السحور' : `متبقي ${m} دقيقة على السحور`),
+    maghribTitle: (m: number) => (m === 0 ? 'وقت الإفطار!' : `متبقي ${m} دقيقة`),
+    maghribBody: (m: number) => (m === 0 ? 'بدأ وقت الإفطار' : `متبقي ${m} دقيقة على الإفطار`),
   },
 };
 
@@ -357,7 +363,13 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
   try {
     const data = event.data.json();
-    const title = data?.title ?? 'Ramadan 2026';
+    const fallbackByLocale = {
+      tr: { title: 'İftar Sahur', body: 'Hatırlatıcı' },
+      en: { title: 'Iftar Sahur', body: 'Reminder' },
+      ar: { title: 'الإفطار والسحور', body: 'تذكير' },
+    } as const;
+    const locale = notificationLocaleCache === 'en' ? 'en' : notificationLocaleCache === 'ar' ? 'ar' : 'tr';
+    const title = data?.title ?? fallbackByLocale[locale].title;
     const body = data?.body ?? '';
     event.waitUntil(
       self.registration.showNotification(title, {
@@ -369,9 +381,15 @@ self.addEventListener('push', (event) => {
       })
     );
   } catch {
+    const fallbackByLocale = {
+      tr: { title: 'İftar Sahur', body: 'Hatırlatıcı' },
+      en: { title: 'Iftar Sahur', body: 'Reminder' },
+      ar: { title: 'الإفطار والسحور', body: 'تذكير' },
+    } as const;
+    const locale = notificationLocaleCache === 'en' ? 'en' : notificationLocaleCache === 'ar' ? 'ar' : 'tr';
     event.waitUntil(
-      self.registration.showNotification('Ramadan 2026', {
-        body: 'Hatırlatıcı',
+      self.registration.showNotification(fallbackByLocale[locale].title, {
+        body: fallbackByLocale[locale].body,
         icon: '/icon-192.png',
         tag: 'ramadan-push',
       })
@@ -399,7 +417,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'NOTIFICATION_SETTINGS_CHANGED') {
     notificationsEnabledCache = event.data.enabled !== false;
-    if (event.data.locale === 'en' || event.data.locale === 'tr') {
+    if (event.data.locale === 'en' || event.data.locale === 'tr' || event.data.locale === 'ar') {
       notificationLocaleCache = event.data.locale;
     }
     startNotificationChecker();

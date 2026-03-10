@@ -16,8 +16,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 export function AuthSection() {
-  const t = useTranslations('settings');
-  const tCommon = useTranslations('common');
+  const tAuth = useTranslations('auth');
   const { user, setUser } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -31,7 +30,7 @@ export function AuthSection() {
 
   const handleGoogleSignIn = async () => {
     if (!isFirebaseEnabled()) {
-      toast.error('Firebase is not configured.');
+      toast.error(tAuth('firebaseNotConfigured'));
       return;
     }
     setLoading(true);
@@ -39,10 +38,10 @@ export function AuthSection() {
       const appUser = await signInWithGoogle();
       if (appUser) {
         setUser(appUser);
-        toast.success(tCommon('language') ? 'Signed in' : 'Giriş yapıldı');
+        toast.success(tAuth('signInSuccess'));
       }
     } catch (e) {
-      toast.error('Sign-in failed.');
+      toast.error(tAuth('signInFailed'));
     } finally {
       setLoading(false);
     }
@@ -52,7 +51,7 @@ export function AuthSection() {
     e.preventDefault();
     if (!email.trim() || !password) return;
     if (!isFirebaseEnabled()) {
-      toast.error('Firebase is not configured.');
+      toast.error(tAuth('firebaseNotConfigured'));
       return;
     }
     setLoading(true);
@@ -62,12 +61,12 @@ export function AuthSection() {
         : await signInWithEmail(email, password);
       if (appUser) {
         setUser(appUser);
-        toast.success(isRegister ? 'Account created' : 'Signed in');
+        toast.success(isRegister ? tAuth('accountCreated') : tAuth('signInSuccess'));
       } else {
-        toast.error('Invalid email or password.');
+        toast.error(tAuth('invalidCredentials'));
       }
     } catch {
-      toast.error('Sign-in failed.');
+      toast.error(tAuth('signInFailed'));
     } finally {
       setLoading(false);
     }
@@ -78,7 +77,7 @@ export function AuthSection() {
     try {
       await signOut();
       setUser(null);
-      toast.success('Signed out');
+      toast.success(tAuth('signedOut'));
     } finally {
       setLoading(false);
     }
@@ -87,7 +86,7 @@ export function AuthSection() {
   if (!isFirebaseEnabled()) {
     return (
       <p className="text-xs text-slate-400">
-        Sign-in is disabled. Set NEXT_PUBLIC_FIREBASE_* env to enable.
+        {tAuth('signInDisabled')}
       </p>
     );
   }
@@ -96,17 +95,17 @@ export function AuthSection() {
     return (
       <div className="space-y-3">
         <p className="text-sm text-slate-200">
-          {user.email ?? 'Signed in'}
+          {user.email ?? tAuth('signedIn')}
         </p>
         <Button
           onClick={handleSignOut}
           variant="outline"
           className="w-full"
           disabled={loading}
-          aria-label="Sign out"
+          aria-label={tAuth('signOut')}
         >
           <LogOut className="w-4 h-4 mr-2" />
-          Sign out
+          {tAuth('signOut')}
         </Button>
       </div>
     );
@@ -119,16 +118,16 @@ export function AuthSection() {
         variant="outline"
         className="w-full"
         disabled={loading}
-        aria-label="Sign in with Google"
+        aria-label={tAuth('signInWithGoogle')}
       >
         <LogIn className="w-4 h-4 mr-2" />
-        Sign in with Google
+        {tAuth('signInWithGoogle')}
       </Button>
 
       <form onSubmit={handleEmailSubmit} className="space-y-2">
         <input
           type="email"
-          placeholder="Email"
+          placeholder={tAuth('email')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ramadan-green"
@@ -136,7 +135,7 @@ export function AuthSection() {
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder={tAuth('password')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ramadan-green"
@@ -150,7 +149,7 @@ export function AuthSection() {
             disabled={loading || !email.trim() || !password}
           >
             <Mail className="w-4 h-4 mr-2" />
-            {isRegister ? 'Register' : 'Sign in'}
+            {isRegister ? tAuth('register') : tAuth('signIn')}
           </Button>
           <Button
             type="button"
@@ -158,7 +157,7 @@ export function AuthSection() {
             size="sm"
             onClick={() => setIsRegister((v) => !v)}
           >
-            {isRegister ? 'Sign in' : 'Register'}
+            {isRegister ? tAuth('signIn') : tAuth('register')}
           </Button>
         </div>
       </form>

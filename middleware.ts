@@ -22,6 +22,16 @@ export default function middleware(request: NextRequest) {
 export const config = {
   // Match internationalized pathnames and important top-level routes
   // This ensures that `/calendar`, `/settings`, `/about`, and `/test` work for the default locale (tr)
-  matcher: ['/', '/calendar', '/settings', '/about', '/test', '/live', '/resources', '/(tr|en|ar)/:path*'],
+  matcher: [
+    '/',
+    '/calendar',
+    '/settings',
+    '/about',
+    '/test',
+    '/live',
+    '/resources',
+    '/resources/:path*',
+    '/ops',
+    '/(tr|en|ar)/:path*',
+  ],
 };
-

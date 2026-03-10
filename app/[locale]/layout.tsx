@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Analytics } from '@vercel/analytics/react';
 import { routing } from '@/lib/i18n/routing';
@@ -12,16 +12,26 @@ import { NotificationManager } from '@/components/NotificationManager';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'Ramadan 2026 Doha - İftar & Sahur',
-  description: 'Doha, Qatar için Ramazan 2026 İftar ve Sahur takvimi',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Ramadan 2026',
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const tCommon = await getTranslations({ locale, namespace: 'common' });
+  const tHome = await getTranslations({ locale, namespace: 'home' });
+
+  return {
+    title: `${tCommon('appName')} - ${tHome('subtitle')}`,
+    description: tHome('subtitle'),
+    manifest: '/manifest.json',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'black-translucent',
+      title: tCommon('appName'),
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',

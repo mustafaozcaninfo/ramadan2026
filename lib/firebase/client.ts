@@ -129,6 +129,20 @@ export interface UserSettingsDoc {
   reminderIntervals?: number[];
   city?: string;
   locale?: string;
+  liveAutoplay?: boolean;
+  resourcePreferences?: {
+    favoriteResourceIds?: string[];
+    recentlyViewed?: string[];
+    resourcesSearch?: string;
+    resourcesFilters?: {
+      category?: string;
+      subcategory?: string;
+      type?: 'zikir' | 'tesbihat' | 'dua' | 'salawat' | 'wird';
+      difficulty?: 'easy' | 'medium' | 'advanced';
+      timing?: 'after_fajr' | 'after_maghrib' | 'morning_evening' | 'anytime';
+      language?: 'tr' | 'en' | 'ar';
+    };
+  };
   updatedAt?: string;
 }
 

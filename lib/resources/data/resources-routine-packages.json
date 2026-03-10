@@ -1,0 +1,120 @@
+[
+  {
+    "id": "pkg_travel",
+    "kind": "travel",
+    "title": {
+      "tr": "Yolculuk Paketi",
+      "en": "Travel Pack",
+      "ar": "باقة السفر"
+    },
+    "description": {
+      "tr": "Seyahat sırasında kısa ve sürdürülebilir zikir akışı.",
+      "en": "Short and sustainable dhikr flow while traveling.",
+      "ar": "تسلسل أذكار قصير ومستدام أثناء السفر."
+    },
+    "itemSlugs": [
+      "post_prayer-allahuakbar-3",
+      "post_prayer-salawat-6",
+      "post_prayer-subhanallahiwabihamdihi-9",
+      "daily_awrad-subhanallah-1",
+      "daily_awrad-alhamdulillah-2",
+      "daily_awrad-allahuakbar-3",
+      "daily_awrad-lailaha-4",
+      "daily_awrad-astaghfirullah-5",
+      "daily_awrad-salawat-6",
+      "daily_awrad-hasbunallah-7",
+      "daily_awrad-hawqala-8",
+      "daily_awrad-subhanallahiwabihamdihi-9"
+    ]
+  },
+  {
+    "id": "pkg_stress",
+    "kind": "stress",
+    "title": {
+      "tr": "Stres Denge Paketi",
+      "en": "Stress Relief Pack",
+      "ar": "باقة تهدئة التوتر"
+    },
+    "description": {
+      "tr": "Yoğun dönemlerde nefes/tefekkür odaklı zikirler.",
+      "en": "Breath and reflection-oriented adhkar for intense moments.",
+      "ar": "أذكار تركز على التنفس والتدبر في أوقات الضغط."
+    },
+    "itemSlugs": [
+      "morning_evening-astaghfirullah-61",
+      "daily_awrad-hawqala-63",
+      "post_prayer-astaghfirullah-68",
+      "salawat-hawqala-70",
+      "daily_awrad-astaghfirullah-75",
+      "istighfar-hawqala-77",
+      "salawat-astaghfirullah-82",
+      "quranic_dhikr-hawqala-84",
+      "istighfar-astaghfirullah-89",
+      "morning_evening-hawqala-91",
+      "quranic_dhikr-astaghfirullah-96",
+      "post_prayer-hawqala-98"
+    ]
+  },
+  {
+    "id": "pkg_night",
+    "kind": "night_worship",
+    "title": {
+      "tr": "Gece İbadeti Paketi",
+      "en": "Night Worship Pack",
+      "ar": "باقة قيام الليل"
+    },
+    "description": {
+      "tr": "Gece tefekkürü ve uzun tesbihat için seçkiler.",
+      "en": "Selections for night contemplation and extended tasbih.",
+      "ar": "مختارات لقيام الليل والتسبيح الممتد."
+    },
+    "itemSlugs": [
+      "morning_evening-lailaha-4",
+      "morning_evening-astaghfirullah-5",
+      "morning_evening-salawat-6",
+      "morning_evening-hasbunallah-7",
+      "morning_evening-hawqala-8",
+      "morning_evening-subhanallahiwabihamdihi-9",
+      "morning_evening-rabbiighfirli-10",
+      "post_prayer-lailaha-4",
+      "post_prayer-astaghfirullah-5",
+      "post_prayer-salawat-6",
+      "post_prayer-hasbunallah-7",
+      "post_prayer-hawqala-8",
+      "post_prayer-subhanallahiwabihamdihi-9",
+      "post_prayer-rabbiighfirli-10"
+    ]
+  },
+  {
+    "id": "pkg_friday",
+    "kind": "friday",
+    "title": {
+      "tr": "Cuma Özel Paketi",
+      "en": "Friday Special Pack",
+      "ar": "باقة يوم الجمعة"
+    },
+    "description": {
+      "tr": "Cuma günü için salavat ve istiğfar ağırlıklı akış.",
+      "en": "Salawat and istighfar focused flow for Friday.",
+      "ar": "تدفق يركز على الصلاة على النبي والاستغفار ليوم الجمعة."
+    },
+    "itemSlugs": [
+      "salawat-subhanallah-1",
+      "salawat-alhamdulillah-2",
+      "salawat-allahuakbar-3",
+      "salawat-lailaha-4",
+      "salawat-astaghfirullah-5",
+      "salawat-salawat-6",
+      "salawat-hasbunallah-7",
+      "salawat-hawqala-8",
+      "salawat-subhanallahiwabihamdihi-9",
+      "salawat-rabbiighfirli-10",
+      "istighfar-subhanallah-1",
+      "istighfar-alhamdulillah-2",
+      "istighfar-allahuakbar-3",
+      "istighfar-lailaha-4",
+      "istighfar-astaghfirullah-5",
+      "istighfar-salawat-6"
+    ]
+  }
+]
