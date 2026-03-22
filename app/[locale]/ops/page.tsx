@@ -1,6 +1,9 @@
 import { Navigation } from '@/components/Navigation';
 import { MenuButton } from '@/components/MenuButton';
 import { OpsDashboardClient } from './OpsDashboardClient';
+import { OpsAccessGate } from './OpsAccessGate';
+import { cookies } from 'next/headers';
+import { OPS_AUTH_COOKIE, isOpsAuthConfigured, isOpsAuthenticatedFromCookie } from '@/lib/opsAuth';
 import { getTranslations } from 'next-intl/server';
 
 export default async function OpsPage({
@@ -10,6 +13,9 @@ export default async function OpsPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations('ops');
+  const cookieStore = await cookies();
+  const authConfigured = isOpsAuthConfigured();
+  const isAuthorized = isOpsAuthenticatedFromCookie(cookieStore.get(OPS_AUTH_COOKIE)?.value);
 
   return (
     <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
@@ -35,7 +41,7 @@ export default async function OpsPage({
         </div>
 
         <div className="max-w-6xl mx-auto">
-          <OpsDashboardClient />
+          {isAuthorized ? <OpsDashboardClient /> : <OpsAccessGate authConfigured={authConfigured} />}
         </div>
       </div>
       <Navigation />

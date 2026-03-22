@@ -75,10 +75,10 @@
     "privacyBody": "We use anonymous analytics (e.g. page views and button clicks) to improve the app. No personal data is stored. When you sign in, your settings are stored in your account and synced across devices."
   },
   "home": {
-    "title": "Iftar & Suhoor Doha",
-    "subtitle": "Iftar & Suhoor Schedule",
-    "todayPrayerTitle": "Today's Prayer Times",
-    "todayPrayerSubtitle": "Track the live countdown so you don't miss the next prayer.",
+    "title": "Prayer Times",
+    "subtitle": "Daily prayer schedule",
+    "todayPrayerTitle": "Today's prayer times",
+    "todayPrayerSubtitle": "All salah times for your city with a live countdown to the next prayer.",
     "goToday": "Go to Today",
     "quickSettings": "Quick Settings",
     "fallbackDataNotice": "Live data is temporarily unavailable. Showing fallback timings.",
@@ -88,7 +88,9 @@
     "iftarTimeBadge": "Iftar Time",
     "countdown": "Time Remaining",
     "todayLabel": "Today",
-    "ramadanYear": "Ramadan Month",
+    "heroKicker": "Prayer times",
+    "prayerTimesBadge": "Full timetable",
+    "ramadanYear": "Ramadan",
     "ramadanDay": "Ramadan Day {day}",
     "iftarSahurBadge": "Iftar & Suhoor",
     "dailyKhatm": "Daily reading",
@@ -96,7 +98,10 @@
     "todaysReading": "Today’s reading: Juz {juz}"
   },
   "calendar": {
-    "title": "Ramadan Calendar",
+    "title": "Monthly prayer calendar",
+    "monthNav": "{monthYear}",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
     "day": "Day",
     "date": "Date",
     "sahur": "Suhoor",
@@ -305,6 +310,16 @@
     "cityFailures": "City check failures: {count}",
     "warningVapidMissing": "VAPID keys are missing",
     "warningRedisMissing": "Upstash Redis is not configured",
-    "warningCityChecksFailed": "Some city timing checks failed"
+    "warningCityChecksFailed": "Some city timing checks failed",
+    "accessTitle": "Ops Access",
+    "accessSubtitle": "Enter the password to access the operations dashboard.",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Ops password",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "invalidPassword": "Invalid password.",
+    "loginFailed": "Sign-in failed.",
+    "tooManyAttempts": "Too many attempts. Please retry in 1 minute.",
+    "opsPasswordMissing": "Ops password is not configured on server (OPS_DASHBOARD_PASSWORD)."
   }
 }

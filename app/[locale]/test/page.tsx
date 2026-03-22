@@ -38,6 +38,7 @@ export default function TestPage() {
   const [hasSwController, setHasSwController] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [lastCheckedAt, setLastCheckedAt] = useState<string>('');
+  const [notificationsEnabledUI, setNotificationsEnabledUI] = useState(false);
   const copy = {
     tr: {
       browserUnsupported: '❌ Bu tarayıcı bildirimleri desteklemiyor',
@@ -290,6 +291,7 @@ export default function TestPage() {
     setIsOnline(typeof navigator !== 'undefined' ? navigator.onLine : true);
     setHasNotificationApi(typeof window !== 'undefined' && 'Notification' in window);
     setHasPushManager(typeof window !== 'undefined' && 'PushManager' in window);
+    setNotificationsEnabledUI(areNotificationsEnabled());
     setHasSwController(
       typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller
     );
@@ -326,6 +328,7 @@ export default function TestPage() {
       setIsOnline(nextOnline);
       setHasNotificationApi(nextHasNotificationApi);
       setHasPushManager(nextHasPushManager);
+      setNotificationsEnabledUI(areNotificationsEnabled());
       setHasSwController(nextHasSwController);
       setIsStandalone(nextIsStandalone);
       let nextSwStatus: 'checking' | 'registered' | 'not-supported' | 'error' = serviceWorkerStatus;
@@ -379,7 +382,7 @@ export default function TestPage() {
         checkedAt: new Date().toISOString(),
         locale,
         notificationPermission,
-        notificationsEnabled: areNotificationsEnabled(),
+        notificationsEnabled: notificationsEnabledUI,
         serviceWorkerStatus,
         hasSwController,
         hasNotificationApi,
@@ -521,11 +524,13 @@ export default function TestPage() {
   };
 
   const toggleNotifications = () => {
-    if (areNotificationsEnabled()) {
+    if (notificationsEnabledUI) {
       disableNotifications();
+      setNotificationsEnabledUI(false);
       setTestResult(copy.notificationsOff);
     } else {
       enableNotifications();
+      setNotificationsEnabledUI(true);
       setTestResult(copy.notificationsOn);
     }
   };
@@ -695,8 +700,8 @@ export default function TestPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-slate-300">{copy.notificationsLabel}</span>
-                <Badge className={areNotificationsEnabled() ? 'bg-ramadan-green' : 'bg-slate-600'}>
-                  {areNotificationsEnabled() ? copy.on : copy.off}
+                <Badge className={notificationsEnabledUI ? 'bg-ramadan-green' : 'bg-slate-600'}>
+                  {notificationsEnabledUI ? copy.on : copy.off}
                 </Badge>
               </div>
               <Button
@@ -705,7 +710,7 @@ export default function TestPage() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {areNotificationsEnabled() ? (
+                {notificationsEnabledUI ? (
                   <>
                     <BellOff className="w-4 h-4 mr-2" />
                     {copy.disableBtn}

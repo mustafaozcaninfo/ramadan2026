@@ -135,10 +135,10 @@ async function getTodayPrayerTimes(): Promise<{ Fajr: string; Maghrib: string } 
     }
     const response = await fetch(url);
     if (response.ok) {
+      const clone = response.clone();
       const data = await response.json();
       const t = data?.data?.timings;
       if (t?.Fajr && t?.Maghrib) {
-        const clone = response.clone();
         cache.put(url, clone);
         return { Fajr: t.Fajr, Maghrib: t.Maghrib };
       }

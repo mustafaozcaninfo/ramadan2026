@@ -56,6 +56,39 @@ interface CatalogResponse {
   meta: CatalogMeta;
 }
 
+const TIMING_LABEL_KEYS: Record<CatalogItem['timing'], 'timing.after_fajr' | 'timing.after_maghrib' | 'timing.morning_evening' | 'timing.anytime'> = {
+  after_fajr: 'timing.after_fajr',
+  after_maghrib: 'timing.after_maghrib',
+  morning_evening: 'timing.morning_evening',
+  anytime: 'timing.anytime',
+};
+
+const TYPE_LABEL_KEYS: Record<CatalogItem['type'], 'resourceType.zikir' | 'resourceType.tesbihat' | 'resourceType.dua' | 'resourceType.salawat' | 'resourceType.wird'> = {
+  zikir: 'resourceType.zikir',
+  tesbihat: 'resourceType.tesbihat',
+  dua: 'resourceType.dua',
+  salawat: 'resourceType.salawat',
+  wird: 'resourceType.wird',
+};
+
+const DIFFICULTY_LABEL_KEYS: Record<CatalogItem['difficulty'], 'resourceDifficulty.easy' | 'resourceDifficulty.medium' | 'resourceDifficulty.advanced'> = {
+  easy: 'resourceDifficulty.easy',
+  medium: 'resourceDifficulty.medium',
+  advanced: 'resourceDifficulty.advanced',
+};
+
+function isTiming(value: string): value is CatalogItem['timing'] {
+  return value === 'after_fajr' || value === 'after_maghrib' || value === 'morning_evening' || value === 'anytime';
+}
+
+function isType(value: string): value is CatalogItem['type'] {
+  return value === 'zikir' || value === 'tesbihat' || value === 'dua' || value === 'salawat' || value === 'wird';
+}
+
+function isDifficulty(value: string): value is CatalogItem['difficulty'] {
+  return value === 'easy' || value === 'medium' || value === 'advanced';
+}
+
 export function ResourcesPageClient() {
   const locale = useLocale() as 'tr' | 'en' | 'ar';
   const t = useTranslations('resourcesV2');
@@ -78,9 +111,9 @@ export function ResourcesPageClient() {
 
   const effectiveContentLocale = resourcesFilters.language ?? locale;
 
-  const timingText = (timing: CatalogItem['timing']) => t(`timing.${timing}` as any);
-  const typeText = (type: CatalogItem['type']) => t(`resourceType.${type}` as any);
-  const difficultyText = (difficulty: CatalogItem['difficulty']) => t(`resourceDifficulty.${difficulty}` as any);
+  const timingText = (timing: CatalogItem['timing']) => t(TIMING_LABEL_KEYS[timing]);
+  const typeText = (type: CatalogItem['type']) => t(TYPE_LABEL_KEYS[type]);
+  const difficultyText = (difficulty: CatalogItem['difficulty']) => t(DIFFICULTY_LABEL_KEYS[difficulty]);
 
   useEffect(() => {
     if (!resourcesFilters.language) {
@@ -242,7 +275,10 @@ export function ResourcesPageClient() {
               <p className="text-xs text-slate-400">{t('filters')}</p>
               <select
                 value={resourcesFilters.timing ?? ''}
-                onChange={(e) => setResourcesFilters({ timing: (e.target.value || undefined) as CatalogItem['timing'] | undefined })}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  setResourcesFilters({ timing: value && isTiming(value) ? value : undefined });
+                }}
                 className="w-full h-10 rounded-lg border border-slate-700 bg-slate-950/70 px-2 text-sm text-slate-100"
               >
                 <option value="">{t('all')}</option>
@@ -258,7 +294,10 @@ export function ResourcesPageClient() {
               <p className="text-xs text-slate-400">{t('type')}</p>
               <select
                 value={resourcesFilters.type ?? ''}
-                onChange={(e) => setResourcesFilters({ type: (e.target.value || undefined) as CatalogItem['type'] | undefined })}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  setResourcesFilters({ type: value && isType(value) ? value : undefined });
+                }}
                 className="w-full h-10 rounded-lg border border-slate-700 bg-slate-950/70 px-2 text-sm text-slate-100"
               >
                 <option value="">{t('all')}</option>
@@ -276,7 +315,7 @@ export function ResourcesPageClient() {
                 value={resourcesFilters.difficulty ?? ''}
                 onChange={(e) =>
                   setResourcesFilters({
-                    difficulty: (e.target.value || undefined) as CatalogItem['difficulty'] | undefined,
+                    difficulty: e.target.value && isDifficulty(e.target.value) ? e.target.value : undefined,
                   })
                 }
                 className="w-full h-10 rounded-lg border border-slate-700 bg-slate-950/70 px-2 text-sm text-slate-100"

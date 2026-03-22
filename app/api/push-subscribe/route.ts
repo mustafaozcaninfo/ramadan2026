@@ -50,7 +50,9 @@ export async function POST(request: NextRequest) {
     }
     const { subscription, locale: localeParam, reminderIntervals } = parsed.data;
     const locale = localeParam === 'en' ? 'en' : localeParam === 'ar' ? 'ar' : 'tr';
-    const intervals = reminderIntervals?.length ? reminderIntervals : [15, 10, 5, 0];
+    const intervals = reminderIntervals?.length
+      ? Array.from(new Set(reminderIntervals)).sort((a, b) => b - a)
+      : [15, 10, 5, 0];
 
     const key = `${REDIS_PREFIX}${encodeURIComponent(subscription.endpoint)}`;
     await redis.set(key, JSON.stringify({ subscription: parsed.data.subscription, locale, reminderIntervals: intervals }), { ex: 60 * 60 * 24 * 180 }); // 180 days TTL

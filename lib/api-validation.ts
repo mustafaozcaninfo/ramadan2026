@@ -21,7 +21,10 @@ export const pushSubscribeBodySchema = z.object({
     expirationTime: z.number().nullable().optional(),
   }),
   locale: z.enum(['tr', 'en', 'ar']).optional(),
-  reminderIntervals: z.array(z.number().int().min(0).max(60)).optional(),
+  reminderIntervals: z
+    .array(z.union([z.literal(15), z.literal(10), z.literal(5), z.literal(0)]))
+    .max(4)
+    .optional(),
 });
 
 export type PushSubscribeBody = z.infer<typeof pushSubscribeBodySchema>;

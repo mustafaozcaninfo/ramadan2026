@@ -7,6 +7,7 @@ const REDIS_PREFIX = 'ramadan:push:';
 const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 const PAYLOADS = {
   tr: {
@@ -59,6 +60,10 @@ function dohaTimeToUtc(dateStr: string, timeStr: string): Date {
  * Called by Vercel Cron every minute. Sends Web Push for 15/10/5/0 min before Fajr/Maghrib.
  */
 export async function GET(request: NextRequest) {
+  if (IS_PROD && !CRON_SECRET) {
+    return NextResponse.json({ error: 'CRON_SECRET is required in production' }, { status: 503 });
+  }
+
   if (CRON_SECRET && request.headers.get('authorization') !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -81,6 +86,9 @@ export async function GET(request: NextRequest) {
 
     // ?test=1 → Tüm abonelere anında test bildirimi gönder (saat beklemeye gerek yok)
     const isTest = request.nextUrl.searchParams.get('test') === '1';
+    if (isTest && IS_PROD) {
+      return NextResponse.json({ error: 'Test mode is disabled in production' }, { status: 403 });
+    }
     if (isTest) {
       const keys = await redis.keys(`${REDIS_PREFIX}*`);
       let sent = 0;

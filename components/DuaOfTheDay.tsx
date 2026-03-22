@@ -10,13 +10,15 @@ import { useTranslations } from 'next-intl';
 
 interface DuaOfTheDayProps {
   locale: 'tr' | 'en' | 'ar';
+  /** Hijri Ramazan günü (1–30); API’den gelir, yoksa takvim gününe göre döngü. */
+  ramadanDay?: number | null;
 }
 
-export function DuaOfTheDay({ locale }: DuaOfTheDayProps) {
+export function DuaOfTheDay({ locale, ramadanDay }: DuaOfTheDayProps) {
   const tCommon = useTranslations('common');
   const tUi = useTranslations('ui');
   const reduceMotion = useReducedMotion();
-  const dua = getDuaOfTheDay(locale === 'ar' ? 'en' : locale);
+  const dua = getDuaOfTheDay(locale === 'ar' ? 'en' : locale, ramadanDay ?? null);
   const shareText = locale === 'ar'
     ? `${tCommon('duaOfTheDay')}\n\n${dua.arabic}`
     : `${dua.title}\n\n${dua.arabic}\n\n${dua.transliteration}\n\n${dua.translation}`;

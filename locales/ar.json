@@ -75,10 +75,10 @@
     "privacyBody": "نستخدم تحليلات مجهولة (مثل مشاهدات الصفحات ونقرات الأزرار) لتحسين التطبيق. لا يتم تخزين بيانات شخصية. عند تسجيل الدخول، يتم تخزين إعداداتك في حسابك ومزامنتها عبر الأجهزة."
   },
   "home": {
-    "title": "الإفطار والسحور الدوحة",
-    "subtitle": "جدول الإفطار والسحور",
+    "title": "مواقيت الصلاة",
+    "subtitle": "جدول الصلاة اليومي",
     "todayPrayerTitle": "مواقيت اليوم",
-    "todayPrayerSubtitle": "تابع العدّ التنازلي حتى لا يفوتك الوقت القادم.",
+    "todayPrayerSubtitle": "جميع أوقات الصلاة لمدينتك مع عدّ تنازلي للصلاة القادمة.",
     "goToday": "اذهب إلى اليوم",
     "quickSettings": "إعدادات سريعة",
     "fallbackDataNotice": "تعذر جلب البيانات المباشرة مؤقتاً. يتم عرض بيانات احتياطية.",
@@ -88,7 +88,9 @@
     "iftarTimeBadge": "وقت الإفطار",
     "countdown": "الوقت المتبقي",
     "todayLabel": "اليوم",
-    "ramadanYear": "شهر رمضان",
+    "heroKicker": "مواقيت الصلاة",
+    "prayerTimesBadge": "الجدول الكامل",
+    "ramadanYear": "رمضان",
     "ramadanDay": "اليوم {day} من رمضان",
     "iftarSahurBadge": "الإفطار والسحور",
     "dailyKhatm": "حزب اليوم",
@@ -96,7 +98,10 @@
     "todaysReading": "حزب اليوم: الجزء {juz}"
   },
   "calendar": {
-    "title": "تقويم رمضان",
+    "title": "تقويم الصلاة الشهري",
+    "monthNav": "{monthYear}",
+    "prevMonth": "الشهر السابق",
+    "nextMonth": "الشهر التالي",
     "day": "اليوم",
     "date": "التاريخ",
     "sahur": "السحور",
@@ -305,6 +310,16 @@
     "cityFailures": "أخطاء فحص المدن: {count}",
     "warningVapidMissing": "مفاتيح VAPID مفقودة",
     "warningRedisMissing": "لم يتم إعداد Upstash Redis",
-    "warningCityChecksFailed": "فشل فحص المواقيت لبعض المدن"
+    "warningCityChecksFailed": "فشل فحص المواقيت لبعض المدن",
+    "accessTitle": "دخول التشغيل",
+    "accessSubtitle": "أدخل كلمة المرور للوصول إلى لوحة التشغيل.",
+    "passwordLabel": "كلمة المرور",
+    "passwordPlaceholder": "كلمة مرور التشغيل",
+    "signIn": "تسجيل الدخول",
+    "signingIn": "جارٍ تسجيل الدخول...",
+    "invalidPassword": "كلمة المرور غير صحيحة.",
+    "loginFailed": "فشل تسجيل الدخول.",
+    "tooManyAttempts": "محاولات كثيرة جدًا. أعد المحاولة بعد دقيقة.",
+    "opsPasswordMissing": "كلمة مرور التشغيل غير مضبوطة على الخادم (OPS_DASHBOARD_PASSWORD)."
   }
 }

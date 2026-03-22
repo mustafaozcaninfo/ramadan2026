@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
     locale,
     category: sp.get('category') ?? undefined,
     subcategory: sp.get('subcategory') ?? undefined,
-    type: (sp.get('type') as any) ?? undefined,
-    difficulty: (sp.get('difficulty') as any) ?? undefined,
-    timing: (sp.get('timing') as any) ?? undefined,
+    type: parseEnum(sp.get('type'), ['zikir', 'tesbihat', 'dua', 'salawat', 'wird']),
+    difficulty: parseEnum(sp.get('difficulty'), ['easy', 'medium', 'advanced']),
+    timing: parseEnum(sp.get('timing'), ['after_fajr', 'after_maghrib', 'morning_evening', 'anytime']),
     tags: parseTags(sp.get('tags')),
     page,
     pageSize,
@@ -37,4 +37,8 @@ export async function GET(request: NextRequest) {
 
 function parseLocale(value: string | null): ResourceLocale {
   return value === 'en' || value === 'ar' ? value : 'tr';
+}
+
+function parseEnum<T extends string>(value: string | null, allowed: readonly T[]): T | undefined {
+  return value && allowed.includes(value as T) ? (value as T) : undefined;
 }

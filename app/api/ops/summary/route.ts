@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 import { SUPPORTED_CITIES, getDohaDateString, getPrayerTimes, getTodayPrayerTimes } from '@/lib/prayer';
+import { OPS_AUTH_COOKIE, isOpsAuthenticatedFromCookie } from '@/lib/opsAuth';
 
 const REDIS_PREFIX = 'ramadan:push:';
 
@@ -78,7 +79,12 @@ async function getNextReminderSlot() {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const isAuthorized = isOpsAuthenticatedFromCookie(request.cookies.get(OPS_AUTH_COOKIE)?.value);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
   const startedAt = Date.now();
   const redis = getRedis();
 

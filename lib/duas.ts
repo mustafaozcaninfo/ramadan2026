@@ -3,8 +3,6 @@
  * Her gün Ramazan ile alakalı, faydalı ve sahih dualar
  */
 
-import { getRamadanDay } from './prayer';
-
 export interface Dua {
   id: number;
   tr: {
@@ -478,11 +476,14 @@ export const duas: Dua[] = [
  * Ramazan gününe göre günün duasını döndürür (1-30).
  * Ramazan dışında takvim gününe göre döngü yapar.
  */
-export function getDuaOfTheDay(locale: 'tr' | 'en' = 'tr'): Dua['tr'] | Dua['en'] {
-  const ramadanDay = getRamadanDay();
-  const index = ramadanDay !== null
-    ? Math.min(Math.max(ramadanDay - 1, 0), duas.length - 1)
-    : (new Date().getDate() - 1) % duas.length;
+export function getDuaOfTheDay(
+  locale: 'tr' | 'en' = 'tr',
+  ramadanDay?: number | null
+): Dua['tr'] | Dua['en'] {
+  const index =
+    ramadanDay !== null && ramadanDay !== undefined
+      ? Math.min(Math.max(ramadanDay - 1, 0), duas.length - 1)
+      : (new Date().getDate() - 1) % duas.length;
   const dua = duas[index];
   return locale === 'tr' ? dua.tr : dua.en;
 }

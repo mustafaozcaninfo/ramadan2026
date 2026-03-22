@@ -10,6 +10,8 @@ interface CalendarPageClientProps {
   startDate: Date;
   locale: 'tr' | 'en' | 'ar';
   autoScrollToToday?: boolean;
+  cityTodayIso: string;
+  todayDayInMonth: number | null;
 }
 
 export function CalendarPageClient({
@@ -17,9 +19,13 @@ export function CalendarPageClient({
   startDate,
   locale,
   autoScrollToToday,
+  cityTodayIso,
+  todayDayInMonth,
 }: CalendarPageClientProps) {
   const [expandedStates, setExpandedStates] = useState<Record<number, boolean>>({});
-  const allExpanded = Object.values(expandedStates).every(Boolean) && Object.keys(expandedStates).length === prayerTimes.length;
+  const allExpanded =
+    Object.values(expandedStates).every(Boolean) &&
+    Object.keys(expandedStates).length === prayerTimes.length;
 
   const toggleAll = () => {
     if (allExpanded) {
@@ -33,32 +39,17 @@ export function CalendarPageClient({
     }
   };
 
-  const toggleCard = (dayNumber: number) => {
-    setExpandedStates(prev => ({
+  const toggleCard = (dayOfMonth: number) => {
+    setExpandedStates((prev) => ({
       ...prev,
-      [dayNumber]: !prev[dayNumber],
+      [dayOfMonth]: !prev[dayOfMonth],
     }));
   };
 
-  // When navigated with ?today=1, automatically scroll to today's card on mount
   useEffect(() => {
-    if (!autoScrollToToday) return;
+    if (!autoScrollToToday || todayDayInMonth === null) return;
 
-    const ramadanStartDate = new Date(startDate);
-    ramadanStartDate.setHours(0, 0, 0, 0);
-    const today = new Date();
-    const todayMidnight = new Date(today);
-    todayMidnight.setHours(0, 0, 0, 0);
-
-    const diffTime = todayMidnight.getTime() - ramadanStartDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const todayDayNumber = diffDays + 1;
-
-    if (todayDayNumber < 1 || todayDayNumber > prayerTimes.length) {
-      return;
-    }
-
-    const todayCardId = `day-${todayDayNumber}`;
+    const todayCardId = `day-${todayDayInMonth}`;
     const todayCard = document.getElementById(todayCardId);
 
     if (todayCard) {
@@ -72,7 +63,7 @@ export function CalendarPageClient({
         }, 2000);
       }
     }
-  }, [autoScrollToToday, startDate, prayerTimes.length]);
+  }, [autoScrollToToday, todayDayInMonth]);
 
   return (
     <>
@@ -86,17 +77,18 @@ export function CalendarPageClient({
         {prayerTimes.map((day, index) => {
           const date = new Date(startDate);
           date.setDate(startDate.getDate() + index);
-          const dayNumber = index + 1;
-          const dayId = `day-${dayNumber}`;
+          const dayOfMonth = index + 1;
+          const dayId = `day-${dayOfMonth}`;
           return (
             <div key={day.data.date.readable} id={dayId}>
               <CalendarDayCard
                 day={day}
-                dayNumber={dayNumber}
+                dayOfMonth={dayOfMonth}
                 locale={locale}
                 date={date}
-                expanded={expandedStates[dayNumber]}
-                onToggle={() => toggleCard(dayNumber)}
+                cityTodayIso={cityTodayIso}
+                expanded={expandedStates[dayOfMonth]}
+                onToggle={() => toggleCard(dayOfMonth)}
               />
             </div>
           );

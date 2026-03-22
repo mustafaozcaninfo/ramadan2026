@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPrayerTimes, getDohaDateString } from '@/lib/prayer';
+import { getPrayerTimes, getCityDateString } from '@/lib/prayer';
 import { timingsQuerySchema, getValidatedCityConfig } from '@/lib/api-validation';
 import { checkApiRateLimit } from '@/lib/rate-limit';
 
@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
       );
     }
     const { date: dateParam, city, country } = parsed.data;
-    const date = dateParam ?? getDohaDateString();
     const cityConfig = getValidatedCityConfig(city, country);
+    const date = dateParam ?? getCityDateString(cityConfig);
 
     const data = await getPrayerTimes(date, cityConfig);
 

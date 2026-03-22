@@ -75,10 +75,10 @@
     "privacyBody": "Uygulamayı iyileştirmek için anonim analitik (sayfa görüntülemeleri ve buton tıklamaları) kullanıyoruz. Kişisel veri saklanmaz. Giriş yaptığınızda ayarlarınız hesabınızda saklanır ve cihazlar arasında senkronize edilir."
   },
   "home": {
-    "title": "İftar & Sahur Doha",
-    "subtitle": "İftar ve Sahur Takvimi",
-    "todayPrayerTitle": "Bugün İçin Vakitler",
-    "todayPrayerSubtitle": "Sıradaki vakti kaçırmamak için geri sayımı takip et.",
+    "title": "Namaz Vakitleri",
+    "subtitle": "Günlük namaz programı",
+    "todayPrayerTitle": "Bugünün namaz vakitleri",
+    "todayPrayerSubtitle": "Şehrinize göre tüm vakitler ve sıradaki namaza geri sayım.",
     "goToday": "Bugüne Git",
     "quickSettings": "Hızlı Ayarlar",
     "fallbackDataNotice": "Canlı veri geçici olarak alınamadı. Yedek vakitler gösteriliyor.",
@@ -88,7 +88,9 @@
     "iftarTimeBadge": "İftar Vakti",
     "countdown": "Kalan Süre",
     "todayLabel": "Bugün",
-    "ramadanYear": "Ramazan Ayı",
+    "heroKicker": "Namaz vakitleri",
+    "prayerTimesBadge": "Tam liste",
+    "ramadanYear": "Ramazan",
     "ramadanDay": "Ramazan {day}. Gün",
     "iftarSahurBadge": "İftar & Sahur",
     "dailyKhatm": "Günlük hatim",
@@ -96,7 +98,10 @@
     "todaysReading": "Bugünkü hatim: Cüz {juz}"
   },
   "calendar": {
-    "title": "Ramazan Takvimi",
+    "title": "Aylık namaz takvimi",
+    "monthNav": "{monthYear}",
+    "prevMonth": "Önceki ay",
+    "nextMonth": "Sonraki ay",
     "day": "Gün",
     "date": "Tarih",
     "sahur": "Sahur",
@@ -305,6 +310,16 @@
     "cityFailures": "Şehir kontrol hataları: {count}",
     "warningVapidMissing": "VAPID anahtarları eksik",
     "warningRedisMissing": "Upstash Redis yapılandırılmadı",
-    "warningCityChecksFailed": "Bazı şehir vakit kontrolleri başarısız oldu"
+    "warningCityChecksFailed": "Bazı şehir vakit kontrolleri başarısız oldu",
+    "accessTitle": "Ops Erişimi",
+    "accessSubtitle": "Operasyon paneline giriş için şifre girin.",
+    "passwordLabel": "Şifre",
+    "passwordPlaceholder": "Ops şifresi",
+    "signIn": "Giriş Yap",
+    "signingIn": "Giriş yapılıyor...",
+    "invalidPassword": "Şifre hatalı.",
+    "loginFailed": "Giriş işlemi başarısız oldu.",
+    "tooManyAttempts": "Çok fazla deneme. Lütfen 1 dakika sonra tekrar deneyin.",
+    "opsPasswordMissing": "Ops şifresi sunucu ortamında tanımlı değil (OPS_DASHBOARD_PASSWORD)."
   }
 }

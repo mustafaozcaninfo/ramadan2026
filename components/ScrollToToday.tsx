@@ -3,49 +3,25 @@
 import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { isToday } from 'date-fns';
 
 interface ScrollToTodayProps {
-  targetId: string;
   className?: string;
-  startDate?: Date;
+  /** Ay içindeki bugünün günü (1–31); görünen ay bugünü içermiyorsa null. */
+  todayDayInMonth: number | null;
 }
 
-export function ScrollToToday({ targetId, className, startDate }: ScrollToTodayProps) {
+export function ScrollToToday({ className, todayDayInMonth }: ScrollToTodayProps) {
   const t = useTranslations('calendar');
 
   const scrollToToday = () => {
-    // Calculate today's Ramadan day number
-    const ramadanStartDate = startDate || new Date('2026-02-18');
-    const today = new Date();
-    
-    // Reset time to midnight for accurate day calculation
-    const start = new Date(ramadanStartDate);
-    start.setHours(0, 0, 0, 0);
-    const todayMidnight = new Date(today);
-    todayMidnight.setHours(0, 0, 0, 0);
-    
-    // Calculate days difference
-    const diffTime = todayMidnight.getTime() - start.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Today's Ramadan day number (1-30)
-    const todayDayNumber = diffDays + 1;
-    
-    // Check if today is within Ramadan (days 1-30)
-    if (todayDayNumber < 1 || todayDayNumber > 30) {
-      return; // Not during Ramadan
-    }
-    
-    // Find today's card by ID
-    const todayCardId = `day-${todayDayNumber}`;
+    if (todayDayInMonth === null) return;
+
+    const todayCardId = `day-${todayDayInMonth}`;
     const todayCard = document.getElementById(todayCardId);
-    
+
     if (todayCard) {
-      // Scroll to the card
       todayCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      // Add a temporary highlight effect
+
       const cardDiv = todayCard.querySelector('div') as HTMLElement | null;
       if (cardDiv) {
         cardDiv.classList.add('ring-2', 'ring-ramadan-green', 'ring-opacity-75', 'transition-all');
@@ -53,8 +29,7 @@ export function ScrollToToday({ targetId, className, startDate }: ScrollToTodayP
           cardDiv.classList.remove('ring-2', 'ring-ramadan-green', 'ring-opacity-75');
         }, 2000);
       }
-      
-      // Try to expand the card if it has a button
+
       setTimeout(() => {
         const cardButton = todayCard.querySelector('button[aria-expanded]') as HTMLButtonElement | null;
         if (cardButton && cardButton.getAttribute('aria-expanded') === 'false') {
@@ -70,6 +45,7 @@ export function ScrollToToday({ targetId, className, startDate }: ScrollToTodayP
       variant="outline"
       size="sm"
       className={className}
+      disabled={todayDayInMonth === null}
       aria-label={t('scrollToToday')}
     >
       <Calendar className="w-4 h-4 mr-2" />

@@ -1,6 +1,11 @@
 import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
-import { getTodayPrayerTimes, getRamadanDay, getPrayerTimes } from '@/lib/prayer';
+import {
+  getTodayPrayerTimes,
+  getPrayerTimes,
+  hijriRamadanDayFromResponse,
+  getCityDateString,
+} from '@/lib/prayer';
 import { getCityConfigFromCookie } from '@/lib/cityCookie';
 import { PrayerTimeCard } from '@/components/PrayerTimeCard';
 import { DuaOfTheDay } from '@/components/DuaOfTheDay';
@@ -26,6 +31,7 @@ export default async function HomePage({
 
   const cookieStore = await cookies();
   const cityConfig = getCityConfigFromCookie(cookieStore.get('ramadan-city')?.value);
+  const tz = cityConfig.timezone ?? 'Asia/Qatar';
 
   let prayerData;
   let usedFallbackData = false;
@@ -33,21 +39,18 @@ export default async function HomePage({
     prayerData = await getTodayPrayerTimes(cityConfig);
   } catch (error) {
     console.error('Error fetching prayer times:', error);
-    const { getPrayerTimes } = await import('@/lib/prayer');
-    prayerData = await getPrayerTimes('2026-02-18', cityConfig);
+    const fallbackDate = getCityDateString(cityConfig);
+    prayerData = await getPrayerTimes(fallbackDate, cityConfig);
     usedFallbackData = true;
   }
 
   const timings = prayerData.data.timings;
   const dateInfo = prayerData.data.date;
 
-  // Get Ramadan day number
-  const ramadanDay = getRamadanDay();
+  const ramadanDay = hijriRamadanDayFromResponse(dateInfo.hijri);
 
-  // Format dates with locale support
   const dateLocale = locale === 'tr' ? tr : enUS;
 
-  // Parse date from DD-MM-YYYY format and also keep an ISO (YYYY-MM-DD) string
   let dateObj: Date;
   let currentIsoDate = '';
   if (dateInfo.gregorian.date && dateInfo.gregorian.date.includes('-')) {
@@ -57,37 +60,38 @@ export default async function HomePage({
       .toString()
       .padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
   } else {
-    // Fallback: use today's date
     dateObj = new Date();
     currentIsoDate = dateObj.toISOString().split('T')[0];
   }
 
-  // Get next day's prayer times (for correct next-day countdown)
   const tomorrowObj = new Date(dateObj);
   tomorrowObj.setDate(tomorrowObj.getDate() + 1);
-  const tomorrowIso = tomorrowObj.toISOString().split('T')[0];
+  const tomorrowIso = `${tomorrowObj.getFullYear()}-${String(tomorrowObj.getMonth() + 1).padStart(2, '0')}-${String(tomorrowObj.getDate()).padStart(2, '0')}`;
   const nextDayData = await getPrayerTimes(tomorrowIso, cityConfig);
   const nextTimings = nextDayData.data.timings;
 
-  // Format gregorian & hijri dates based on locale
   const dayName = format(dateObj, 'EEEE', { locale: dateLocale });
   const dayDate = format(dateObj, 'd MMMM yyyy', { locale: dateLocale });
   const gregorianDate = `${dayName}, ${dayDate}`;
 
-  // Format hijri date
-  const hijriDate = dateInfo.hijri?.day && dateInfo.hijri?.month?.en
-    ? `${dateInfo.hijri.day} ${dateInfo.hijri.month.en} ${dateInfo.hijri.year} AH`
-    : '';
+  const hijriDate =
+    dateInfo.hijri?.day && dateInfo.hijri?.month?.en
+      ? `${dateInfo.hijri.day} ${dateInfo.hijri.month.en} ${dateInfo.hijri.year} AH`
+      : '';
 
   const selectedCityLabel = `${cityConfig.city}, ${cityConfig.country}`;
-  const methodLabel = cityConfig.city === 'Doha' && cityConfig.country === 'Qatar'
-    ? tCommon('officialQatarMethod')
-    : tCommon('cityBasedMethod');
+  const methodLabel =
+    cityConfig.city === 'Doha' && cityConfig.country === 'Qatar'
+      ? tCommon('officialQatarMethod')
+      : tCommon('cityBasedMethod');
   const heroTitle = tHome('todayPrayerTitle');
   const heroSubtitle = tHome('todayPrayerSubtitle');
   const goTodayLabel = tHome('goToday');
   const quickSettingsLabel = tHome('quickSettings');
   const fallbackNotice = tHome('fallbackDataNotice');
+
+  const calYear = dateObj.getFullYear();
+  const calMonth = dateObj.getMonth() + 1;
 
   return (
     <ErrorBoundary>
@@ -133,14 +137,12 @@ export default async function HomePage({
               <div className="px-4 sm:px-6 py-5 sm:py-6 flex items-start justify-between gap-4">
                 <div className="max-w-xl">
                   <p className="text-[11px] sm:text-xs font-medium text-amber-200 uppercase tracking-[0.22em]">
-                    {tHome('ramadanYear')}
+                    {tHome('heroKicker')}
                   </p>
                   <p className="mt-2 text-xl sm:text-2xl md:text-3xl font-semibold text-amber-100 drop-shadow-md">
                     {heroTitle}
                   </p>
-                  <p className="mt-2 text-sm text-slate-200/90">
-                    {heroSubtitle}
-                  </p>
+                  <p className="mt-2 text-sm text-slate-200/90">{heroSubtitle}</p>
                   <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 text-[11px] sm:text-xs text-slate-100 border border-amber-300/40">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-ramadan-glow" />
                     {selectedCityLabel}
@@ -149,7 +151,7 @@ export default async function HomePage({
                 <div className="hidden sm:flex flex-col items-end text-right text-xs text-slate-100/90 gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-ramadan-gold/40 bg-black/25 px-3 py-1 text-[11px] uppercase tracking-[0.15em] text-amber-200">
                     <Sparkles className="w-3.5 h-3.5" />
-                    {tHome('iftarSahurBadge')}
+                    {tHome('prayerTimesBadge')}
                   </span>
                   <span className="text-sm font-semibold">{methodLabel}</span>
                 </div>
@@ -157,14 +159,20 @@ export default async function HomePage({
             </div>
 
             <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <Link href="/calendar?today=1" aria-label={goTodayLabel}>
+              <Link
+                href={`/calendar?year=${calYear}&month=${calMonth}&today=1`}
+                aria-label={goTodayLabel}
+              >
                 <Button className="w-full bg-ramadan-green hover:bg-emerald-500 text-white">
                   <Calendar className="w-4 h-4 mr-2" />
                   {goTodayLabel}
                 </Button>
               </Link>
               <Link href="/settings" aria-label={quickSettingsLabel}>
-                <Button variant="outline" className="w-full border-slate-500/80 bg-slate-900/35 hover:bg-slate-800/80">
+                <Button
+                  variant="outline"
+                  className="w-full border-slate-500/80 bg-slate-900/35 hover:bg-slate-800/80"
+                >
                   <Settings className="w-4 h-4 mr-2" />
                   {quickSettingsLabel}
                 </Button>
@@ -190,13 +198,12 @@ export default async function HomePage({
               maghrib={timings.Maghrib}
               isha={timings.Isha}
               nextFajr={nextTimings.Fajr}
-              nextMaghrib={nextTimings.Maghrib}
               sunrise={timings.Sunrise}
-              hijriDate={hijriDate}
-              gregorianDate={gregorianDate}
-              ramadanDay={ramadanDay}
               currentDateIso={currentIsoDate}
               nextDateIso={tomorrowIso}
+              timezone={tz}
+              hijriDate={hijriDate}
+              gregorianDate={gregorianDate}
               locale={locale as 'tr' | 'en' | 'ar'}
             />
 
@@ -204,11 +211,13 @@ export default async function HomePage({
 
             <AzanButton />
 
-            <DuaOfTheDay locale={locale as 'tr' | 'en' | 'ar'} />
+            <DuaOfTheDay locale={locale as 'tr' | 'en' | 'ar'} ramadanDay={ramadanDay} />
 
             <div className="text-center text-xs text-slate-300 pt-4 border-t border-slate-600/50">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700/50">
-                <p className="text-ramadan-green font-medium">{selectedCityLabel} • {methodLabel}</p>
+                <p className="text-ramadan-green font-medium">
+                  {selectedCityLabel} • {methodLabel}
+                </p>
               </div>
               <p className="mt-3 text-slate-300/85">
                 {tCommon('source')}:{' '}

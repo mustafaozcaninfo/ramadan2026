@@ -4,33 +4,40 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 interface CountdownProps {
-  targetTime: string; // HH:mm format (fallback when targetDateTime is not provided)
-  targetDateTime?: Date; // Precise target Date (preferred for correct timezone/date handling)
+  targetTime: string;
+  targetDateTime?: Date;
   label: string;
   locale?: 'tr' | 'en' | 'ar';
-  variant?: 'sahur' | 'iftar'; // For different color schemes
+  /** `next` = sıradaki namaz (varsayılan); eski sahur/iftar stilleri geriye dönük. */
+  variant?: 'sahur' | 'iftar' | 'next';
 }
 
 interface CountdownCardProps {
   value: number;
   label: string;
   index: number;
-  variant?: 'sahur' | 'iftar';
+  variant?: 'sahur' | 'iftar' | 'next';
 }
 
-function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCardProps) {
+function CountdownCard({ value, label, index, variant = 'next' }: CountdownCardProps) {
   const reduceMotion = useReducedMotion();
-  const gradientClass = variant === 'sahur' 
-    ? 'bg-gradient-to-br from-blue-500/40 via-blue-600/50 to-blue-700/60 dark:from-blue-600/50 dark:via-blue-700/60 dark:to-blue-800/70'
-    : 'bg-gradient-to-br from-ramadan-gold/40 via-ramadan-gold/50 to-ramadan-gold/60 dark:from-ramadan-gold/50 dark:via-ramadan-gold/60 dark:to-ramadan-gold/70';
-  
-  const borderClass = variant === 'sahur'
-    ? 'border-blue-400/50 dark:border-blue-500/50'
-    : 'border-ramadan-gold/50 dark:border-ramadan-gold/60';
+  const gradientClass =
+    variant === 'sahur'
+      ? 'bg-gradient-to-br from-blue-500/40 via-blue-600/50 to-blue-700/60 dark:from-blue-600/50 dark:via-blue-700/60 dark:to-blue-800/70'
+      : variant === 'iftar'
+        ? 'bg-gradient-to-br from-ramadan-gold/40 via-ramadan-gold/50 to-ramadan-gold/60 dark:from-ramadan-gold/50 dark:via-ramadan-gold/60 dark:to-ramadan-gold/70'
+        : 'bg-gradient-to-br from-emerald-500/35 via-slate-600/45 to-slate-700/55 dark:from-emerald-600/40 dark:via-slate-700/55 dark:to-slate-800/65';
 
-  const textColor = variant === 'sahur' ? 'text-blue-100' : 'text-ramadan-gold';
+  const borderClass =
+    variant === 'sahur'
+      ? 'border-blue-400/50 dark:border-blue-500/50'
+      : variant === 'iftar'
+        ? 'border-ramadan-gold/50 dark:border-ramadan-gold/60'
+        : 'border-emerald-400/45 dark:border-emerald-500/40';
 
-  // Visual indicator when time is very close (less than 1 hour)
+  const textColor =
+    variant === 'sahur' ? 'text-blue-100' : variant === 'iftar' ? 'text-ramadan-gold' : 'text-emerald-100';
+
   const isLowTime =
     (label.toLowerCase().includes('minute') ||
       label.toLowerCase().includes('dakika') ||
@@ -63,22 +70,25 @@ function CountdownCard({ value, label, index, variant = 'iftar' }: CountdownCard
   );
 }
 
-export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', variant = 'iftar' }: CountdownProps) {
+export function Countdown({
+  targetTime,
+  targetDateTime,
+  label,
+  locale = 'tr',
+  variant = 'next',
+}: CountdownProps) {
   const reduceMotion = useReducedMotion();
   const [timeRemaining, setTimeRemaining] = useState({
     days: 0,
-    hours: 0, 
-    minutes: 0, 
-    seconds: 0 
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
   });
 
-  // Memoize target date to avoid recalculation.
-  // Prefer an explicit Date (with correct day & timezone) when provided.
   const targetDate = useMemo(() => {
     if (targetDateTime instanceof Date) {
       return targetDateTime;
     }
-    // Fallback: derive Date only from HH:mm (uses local timezone)
     const [hours, minutes] = targetTime.split(':').map(Number);
     const now = new Date();
     const target = new Date();
@@ -89,7 +99,6 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
     return target;
   }, [targetTime, targetDateTime]);
 
-  // Optimized update function
   const updateCountdown = useCallback(() => {
     const now = new Date();
     const diff = targetDate.getTime() - now.getTime();
@@ -106,7 +115,6 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
     const seconds = totalSeconds % 60;
 
     setTimeRemaining((prev) => {
-      // Only update if changed to prevent unnecessary re-renders
       if (
         prev.days !== days ||
         prev.hours !== hours ||
@@ -122,7 +130,6 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
   useEffect(() => {
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
-
     return () => clearInterval(interval);
   }, [updateCountdown]);
 
@@ -133,7 +140,6 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
         ? ['يوم', 'ساعة', 'دقيقة', 'ثانية']
         : ['Days', 'Hours', 'Minutes', 'Seconds'];
 
-  // Show days only if > 0, otherwise show hours, minutes, seconds
   const showDays = timeRemaining.days > 0;
   const countdownItems = showDays
     ? [
@@ -148,17 +154,16 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
         { value: timeRemaining.seconds, label: labels[3] },
       ];
 
-  // Check if countdown reached zero
-  const isZero = timeRemaining.days === 0 && timeRemaining.hours === 0 && 
-                 timeRemaining.minutes === 0 && timeRemaining.seconds === 0;
+  const isZero =
+    timeRemaining.days === 0 &&
+    timeRemaining.hours === 0 &&
+    timeRemaining.minutes === 0 &&
+    timeRemaining.seconds === 0;
 
   useEffect(() => {
     if (isZero && typeof window !== 'undefined') {
-      // Announce when countdown reaches zero
       const announcement =
         locale === 'tr' ? 'Süre doldu!' : locale === 'ar' ? 'انتهى الوقت!' : 'Time is up!';
-      
-      // Create a live region for announcement
       const announcementEl = document.createElement('div');
       announcementEl.setAttribute('role', 'status');
       announcementEl.setAttribute('aria-live', 'polite');
@@ -166,7 +171,6 @@ export function Countdown({ targetTime, targetDateTime, label, locale = 'tr', va
       announcementEl.className = 'sr-only';
       announcementEl.textContent = announcement;
       document.body.appendChild(announcementEl);
-      
       setTimeout(() => {
         document.body.removeChild(announcementEl);
       }, reduceMotion ? 100 : 1000);
