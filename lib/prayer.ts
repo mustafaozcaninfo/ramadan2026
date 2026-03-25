@@ -2,7 +2,7 @@
  * Prayer times utilities — Aladhan API only (timingsByCity).
  */
 
-import { formatInTimeZone } from 'date-fns-tz';
+import { formatInTimeZone, toDate } from 'date-fns-tz';
 
 export interface CityConfig {
   city: string;
@@ -193,6 +193,17 @@ export function formatTimeRemaining(
   seconds: number
 ): string {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+/** Wall-clock prayer time (YYYY-MM-DD + HH:mm from Aladhan) → UTC `Date`. */
+export function localPrayerTimeToUtc(
+  dateStr: string,
+  timeHHmm: string,
+  timeZone: string
+): Date {
+  const [h, m] = timeHHmm.split(':').map(Number);
+  const wall = `${dateStr}T${String(h ?? 0).padStart(2, '0')}:${String(m ?? 0).padStart(2, '0')}:00`;
+  return toDate(wall, { timeZone });
 }
 
 /** Doha timezone — push/ops that still key off Qatar calendar day. */

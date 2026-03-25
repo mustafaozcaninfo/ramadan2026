@@ -2,6 +2,9 @@
  * Browser notification utilities for prayer time reminders
  */
 
+import { SUPPORTED_CITIES } from '@/lib/prayer';
+import { useAppStore } from '@/lib/store/useAppStore';
+
 const LS_NOTIFICATIONS = 'prayer-notifications-enabled';
 const LS_LEGACY_NOTIFICATIONS = 'ramadan-notifications-enabled';
 const IDB_NAME = 'prayer-app';
@@ -120,9 +123,19 @@ export async function subscribeToPush(locale: NotificationLocale | PushLocale, r
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
     });
-    const body: { subscription: object; locale: string; reminderIntervals?: number[] } = {
+    const { city } = useAppStore.getState();
+    const cityCfg = SUPPORTED_CITIES.find((c) => c.city === city) ?? SUPPORTED_CITIES[0];
+    const body: {
+      subscription: object;
+      locale: string;
+      reminderIntervals?: number[];
+      city: string;
+      country: string;
+    } = {
       subscription: subscription.toJSON(),
       locale: pushLocale,
+      city: cityCfg.city,
+      country: cityCfg.country,
     };
     if (reminderIntervals?.length) body.reminderIntervals = reminderIntervals;
     const res = await fetch('/api/push-subscribe', {

@@ -12,26 +12,53 @@ import { useLocale } from 'next-intl';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { SUPPORTED_CITIES } from '@/lib/prayer';
 
-const NOTIFICATION_STRINGS = {
+type PrayerKey = 'Fajr' | 'Sunrise' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha';
+
+const PRAYER_NAMES: Record<'tr' | 'en' | 'ar', Record<PrayerKey, string>> = {
   tr: {
-    fajrTitle: (m: number) => (m === 0 ? 'Sahur Vakti!' : `${m} dakika kaldı`),
-    fajrBody: (m: number) => (m === 0 ? 'Sahur vakti geldi' : `${m} dakika sonra Sahur vakti`),
-    maghribTitle: (m: number) => (m === 0 ? 'İftar Vakti!' : `${m} dakika kaldı`),
-    maghribBody: (m: number) => (m === 0 ? 'İftar vakti geldi' : `${m} dakika sonra İftar vakti`),
+    Fajr: 'İmsak',
+    Sunrise: 'Güneş',
+    Dhuhr: 'Öğle',
+    Asr: 'İkindi',
+    Maghrib: 'Akşam',
+    Isha: 'Yatsı',
   },
   en: {
-    fajrTitle: (m: number) => (m === 0 ? 'Suhoor Time!' : `${m} min remaining`),
-    fajrBody: (m: number) => (m === 0 ? 'Suhoor time has started' : `${m} minutes until Suhoor`),
-    maghribTitle: (m: number) => (m === 0 ? 'Iftar Time!' : `${m} min remaining`),
-    maghribBody: (m: number) => (m === 0 ? 'Iftar time has started' : `${m} minutes until Iftar`),
+    Fajr: 'Fajr',
+    Sunrise: 'Sunrise',
+    Dhuhr: 'Dhuhr',
+    Asr: 'Asr',
+    Maghrib: 'Maghrib',
+    Isha: 'Isha',
   },
   ar: {
-    fajrTitle: (m: number) => (m === 0 ? 'وقت السحور!' : `متبقي ${m} دقيقة`),
-    fajrBody: (m: number) => (m === 0 ? 'بدأ وقت السحور' : `متبقي ${m} دقيقة على السحور`),
-    maghribTitle: (m: number) => (m === 0 ? 'وقت الإفطار!' : `متبقي ${m} دقيقة`),
-    maghribBody: (m: number) => (m === 0 ? 'بدأ وقت الإفطار' : `متبقي ${m} دقيقة على الإفطار`),
+    Fajr: 'الفجر',
+    Sunrise: 'الشروق',
+    Dhuhr: 'الظهر',
+    Asr: 'العصر',
+    Maghrib: 'المغرب',
+    Isha: 'العشاء',
   },
 };
+
+const PRAYER_ORDER: PrayerKey[] = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+function safariStrings(locale: 'tr' | 'en' | 'ar', key: PrayerKey, minutes: number) {
+  const name = PRAYER_NAMES[locale][key];
+  if (locale === 'tr') {
+    return minutes === 0
+      ? { title: `${name} vakti`, body: `${name} vakti girdi` }
+      : { title: `${minutes} dakika kaldı`, body: `${minutes} dakika sonra ${name}` };
+  }
+  if (locale === 'ar') {
+    return minutes === 0
+      ? { title: `وَقت ${name}`, body: `دخل وَقت ${name}` }
+      : { title: `متبقي ${minutes} دقيقة`, body: `متبقي ${minutes} دقيقة على ${name}` };
+  }
+  return minutes === 0
+    ? { title: `${name} time`, body: `${name} time has started` }
+    : { title: `${minutes} min left`, body: `${minutes} minutes until ${name}` };
+}
 
 function isSafariOrIOS(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -131,7 +158,6 @@ export function NotificationManager() {
     if (!isSafariOrIOS()) return;
 
     const scheduled = scheduledRef.current;
-    const strings = NOTIFICATION_STRINGS[normalizedLocale];
     const intervals = reminderIntervals.length ? reminderIntervals : [0];
 
     const scheduleNotifications = async () => {
@@ -145,35 +171,33 @@ export function NotificationManager() {
         if (!timings?.Fajr || !timings?.Maghrib) return;
 
         const cityTz = cityConfig.timezone ?? 'Asia/Qatar';
-        const fajrTime = parseTimeInCity(timings.Fajr, cityTz);
-        const maghribTime = parseTimeInCity(timings.Maghrib, cityTz);
         const now = new Date();
 
         scheduled.forEach((id) => clearTimeout(id));
         scheduled.clear();
 
-        const reminders = [
-          ...(intervals.map((minutes) => ({
-            time: new Date(fajrTime.getTime() - minutes * 60 * 1000),
-            minutes,
-            type: 'fajr' as const,
-          }))),
-          ...(intervals.map((minutes) => ({
-            time: new Date(maghribTime.getTime() - minutes * 60 * 1000),
-            minutes,
-            type: 'maghrib' as const,
-          }))),
-        ];
+        const reminders: Array<{ time: Date; minutes: number; prayerKey: PrayerKey }> = [];
 
-        reminders.forEach(({ time, minutes, type }) => {
+        for (const prayerKey of PRAYER_ORDER) {
+          const timeStr = timings[prayerKey];
+          if (!timeStr) continue;
+          const prayerInstant = parseTimeInCity(timeStr, cityTz);
+          for (const minutes of intervals) {
+            reminders.push({
+              time: new Date(prayerInstant.getTime() - minutes * 60 * 1000),
+              minutes,
+              prayerKey,
+            });
+          }
+        }
+
+        reminders.forEach(({ time, minutes, prayerKey }) => {
           const delay = time.getTime() - now.getTime();
           if (delay > 0 && delay < 24 * 60 * 60 * 1000) {
             const timeoutId = window.setTimeout(() => {
               if (!('Notification' in window) || Notification.permission !== 'granted') return;
-              const isFajr = type === 'fajr';
-              const title = isFajr ? strings.fajrTitle(minutes) : strings.maghribTitle(minutes);
-              const body = isFajr ? strings.fajrBody(minutes) : strings.maghribBody(minutes);
-              showNotification(title, { body, tag: `safari-${type}-${minutes}-${Date.now()}` });
+              const { title, body } = safariStrings(normalizedLocale, prayerKey, minutes);
+              showNotification(title, { body, tag: `safari-${prayerKey}-${minutes}-${Date.now()}` });
             }, delay);
             scheduled.add(timeoutId);
           }

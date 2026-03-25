@@ -6,17 +6,17 @@ import { useTranslations } from 'next-intl';
 
 interface ScrollToTodayProps {
   className?: string;
-  /** Gregoryen bugün (YYYY-MM-DD); listede yoksa null. */
-  todayIso: string | null;
+  /** Görünen ayda bugünün gün numarası (1–31); ay uyuşmuyorsa null. */
+  todayDayInMonth: number | null;
 }
 
-export function ScrollToToday({ className, todayIso }: ScrollToTodayProps) {
+export function ScrollToToday({ className, todayDayInMonth }: ScrollToTodayProps) {
   const t = useTranslations('calendar');
 
   const scrollToToday = () => {
-    if (todayIso === null) return;
+    if (todayDayInMonth === null) return;
 
-    const todayCardId = `day-${todayIso}`;
+    const todayCardId = `day-${todayDayInMonth}`;
     const todayCard = document.getElementById(todayCardId);
 
     if (todayCard) {
@@ -45,7 +45,7 @@ export function ScrollToToday({ className, todayIso }: ScrollToTodayProps) {
       variant="outline"
       size="sm"
       className={className}
-      disabled={todayIso === null}
+      disabled={todayDayInMonth === null}
       aria-label={t('scrollToToday')}
     >
       <Calendar className="w-4 h-4 mr-2" />

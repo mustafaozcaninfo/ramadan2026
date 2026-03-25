@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
-import { pushSubscribeBodySchema } from '@/lib/api-validation';
+import { getValidatedCityConfig, pushSubscribeBodySchema } from '@/lib/api-validation';
 import { checkApiRateLimit } from '@/lib/rate-limit';
 
 const REDIS_PREFIX = 'prayer:push:';
@@ -48,14 +48,25 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { subscription, locale: localeParam, reminderIntervals } = parsed.data;
+    const { subscription, locale: localeParam, reminderIntervals, city, country } = parsed.data;
     const locale = localeParam === 'en' ? 'en' : localeParam === 'ar' ? 'ar' : 'tr';
     const intervals = reminderIntervals?.length
       ? Array.from(new Set(reminderIntervals)).sort((a, b) => b - a)
       : [15, 10, 5, 0];
+    const cityCfg = getValidatedCityConfig(city, country);
 
     const key = `${REDIS_PREFIX}${encodeURIComponent(subscription.endpoint)}`;
-    await redis.set(key, JSON.stringify({ subscription: parsed.data.subscription, locale, reminderIntervals: intervals }), { ex: 60 * 60 * 24 * 180 }); // 180 days TTL
+    await redis.set(
+      key,
+      JSON.stringify({
+        subscription: parsed.data.subscription,
+        locale,
+        reminderIntervals: intervals,
+        city: cityCfg.city,
+        country: cityCfg.country,
+      }),
+      { ex: 60 * 60 * 24 * 180 }
+    ); // 180 days TTL
 
     return NextResponse.json({ ok: true });
   } catch (e) {

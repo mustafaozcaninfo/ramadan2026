@@ -119,10 +119,62 @@ async function getNotificationLocale(): Promise<'tr' | 'en' | 'ar'> {
   }
 }
 
+type SwPrayerKey = 'Fajr' | 'Sunrise' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha';
+
+const SW_PRAYER_ORDER: SwPrayerKey[] = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+const SW_PRAYER_NAMES: Record<'tr' | 'en' | 'ar', Record<SwPrayerKey, string>> = {
+  tr: {
+    Fajr: 'İmsak',
+    Sunrise: 'Güneş',
+    Dhuhr: 'Öğle',
+    Asr: 'İkindi',
+    Maghrib: 'Akşam',
+    Isha: 'Yatsı',
+  },
+  en: {
+    Fajr: 'Fajr',
+    Sunrise: 'Sunrise',
+    Dhuhr: 'Dhuhr',
+    Asr: 'Asr',
+    Maghrib: 'Maghrib',
+    Isha: 'Isha',
+  },
+  ar: {
+    Fajr: 'الفجر',
+    Sunrise: 'الشروق',
+    Dhuhr: 'الظهر',
+    Asr: 'العصر',
+    Maghrib: 'المغرب',
+    Isha: 'العشاء',
+  },
+};
+
+function swNotificationCopy(
+  locale: 'tr' | 'en' | 'ar',
+  key: SwPrayerKey,
+  minutes: number
+): { title: string; body: string } {
+  const name = SW_PRAYER_NAMES[locale][key];
+  if (locale === 'tr') {
+    return minutes === 0
+      ? { title: `${name} vakti`, body: `${name} vakti girdi` }
+      : { title: `${minutes} dakika kaldı`, body: `${minutes} dakika sonra ${name}` };
+  }
+  if (locale === 'ar') {
+    return minutes === 0
+      ? { title: `وَقت ${name}`, body: `دخل وَقت ${name}` }
+      : { title: `متبقي ${minutes} دقيقة`, body: `متبقي ${minutes} دقيقة على ${name}` };
+  }
+  return minutes === 0
+    ? { title: `${name} time`, body: `${name} time has started` }
+    : { title: `${minutes} min left`, body: `${minutes} minutes until ${name}` };
+}
+
 /**
  * Get today's prayer times from same-origin API (Doha date, same data as app)
  */
-async function getTodayPrayerTimes(): Promise<{ Fajr: string; Maghrib: string } | null> {
+async function getTodayPrayerTimes(): Promise<Partial<Record<SwPrayerKey, string>> | null> {
   const dohaDate = getDohaDateString();
   const url = `${self.location.origin}/api/timings?date=${dohaDate}`;
   try {
@@ -131,7 +183,7 @@ async function getTodayPrayerTimes(): Promise<{ Fajr: string; Maghrib: string } 
     if (cached) {
       const data = await cached.json();
       const t = data?.data?.timings;
-      if (t?.Fajr && t?.Maghrib) return { Fajr: t.Fajr, Maghrib: t.Maghrib };
+      if (t?.Fajr && t?.Maghrib) return t;
     }
     const response = await fetch(url);
     if (response.ok) {
@@ -140,7 +192,7 @@ async function getTodayPrayerTimes(): Promise<{ Fajr: string; Maghrib: string } 
       const t = data?.data?.timings;
       if (t?.Fajr && t?.Maghrib) {
         cache.put(url, clone);
-        return { Fajr: t.Fajr, Maghrib: t.Maghrib };
+        return t;
       }
     }
   } catch (error) {
@@ -148,28 +200,6 @@ async function getTodayPrayerTimes(): Promise<{ Fajr: string; Maghrib: string } 
   }
   return null;
 }
-
-
-const NOTIFICATION_STRINGS = {
-  tr: {
-    fajrTitle: (m: number) => (m === 0 ? 'İmsak vakti!' : `${m} dakika kaldı`),
-    fajrBody: (m: number) => (m === 0 ? 'İmsak vakti geldi' : `${m} dakika sonra İmsak`),
-    maghribTitle: (m: number) => (m === 0 ? 'Akşam vakti!' : `${m} dakika kaldı`),
-    maghribBody: (m: number) => (m === 0 ? 'Akşam vakti geldi' : `${m} dakika sonra Akşam`),
-  },
-  en: {
-    fajrTitle: (m: number) => (m === 0 ? 'Fajr time!' : `${m} min remaining`),
-    fajrBody: (m: number) => (m === 0 ? 'Fajr time has started' : `${m} minutes until Fajr`),
-    maghribTitle: (m: number) => (m === 0 ? 'Maghrib time!' : `${m} min remaining`),
-    maghribBody: (m: number) => (m === 0 ? 'Maghrib time has started' : `${m} minutes until Maghrib`),
-  },
-  ar: {
-    fajrTitle: (m: number) => (m === 0 ? 'وقت الفجر!' : `متبقي ${m} دقيقة`),
-    fajrBody: (m: number) => (m === 0 ? 'بدأ وقت الفجر' : `متبقي ${m} دقيقة على الفجر`),
-    maghribTitle: (m: number) => (m === 0 ? 'وقت المغرب!' : `متبقي ${m} دقيقة`),
-    maghribBody: (m: number) => (m === 0 ? 'بدأ وقت المغرب' : `متبقي ${m} دقيقة على المغرب`),
-  },
-};
 
 /**
  * Check and send notifications for prayer times
@@ -180,48 +210,33 @@ async function checkAndSendNotifications(): Promise<void> {
     if (!enabled) return;
 
     const locale = await getNotificationLocale();
-    const strings = NOTIFICATION_STRINGS[locale];
     const prayerTimes = await getTodayPrayerTimes();
     if (!prayerTimes) return;
 
     const now = new Date();
-    const fajrTime = parseTimeToDate(prayerTimes.Fajr);
-    const maghribTime = parseTimeToDate(prayerTimes.Maghrib);
     const dateKey = getDohaDateString();
+    const reminderMinutes = [15, 10, 5, 0];
 
-    const fajrReminders = [15, 10, 5, 0];
-    for (const minutes of fajrReminders) {
-      const reminderTime = new Date(fajrTime.getTime() - minutes * 60 * 1000);
-      const timeDiff = reminderTime.getTime() - now.getTime();
-      const notificationKey = `fajr-${minutes}-${dateKey}`;
+    for (const key of SW_PRAYER_ORDER) {
+      const timeStr = prayerTimes[key];
+      if (!timeStr) continue;
+      const prayerInstant = parseTimeToDate(timeStr);
+      for (const minutes of reminderMinutes) {
+        const reminderTime = new Date(prayerInstant.getTime() - minutes * 60 * 1000);
+        const timeDiff = reminderTime.getTime() - now.getTime();
+        const notificationKey = `${key.toLowerCase()}-${minutes}-${dateKey}`;
 
-      if (timeDiff >= 0 && timeDiff < 60 * 1000 && !lastNotificationTimes.has(notificationKey)) {
-        await self.registration.showNotification(strings.fajrTitle(minutes), {
-          body: strings.fajrBody(minutes),
-          icon: '/icon-192.png',
-          badge: '/icon-192.png',
-          tag: notificationKey,
-          requireInteraction: false,
-        });
-        lastNotificationTimes.add(notificationKey);
-      }
-    }
-
-    const maghribReminders = [15, 10, 5, 0];
-    for (const minutes of maghribReminders) {
-      const reminderTime = new Date(maghribTime.getTime() - minutes * 60 * 1000);
-      const timeDiff = reminderTime.getTime() - now.getTime();
-      const notificationKey = `maghrib-${minutes}-${dateKey}`;
-
-      if (timeDiff >= 0 && timeDiff < 60 * 1000 && !lastNotificationTimes.has(notificationKey)) {
-        await self.registration.showNotification(strings.maghribTitle(minutes), {
-          body: strings.maghribBody(minutes),
-          icon: '/icon-192.png',
-          badge: '/icon-192.png',
-          tag: notificationKey,
-          requireInteraction: false,
-        });
-        lastNotificationTimes.add(notificationKey);
+        if (timeDiff >= 0 && timeDiff < 60 * 1000 && !lastNotificationTimes.has(notificationKey)) {
+          const { title, body } = swNotificationCopy(locale, key, minutes);
+          await self.registration.showNotification(title, {
+            body,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: notificationKey,
+            requireInteraction: false,
+          });
+          lastNotificationTimes.add(notificationKey);
+        }
       }
     }
 

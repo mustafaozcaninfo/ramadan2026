@@ -21,6 +21,8 @@ export const pushSubscribeBodySchema = z.object({
     expirationTime: z.number().nullable().optional(),
   }),
   locale: z.enum(['tr', 'en', 'ar']).optional(),
+  city: z.string().min(1).max(100).optional(),
+  country: z.string().min(1).max(100).optional(),
   reminderIntervals: z
     .array(z.union([z.literal(15), z.literal(10), z.literal(5), z.literal(0)]))
     .max(4)

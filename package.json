@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
+    "deploy": "npx vercel@latest --prod",
     "generate-vapid": "node scripts/generate-vapid.js"
   },
   "dependencies": {

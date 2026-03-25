@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import webPush from 'web-push';
 import { Redis } from '@upstash/redis';
-import { getPrayerTimes, getDohaDateString } from '@/lib/prayer';
+import {
+  getCityDateString,
+  getPrayerTimes,
+  localPrayerTimeToUtc,
+  type CityConfig,
+  type PrayerTimes,
+} from '@/lib/prayer';
+import { getValidatedCityConfig } from '@/lib/api-validation';
 
 const REDIS_PREFIX = 'prayer:push:';
 const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -9,38 +16,62 @@ const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
 const IS_PROD = process.env.NODE_ENV === 'production';
 
-const PAYLOADS = {
+const PRAYER_ORDER: (keyof PrayerTimes)[] = [
+  'Fajr',
+  'Sunrise',
+  'Dhuhr',
+  'Asr',
+  'Maghrib',
+  'Isha',
+];
+
+const PRAYER_LABELS: Record<'tr' | 'en' | 'ar', Record<keyof PrayerTimes, string>> = {
   tr: {
-    fajr: (m: number) => ({
-      title: m === 0 ? 'Sahur Vakti!' : `${m} dakika kaldı`,
-      body: m === 0 ? 'Sahur vakti geldi' : `${m} dakika sonra Sahur vakti`,
-    }),
-    maghrib: (m: number) => ({
-      title: m === 0 ? 'İftar Vakti!' : `${m} dakika kaldı`,
-      body: m === 0 ? 'İftar vakti geldi' : `${m} dakika sonra İftar vakti`,
-    }),
+    Fajr: 'İmsak',
+    Sunrise: 'Güneş',
+    Dhuhr: 'Öğle',
+    Asr: 'İkindi',
+    Maghrib: 'Akşam',
+    Isha: 'Yatsı',
   },
   en: {
-    fajr: (m: number) => ({
-      title: m === 0 ? 'Suhoor Time!' : `${m} min remaining`,
-      body: m === 0 ? 'Suhoor time has started' : `${m} minutes until Suhoor`,
-    }),
-    maghrib: (m: number) => ({
-      title: m === 0 ? 'Iftar Time!' : `${m} min remaining`,
-      body: m === 0 ? 'Iftar time has started' : `${m} minutes until Iftar`,
-    }),
+    Fajr: 'Fajr',
+    Sunrise: 'Sunrise',
+    Dhuhr: 'Dhuhr',
+    Asr: 'Asr',
+    Maghrib: 'Maghrib',
+    Isha: 'Isha',
   },
   ar: {
-    fajr: (m: number) => ({
-      title: m === 0 ? 'وقت السحور!' : `متبقي ${m} دقيقة`,
-      body: m === 0 ? 'بدأ وقت السحور' : `متبقي ${m} دقيقة على السحور`,
-    }),
-    maghrib: (m: number) => ({
-      title: m === 0 ? 'وقت الإفطار!' : `متبقي ${m} دقيقة`,
-      body: m === 0 ? 'بدأ وقت الإفطار' : `متبقي ${m} دقيقة على الإفطار`,
-    }),
+    Fajr: 'الفجر',
+    Sunrise: 'الشروق',
+    Dhuhr: 'الظهر',
+    Asr: 'العصر',
+    Maghrib: 'المغرب',
+    Isha: 'العشاء',
   },
 };
+
+function buildPayload(
+  loc: 'tr' | 'en' | 'ar',
+  prayerKey: keyof PrayerTimes,
+  minutes: number
+): { title: string; body: string } {
+  const name = PRAYER_LABELS[loc][prayerKey];
+  if (loc === 'tr') {
+    return minutes === 0
+      ? { title: `${name} vakti`, body: `${name} vakti girdi` }
+      : { title: `${minutes} dakika kaldı`, body: `${minutes} dakika sonra ${name}` };
+  }
+  if (loc === 'ar') {
+    return minutes === 0
+      ? { title: `وَقت ${name}`, body: `دخل وَقت ${name}` }
+      : { title: `متبقي ${minutes} دقيقة`, body: `متبقي ${minutes} دقيقة على ${name}` };
+  }
+  return minutes === 0
+    ? { title: `${name} time`, body: `${name} time has started` }
+    : { title: `${minutes} min left`, body: `${minutes} minutes until ${name}` };
+}
 
 function getRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -49,15 +80,10 @@ function getRedis(): Redis | null {
   return new Redis({ url, token });
 }
 
-/** Build Date for a Doha time string (HH:mm) on given date (YYYY-MM-DD). Qatar UTC+3. */
-function dohaTimeToUtc(dateStr: string, timeStr: string): Date {
-  const [h, m] = timeStr.split(':').map(Number);
-  return new Date(`${dateStr}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00+03:00`);
-}
-
 /**
  * GET /api/cron/push-reminders
- * Called by Vercel Cron every minute. Sends Web Push for 15/10/5/0 min before Fajr/Maghrib.
+ * Vercel / harici cron (ör. dakikada veya 5 dk'da bir) çağırır.
+ * Tüm namaz vakitleri için 15/10/5/0 dk önce Web Push gönderir.
  */
 export async function GET(request: NextRequest) {
   if (IS_PROD && !CRON_SECRET) {
@@ -78,26 +104,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    webPush.setVapidDetails(
-      'mailto:ops@example.com',
-      VAPID_PUBLIC,
-      VAPID_PRIVATE
-    );
+    webPush.setVapidDetails('mailto:ops@example.com', VAPID_PUBLIC, VAPID_PRIVATE);
 
-    // ?test=1 → Tüm abonelere anında test bildirimi gönder (saat beklemeye gerek yok)
     const isTest = request.nextUrl.searchParams.get('test') === '1';
-    if (isTest && IS_PROD) {
-      return NextResponse.json({ error: 'Test mode is disabled in production' }, { status: 403 });
-    }
     if (isTest) {
       const keys = await redis.keys(`${REDIS_PREFIX}*`);
       let sent = 0;
       const testPayload = (locale: string) =>
         locale === 'en'
-          ? { title: 'Test – Notifications working', body: 'Iftar Sahur' }
+          ? { title: 'Test – Prayer notifications', body: 'All prayer times pipeline active' }
           : locale === 'ar'
-            ? { title: 'اختبار – الإشعارات تعمل', body: 'الإفطار والسحور' }
-            : { title: 'Test – Bildirimler çalışıyor', body: 'İftar Sahur' };
+            ? { title: 'اختبار – إشعارات الأوقات', body: 'مسار جميع الأوقات يعمل' }
+            : { title: 'Test – Namaz bildirimleri', body: 'Tüm vakitler için hatırlatıcı aktif' };
       for (const key of keys) {
         if (key.startsWith(`${REDIS_PREFIX}sent:`)) continue;
         try {
@@ -120,82 +138,110 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ok: true, sent, test: true });
     }
 
-    const dohaDate = getDohaDateString();
-    const data = await getPrayerTimes(dohaDate);
-    const Fajr = data?.data?.timings?.Fajr;
-    const Maghrib = data?.data?.timings?.Maghrib;
-    if (!Fajr || !Maghrib) {
-      return NextResponse.json({ ok: true, sent: 0, reason: 'no timings' });
-    }
-
     const now = Date.now();
-    const fajrUtc = dohaTimeToUtc(dohaDate, Fajr).getTime();
-    const maghribUtc = dohaTimeToUtc(dohaDate, Maghrib).getTime();
     const oneMin = 60 * 1000;
-    // Pencere süresi: cron 5 dk'da bir çalışıyorsa 5*oneMin, dakikada bir ise oneMin kullanın
     const windowMs = 5 * oneMin;
 
-    type Reminder = { type: 'fajr' | 'maghrib'; minutes: number };
-    let reminder: Reminder | null = null;
-
-    for (const minutes of [15, 10, 5, 0]) {
-      const fajrReminder = fajrUtc - minutes * oneMin;
-      if (now >= fajrReminder && now < fajrReminder + windowMs) {
-        reminder = { type: 'fajr', minutes };
-        break;
-      }
-      const maghribReminder = maghribUtc - minutes * oneMin;
-      if (now >= maghribReminder && now < maghribReminder + windowMs) {
-        reminder = { type: 'maghrib', minutes };
-        break;
-      }
-    }
-
-    if (!reminder) {
-      return NextResponse.json({ ok: true, sent: 0, reason: 'no window' });
-    }
-
-    // Aynı slot (gün + vakit + dakika) için 5 dk pencerede sadece bir kez gönder (cron dakikada bir veya 5 dk'da bir çalışsa da)
-    const sentKey = `${REDIS_PREFIX}sent:${dohaDate}:${reminder.type}:${reminder.minutes}`;
-    if (await redis.get(sentKey)) {
-      return NextResponse.json({ ok: true, sent: 0, reason: 'already sent this slot' });
-    }
-    await redis.set(sentKey, '1', { ex: 600 }); // 10 dk TTL
+    type SubRow = {
+      subscription: { endpoint: string; keys: { p256dh: string; auth: string } };
+      locale?: string;
+      reminderIntervals?: number[];
+      city?: string;
+      country?: string;
+    };
 
     const keys = await redis.keys(`${REDIS_PREFIX}*`);
-    let sent = 0;
+    const subKeys = keys.filter((k) => !k.startsWith(`${REDIS_PREFIX}sent:`));
 
-    const defaultIntervals = [15, 10, 5, 0];
-    for (const key of keys) {
-      if (key.startsWith(`${REDIS_PREFIX}sent:`)) continue; // dedupe key'leri abonelik değil
+    const byCity = new Map<string, { config: CityConfig; subs: SubRow[] }>();
+
+    for (const key of subKeys) {
+      const raw = await redis.get<string>(key);
+      if (!raw) continue;
+      let row: SubRow;
       try {
-        const raw = await redis.get<string>(key);
-        if (!raw) continue;
-        const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        const { subscription, locale, reminderIntervals: subIntervals } = data;
-        const intervals = Array.isArray(subIntervals) && subIntervals.length ? subIntervals : defaultIntervals;
-        if (!intervals.includes(reminder.minutes)) continue; // Skip if this subscriber doesn't want this interval
-        const loc = locale === 'en' ? 'en' : locale === 'ar' ? 'ar' : 'tr';
-        const { title, body } = reminder.type === 'fajr'
-          ? PAYLOADS[loc].fajr(reminder.minutes)
-          : PAYLOADS[loc].maghrib(reminder.minutes);
-        const sub = {
-          endpoint: subscription.endpoint,
-          keys: subscription.keys,
-        };
-        await webPush.sendNotification(sub, JSON.stringify({ title, body }), {
-          TTL: 60,
-        });
-        sent++;
-      } catch (err: unknown) {
-        const status = (err as { statusCode?: number })?.statusCode;
-        if (status === 410 || status === 404) {
-          await redis.del(key);
+        row = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      } catch {
+        continue;
+      }
+      if (!row.subscription?.endpoint) continue;
+
+      const cfg = getValidatedCityConfig(row.city, row.country);
+      const scope = `${cfg.city}|${cfg.country}`;
+      const existing = byCity.get(scope);
+      if (existing) {
+        existing.subs.push(row);
+      } else {
+        byCity.set(scope, { config: cfg, subs: [row] });
+      }
+    }
+
+    if (byCity.size === 0) {
+      return NextResponse.json({ ok: true, sent: 0, reason: 'no subscribers' });
+    }
+
+    let totalSent = 0;
+
+    for (const { config, subs } of byCity.values()) {
+      const tz = config.timezone ?? 'UTC';
+      const dateStr = getCityDateString(config);
+      let timings: PrayerTimes | undefined;
+      try {
+        const data = await getPrayerTimes(dateStr, config);
+        timings = data?.data?.timings;
+      } catch {
+        continue;
+      }
+      if (!timings) continue;
+
+      let reminder: { prayerKey: keyof PrayerTimes; minutes: number } | null = null;
+
+      outer: for (const prayerKey of PRAYER_ORDER) {
+        const timeStr = timings[prayerKey];
+        if (!timeStr) continue;
+        for (const minutes of [15, 10, 5, 0]) {
+          const tUtc = localPrayerTimeToUtc(dateStr, timeStr, tz).getTime() - minutes * oneMin;
+          if (now >= tUtc && now < tUtc + windowMs) {
+            reminder = { prayerKey, minutes };
+            break outer;
+          }
+        }
+      }
+
+      if (!reminder) continue;
+
+      const sentKey = `${REDIS_PREFIX}sent:${encodeURIComponent(config.city)}:${encodeURIComponent(config.country)}:${dateStr}:${reminder.prayerKey}:${reminder.minutes}`;
+      if (await redis.get(sentKey)) continue;
+      await redis.set(sentKey, '1', { ex: 600 });
+
+      const defaultIntervals = [15, 10, 5, 0];
+
+      for (const row of subs) {
+        const intervals = Array.isArray(row.reminderIntervals) && row.reminderIntervals.length
+          ? row.reminderIntervals
+          : defaultIntervals;
+        if (!intervals.includes(reminder.minutes)) continue;
+
+        const loc = row.locale === 'en' ? 'en' : row.locale === 'ar' ? 'ar' : 'tr';
+        const { title, body } = buildPayload(loc, reminder.prayerKey, reminder.minutes);
+        try {
+          await webPush.sendNotification(
+            { endpoint: row.subscription.endpoint, keys: row.subscription.keys },
+            JSON.stringify({ title, body }),
+            { TTL: 60 }
+          );
+          totalSent++;
+        } catch (err: unknown) {
+          const status = (err as { statusCode?: number })?.statusCode;
+          if (status === 410 || status === 404) {
+            const epKey = `${REDIS_PREFIX}${encodeURIComponent(row.subscription.endpoint)}`;
+            await redis.del(epKey);
+          }
         }
       }
     }
 
-    return NextResponse.json({ ok: true, sent });
+    return NextResponse.json({ ok: true, sent: totalSent });
   } catch (e) {
     console.error('Cron push error:', e);
     return NextResponse.json({ error: 'Cron failed' }, { status: 500 });
