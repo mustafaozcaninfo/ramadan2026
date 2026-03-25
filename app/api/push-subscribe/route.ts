@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 import { getValidatedCityConfig, pushSubscribeBodySchema } from '@/lib/api-validation';
 import { checkApiRateLimit } from '@/lib/rate-limit';
-
-const REDIS_PREFIX = 'prayer:push:';
+import { LEGACY_PUSH_SUBSCRIPTION_PREFIX, PUSH_SUBSCRIPTION_PREFIX } from '@/lib/pushRedis';
 
 function getRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
       : [15, 10, 5, 0];
     const cityCfg = getValidatedCityConfig(city, country);
 
-    const key = `${REDIS_PREFIX}${encodeURIComponent(subscription.endpoint)}`;
+    const key = `${PUSH_SUBSCRIPTION_PREFIX}${encodeURIComponent(subscription.endpoint)}`;
     await redis.set(
       key,
       JSON.stringify({
@@ -67,6 +66,11 @@ export async function POST(request: NextRequest) {
       }),
       { ex: 60 * 60 * 24 * 180 }
     ); // 180 days TTL
+
+    const legacyKey = `${LEGACY_PUSH_SUBSCRIPTION_PREFIX}${encodeURIComponent(subscription.endpoint)}`;
+    if (legacyKey !== key) {
+      await redis.del(legacyKey);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e) {

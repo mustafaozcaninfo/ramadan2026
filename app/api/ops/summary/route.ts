@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 import { SUPPORTED_CITIES, getDohaDateString, getPrayerTimes, getTodayPrayerTimes } from '@/lib/prayer';
 import { OPS_AUTH_COOKIE, isOpsAuthenticatedFromCookie } from '@/lib/opsAuth';
-
-const REDIS_PREFIX = 'prayer:push:';
+import {
+  fetchAllPushRedisKeys,
+  filterPushSubscriptionKeys,
+  isPushSentKey,
+  stripPushSentKeyPrefix,
+} from '@/lib/pushRedis';
 
 type OpsSubscription = {
   subscription?: {
@@ -128,12 +132,12 @@ export async function GET(request: NextRequest) {
 
   if (redis) {
     try {
-      const keys = await redis.keys(`${REDIS_PREFIX}*`);
-      const sentKeys = keys.filter((k) => k.startsWith(`${REDIS_PREFIX}sent:`));
-      const subKeys = keys.filter((k) => !k.startsWith(`${REDIS_PREFIX}sent:`));
+      const keys = await fetchAllPushRedisKeys(redis);
+      const sentKeys = keys.filter(isPushSentKey);
+      const subKeys = filterPushSubscriptionKeys(keys);
       sentSlotCount = sentKeys.length;
       recentSentSlots = sentKeys
-        .map((k) => k.replace(`${REDIS_PREFIX}sent:`, ''))
+        .map(stripPushSentKeyPrefix)
         .sort()
         .reverse()
         .slice(0, 12);

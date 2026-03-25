@@ -136,7 +136,7 @@ Kullanıcıya yönelik bildirim özellikleri:
 - **Arka plan Web Push bildirimleri**:
   - PWA + destekleyen tarayıcılar için:
     - `subscribeToPush` ile `PushSubscription` alınıp `/api/push-subscribe` endpoint’ine gönderilir.
-    - Sunucu tarafında Upstash Redis’e (`ramadan:push:*`) kayıt edilir.
+    - Sunucu tarafında Upstash Redis’e (`prayer:push:*`) kayıt edilir.
     - Vercel Cron işleyicisi `/api/cron/push-reminders` route’unu periyodik olarak tetikler.
     - Belirli pencere (15/10/5/0 dk) içinde doğru vakit bulunduğunda Web Push mesajları gönderilir.
 
@@ -264,7 +264,7 @@ Kullanıcıya yönelik bildirim özellikleri:
 
 - `/api/push-subscribe`:
   - Body: `{ subscription: PushSubscriptionJSON, locale?: 'tr' | 'en' }`.
-  - Upstash Redis’e `ramadan:push:<endpoint>` key’i ile (180 gün TTL) kayıt yapar.
+  - Upstash Redis’e `prayer:push:<endpoint>` key’i ile (180 gün TTL) kayıt yapar.
 - `/api/cron/push-reminders`:
   - Vercel Cron ya da dış cron servisinden çağrılır.
   - `CRON_SECRET` header kontrolü (opsiyonel) ile basit yetkilendirme.
@@ -272,7 +272,7 @@ Kullanıcıya yönelik bildirim özellikleri:
   - `isTest` parametresi (`?test=1`) ile tüm abonelere anında test bildirimi gönderebilme.
   - Günün Fajr ve Maghrib saatlerini `getPrayerTimes(dohaDate)` ile alır.
   - Şu anki UTC zamanını Fajr/Maghrib’e göre 15/10/5/0 dk penceresi içinde kontrol eder (`dohaTimeToUtc`).
-  - Aynı slot (gün + vakit + dakika) için `ramadan:push:sent:<date>:<type>:<minutes>` key’i ile deduplikasyon (10 dk TTL).
+  - Aynı slot için `prayer:push:sent:<şehir>:<ülke>:<tarih>:<vakit>:<dakika>` key’i ile deduplikasyon (10 dk TTL). Eski `ramadan:push:*` anahtarları okunur; yeni yazımlar `prayer:push:` ile yapılır.
   - Tüm aboneleri gezerek ilgili locale’de `PAYLOADS` içeriği ile push gönderir.
   - 410/404 dönen subscription’ları Redis’ten temizler.
 

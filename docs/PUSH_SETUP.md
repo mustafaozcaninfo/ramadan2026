@@ -41,7 +41,7 @@ Bu **3 satırın tamamını** kopyala (ileride Vercel’e yapıştıracaksın). 
 
 1. Tarayıcıda **https://console.upstash.com** aç.
 2. Giriş yap veya ücretsiz hesap oluştur.
-3. **Create Database** → İsim ver (örn. `ramadan-push`) → **Region** seç (örn. EU) → **Create**.
+3. **Create Database** → İsim ver (örn. `prayer-push`) → **Region** seç (örn. EU) → **Create**.
 4. Oluşan veritabanına tıkla. **REST API** bölümünde:
    - **UPSTASH_REDIS_REST_URL** (örn. `https://xxx.upstash.io`)
    - **UPSTASH_REDIS_REST_TOKEN** (uzun token)

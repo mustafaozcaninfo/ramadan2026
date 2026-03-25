@@ -250,7 +250,7 @@ Create a mobile application for Ramadan 2026 prayer times in Doha, Qatar. This i
 **POST `/api/push-subscribe`**
 - Receives: `{ subscription: PushSubscriptionJSON, locale?: 'tr' | 'en' }`
 - Stores subscription in Upstash Redis
-- Key format: `ramadan:push:{encoded-endpoint}`
+- Key format: `prayer:push:{encoded-endpoint}` (legacy `ramadan:push:` still read until migrated)
 - TTL: 180 days
 - Returns: `{ ok: true }`
 
@@ -270,7 +270,7 @@ Create a mobile application for Ramadan 2026 prayer times in Doha, Qatar. This i
    - 5 min before Fajr/Maghrib
    - At Fajr/Maghrib time
 4. Checks if current time is within any reminder window (5-minute window for cron flexibility)
-5. Deduplication: Uses Redis key `ramadan:push:sent:{date}:{type}:{minutes}` with 10-minute TTL
+5. Deduplication: Uses Redis key `prayer:push:sent:{city}:{country}:{date}:{prayerKey}:{minutes}` with 10-minute TTL
 6. Fetches all subscriptions from Redis
 7. Sends push notification to each subscription with localized message
 8. Removes invalid subscriptions (410/404 status)

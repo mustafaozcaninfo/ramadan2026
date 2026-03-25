@@ -9,8 +9,12 @@ import {
   type PrayerTimes,
 } from '@/lib/prayer';
 import { getValidatedCityConfig } from '@/lib/api-validation';
+import {
+  PUSH_SUBSCRIPTION_PREFIX,
+  fetchAllPushRedisKeys,
+  filterPushSubscriptionKeys,
+} from '@/lib/pushRedis';
 
-const REDIS_PREFIX = 'prayer:push:';
 const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -108,7 +112,7 @@ export async function GET(request: NextRequest) {
 
     const isTest = request.nextUrl.searchParams.get('test') === '1';
     if (isTest) {
-      const keys = await redis.keys(`${REDIS_PREFIX}*`);
+      const keys = filterPushSubscriptionKeys(await fetchAllPushRedisKeys(redis));
       let sent = 0;
       const testPayload = (locale: string) =>
         locale === 'en'
@@ -117,7 +121,6 @@ export async function GET(request: NextRequest) {
             ? { title: 'اختبار – إشعارات الأوقات', body: 'مسار جميع الأوقات يعمل' }
             : { title: 'Test – Namaz bildirimleri', body: 'Tüm vakitler için hatırlatıcı aktif' };
       for (const key of keys) {
-        if (key.startsWith(`${REDIS_PREFIX}sent:`)) continue;
         try {
           const raw = await redis.get<string>(key);
           if (!raw) continue;
@@ -143,6 +146,7 @@ export async function GET(request: NextRequest) {
     const windowMs = 5 * oneMin;
 
     type SubRow = {
+      redisKey: string;
       subscription: { endpoint: string; keys: { p256dh: string; auth: string } };
       locale?: string;
       reminderIntervals?: number[];
@@ -150,15 +154,14 @@ export async function GET(request: NextRequest) {
       country?: string;
     };
 
-    const keys = await redis.keys(`${REDIS_PREFIX}*`);
-    const subKeys = keys.filter((k) => !k.startsWith(`${REDIS_PREFIX}sent:`));
+    const subKeys = filterPushSubscriptionKeys(await fetchAllPushRedisKeys(redis));
 
     const byCity = new Map<string, { config: CityConfig; subs: SubRow[] }>();
 
     for (const key of subKeys) {
       const raw = await redis.get<string>(key);
       if (!raw) continue;
-      let row: SubRow;
+      let row: Omit<SubRow, 'redisKey'>;
       try {
         row = typeof raw === 'string' ? JSON.parse(raw) : raw;
       } catch {
@@ -168,11 +171,12 @@ export async function GET(request: NextRequest) {
 
       const cfg = getValidatedCityConfig(row.city, row.country);
       const scope = `${cfg.city}|${cfg.country}`;
+      const full: SubRow = { redisKey: key, ...row };
       const existing = byCity.get(scope);
       if (existing) {
-        existing.subs.push(row);
+        existing.subs.push(full);
       } else {
-        byCity.set(scope, { config: cfg, subs: [row] });
+        byCity.set(scope, { config: cfg, subs: [full] });
       }
     }
 
@@ -210,7 +214,7 @@ export async function GET(request: NextRequest) {
 
       if (!reminder) continue;
 
-      const sentKey = `${REDIS_PREFIX}sent:${encodeURIComponent(config.city)}:${encodeURIComponent(config.country)}:${dateStr}:${reminder.prayerKey}:${reminder.minutes}`;
+      const sentKey = `${PUSH_SUBSCRIPTION_PREFIX}sent:${encodeURIComponent(config.city)}:${encodeURIComponent(config.country)}:${dateStr}:${reminder.prayerKey}:${reminder.minutes}`;
       if (await redis.get(sentKey)) continue;
       await redis.set(sentKey, '1', { ex: 600 });
 
@@ -234,8 +238,7 @@ export async function GET(request: NextRequest) {
         } catch (err: unknown) {
           const status = (err as { statusCode?: number })?.statusCode;
           if (status === 410 || status === 404) {
-            const epKey = `${REDIS_PREFIX}${encodeURIComponent(row.subscription.endpoint)}`;
-            await redis.del(epKey);
+            await redis.del(row.redisKey);
           }
         }
       }
