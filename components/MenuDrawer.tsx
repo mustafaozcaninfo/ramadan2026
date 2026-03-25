@@ -108,7 +108,7 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ramadan-green focus-visible:ring-offset-2"
+                  className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2"
                   aria-label={tMenu('close')}
                 >
                   <X className="w-5 h-5 text-slate-300" />
@@ -125,11 +125,11 @@ export function MenuDrawer({ isOpen, onClose, locale }: MenuDrawerProps) {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 hover:border-ramadan-green/50 transition-all cursor-pointer group"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 hover:border-brand-green/50 transition-all cursor-pointer group"
                     onClick={item.onClick}
                   >
-                    <div className="p-2 bg-ramadan-green/10 rounded-lg group-hover:bg-ramadan-green/20 transition-colors">
-                      <Icon className="w-5 h-5 text-ramadan-green" />
+                    <div className="p-2 bg-brand-green/10 rounded-lg group-hover:bg-brand-green/20 transition-colors">
+                      <Icon className="w-5 h-5 text-brand-green" />
                     </div>
                     <span className="flex-1 text-slate-200 font-medium">{item.label}</span>
                   </motion.div>

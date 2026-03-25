@@ -49,7 +49,7 @@ async function areNotificationsEnabled(): Promise<boolean> {
   if (notificationsEnabledCache !== null) return notificationsEnabledCache;
   try {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('ramadan-app', 1);
+      const request = indexedDB.open('prayer-app', 1);
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
       request.onupgradeneeded = (event) => {
@@ -88,7 +88,7 @@ async function getNotificationLocale(): Promise<'tr' | 'en' | 'ar'> {
   if (notificationLocaleCache !== null) return notificationLocaleCache;
   try {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('ramadan-app', 1);
+      const request = indexedDB.open('prayer-app', 1);
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
       request.onupgradeneeded = (event) => {
@@ -126,7 +126,7 @@ async function getTodayPrayerTimes(): Promise<{ Fajr: string; Maghrib: string } 
   const dohaDate = getDohaDateString();
   const url = `${self.location.origin}/api/timings?date=${dohaDate}`;
   try {
-    const cache = await caches.open('ramadan-timings-cache');
+    const cache = await caches.open('prayer-timings-cache');
     const cached = await cache.match(url);
     if (cached) {
       const data = await cached.json();
@@ -152,22 +152,22 @@ async function getTodayPrayerTimes(): Promise<{ Fajr: string; Maghrib: string } 
 
 const NOTIFICATION_STRINGS = {
   tr: {
-    fajrTitle: (m: number) => (m === 0 ? 'Sahur Vakti!' : `${m} dakika kaldı`),
-    fajrBody: (m: number) => (m === 0 ? 'Sahur vakti geldi' : `${m} dakika sonra Sahur vakti`),
-    maghribTitle: (m: number) => (m === 0 ? 'İftar Vakti!' : `${m} dakika kaldı`),
-    maghribBody: (m: number) => (m === 0 ? 'İftar vakti geldi' : `${m} dakika sonra İftar vakti`),
+    fajrTitle: (m: number) => (m === 0 ? 'İmsak vakti!' : `${m} dakika kaldı`),
+    fajrBody: (m: number) => (m === 0 ? 'İmsak vakti geldi' : `${m} dakika sonra İmsak`),
+    maghribTitle: (m: number) => (m === 0 ? 'Akşam vakti!' : `${m} dakika kaldı`),
+    maghribBody: (m: number) => (m === 0 ? 'Akşam vakti geldi' : `${m} dakika sonra Akşam`),
   },
   en: {
-    fajrTitle: (m: number) => (m === 0 ? 'Suhoor Time!' : `${m} min remaining`),
-    fajrBody: (m: number) => (m === 0 ? 'Suhoor time has started' : `${m} minutes until Suhoor`),
-    maghribTitle: (m: number) => (m === 0 ? 'Iftar Time!' : `${m} min remaining`),
-    maghribBody: (m: number) => (m === 0 ? 'Iftar time has started' : `${m} minutes until Iftar`),
+    fajrTitle: (m: number) => (m === 0 ? 'Fajr time!' : `${m} min remaining`),
+    fajrBody: (m: number) => (m === 0 ? 'Fajr time has started' : `${m} minutes until Fajr`),
+    maghribTitle: (m: number) => (m === 0 ? 'Maghrib time!' : `${m} min remaining`),
+    maghribBody: (m: number) => (m === 0 ? 'Maghrib time has started' : `${m} minutes until Maghrib`),
   },
   ar: {
-    fajrTitle: (m: number) => (m === 0 ? 'وقت السحور!' : `متبقي ${m} دقيقة`),
-    fajrBody: (m: number) => (m === 0 ? 'بدأ وقت السحور' : `متبقي ${m} دقيقة على السحور`),
-    maghribTitle: (m: number) => (m === 0 ? 'وقت الإفطار!' : `متبقي ${m} دقيقة`),
-    maghribBody: (m: number) => (m === 0 ? 'بدأ وقت الإفطار' : `متبقي ${m} دقيقة على الإفطار`),
+    fajrTitle: (m: number) => (m === 0 ? 'وقت الفجر!' : `متبقي ${m} دقيقة`),
+    fajrBody: (m: number) => (m === 0 ? 'بدأ وقت الفجر' : `متبقي ${m} دقيقة على الفجر`),
+    maghribTitle: (m: number) => (m === 0 ? 'وقت المغرب!' : `متبقي ${m} دقيقة`),
+    maghribBody: (m: number) => (m === 0 ? 'بدأ وقت المغرب' : `متبقي ${m} دقيقة على المغرب`),
   },
 };
 
@@ -364,9 +364,9 @@ self.addEventListener('push', (event) => {
   try {
     const data = event.data.json();
     const fallbackByLocale = {
-      tr: { title: 'İftar Sahur', body: 'Hatırlatıcı' },
-      en: { title: 'Iftar Sahur', body: 'Reminder' },
-      ar: { title: 'الإفطار والسحور', body: 'تذكير' },
+      tr: { title: 'Namaz Vakitleri', body: 'Hatırlatıcı' },
+      en: { title: 'Prayer Times', body: 'Reminder' },
+      ar: { title: 'مواقيت الصلاة', body: 'تذكير' },
     } as const;
     const locale = notificationLocaleCache === 'en' ? 'en' : notificationLocaleCache === 'ar' ? 'ar' : 'tr';
     const title = data?.title ?? fallbackByLocale[locale].title;
@@ -376,22 +376,22 @@ self.addEventListener('push', (event) => {
         body,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
-        tag: 'ramadan-push',
+        tag: 'prayer-push',
         requireInteraction: false,
       })
     );
   } catch {
     const fallbackByLocale = {
-      tr: { title: 'İftar Sahur', body: 'Hatırlatıcı' },
-      en: { title: 'Iftar Sahur', body: 'Reminder' },
-      ar: { title: 'الإفطار والسحور', body: 'تذكير' },
+      tr: { title: 'Namaz Vakitleri', body: 'Hatırlatıcı' },
+      en: { title: 'Prayer Times', body: 'Reminder' },
+      ar: { title: 'مواقيت الصلاة', body: 'تذكير' },
     } as const;
     const locale = notificationLocaleCache === 'en' ? 'en' : notificationLocaleCache === 'ar' ? 'ar' : 'tr';
     event.waitUntil(
       self.registration.showNotification(fallbackByLocale[locale].title, {
         body: fallbackByLocale[locale].body,
         icon: '/icon-192.png',
-        tag: 'ramadan-push',
+        tag: 'prayer-push',
       })
     );
   }

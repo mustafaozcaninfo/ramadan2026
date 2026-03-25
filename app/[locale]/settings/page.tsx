@@ -15,9 +15,9 @@ export default async function SettingsPage({
     <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-brand-green rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-ramadan-gold rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-gold rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 pb-4 sm:pb-6 relative z-10 safe-area-inset-top">

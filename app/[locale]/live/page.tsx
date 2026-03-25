@@ -41,9 +41,9 @@ export default function LivePage() {
     <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-brand-green rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-ramadan-gold rounded-full blur-3xl opacity-60" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-gold rounded-full blur-3xl opacity-60" />
       </div>
 
       <div className="container mx-auto px-4 py-6 relative z-10 safe-area-inset-top">
@@ -55,7 +55,7 @@ export default function LivePage() {
         >
           <div className="flex flex-col items-start">
             <h1 className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-amber-50 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
-              <Tv className="w-6 h-6 text-ramadan-gold shrink-0" />
+              <Tv className="w-6 h-6 text-brand-gold shrink-0" />
               {t('title')}
             </h1>
             <p className="mt-1 text-xs text-slate-400 hidden sm:block">{t('subtitle')}</p>
@@ -72,7 +72,7 @@ export default function LivePage() {
             className="rounded-2xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-xl p-4 shadow-xl shadow-black/20"
           >
             <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300">
-              <Radio className="w-4 h-4 text-ramadan-gold" />
+              <Radio className="w-4 h-4 text-brand-gold" />
               {t('selectChannel')}
             </p>
             <div className="flex gap-3">
@@ -87,7 +87,7 @@ export default function LivePage() {
                     onClick={() => setSelectedChannel(ch)}
                     className={`flex-1 rounded-xl py-4 px-4 font-medium transition-all duration-300 ${
                       isActive
-                        ? 'bg-gradient-to-br from-ramadan-green to-emerald-700 text-white border-2 border-ramadan-green/50 shadow-lg shadow-ramadan-green/25 scale-[1.02]'
+                        ? 'bg-gradient-to-br from-brand-green to-emerald-700 text-white border-2 border-brand-green/50 shadow-lg shadow-brand-green/25 scale-[1.02]'
                         : 'bg-slate-700/40 text-slate-400 border-2 border-transparent hover:border-slate-600 hover:text-slate-300 hover:bg-slate-700/60'
                     }`}
                   >
@@ -154,7 +154,7 @@ export default function LivePage() {
                 href="https://www.qtv.qa/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-ramadan-green hover:text-ramadan-gold transition-colors font-medium"
+                className="inline-flex items-center gap-1 text-brand-green hover:text-brand-gold transition-colors font-medium"
               >
                 qtv.qa
                 <ExternalLink className="w-3 h-3" />

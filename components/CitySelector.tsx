@@ -3,7 +3,11 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { SUPPORTED_CITIES } from '@/lib/prayer';
-import { RAMADAN_CITY_COOKIE, getCityConfigFromCookie } from '@/lib/cityCookie';
+import {
+  PRAYER_CITY_COOKIE,
+  LEGACY_PRAYER_CITY_COOKIE,
+  getCityConfigFromCookie,
+} from '@/lib/cityCookie';
 import { MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -12,7 +16,7 @@ const COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 function setCityCookie(city: string, country: string) {
   if (typeof document === 'undefined') return;
   const value = `${encodeURIComponent(city)}:${encodeURIComponent(country)}`;
-  document.cookie = `${RAMADAN_CITY_COOKIE}=${value};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax`;
+  document.cookie = `${PRAYER_CITY_COOKIE}=${value};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax`;
 }
 
 function getCookieValue(name: string): string | undefined {
@@ -27,7 +31,7 @@ export function CitySelector() {
   const setCity = useAppStore((s) => s.setCity);
 
   useEffect(() => {
-    const val = getCookieValue(RAMADAN_CITY_COOKIE);
+    const val = getCookieValue(PRAYER_CITY_COOKIE) ?? getCookieValue(LEGACY_PRAYER_CITY_COOKIE);
     if (val) {
       const config = getCityConfigFromCookie(val);
       if (config.city !== city) setCity(config.city);
@@ -49,14 +53,14 @@ export function CitySelector() {
   return (
     <div className="space-y-2">
       <label htmlFor="city-select" className="text-sm font-medium text-slate-300 flex items-center gap-2">
-        <MapPin className="w-4 h-4 text-ramadan-green" aria-hidden />
+        <MapPin className="w-4 h-4 text-brand-green" aria-hidden />
         {t('cityLabel')}
       </label>
       <select
         id="city-select"
         value={`${currentConfig.city}:${currentConfig.country}`}
         onChange={handleChange}
-        className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-ramadan-green min-h-[44px]"
+        className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-green min-h-[44px]"
         aria-label={t('selectCity')}
       >
         {SUPPORTED_CITIES.map((c) => (

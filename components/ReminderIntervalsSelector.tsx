@@ -25,7 +25,7 @@ export function ReminderIntervalsSelector() {
             className={cn(
               'inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors',
               checked
-                ? 'border-ramadan-green/60 bg-ramadan-green/15 text-slate-100'
+                ? 'border-brand-green/60 bg-brand-green/15 text-slate-100'
                 : 'border-slate-500/50 bg-slate-800/50 text-slate-400 hover:border-slate-400'
             )}
           >
@@ -33,7 +33,7 @@ export function ReminderIntervalsSelector() {
               type="checkbox"
               checked={checked}
               onChange={() => toggleReminderInterval(minutes)}
-              className="h-4 w-4 rounded border border-slate-500 bg-slate-800 text-ramadan-green focus:ring-ramadan-green/50"
+              className="h-4 w-4 rounded border border-slate-500 bg-slate-800 text-brand-green focus:ring-brand-green/50"
               aria-label={label}
             />
             {label}

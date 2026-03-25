@@ -3,7 +3,7 @@ import { Redis } from '@upstash/redis';
 import { SUPPORTED_CITIES, getDohaDateString, getPrayerTimes, getTodayPrayerTimes } from '@/lib/prayer';
 import { OPS_AUTH_COOKIE, isOpsAuthenticatedFromCookie } from '@/lib/opsAuth';
 
-const REDIS_PREFIX = 'ramadan:push:';
+const REDIS_PREFIX = 'prayer:push:';
 
 type OpsSubscription = {
   subscription?: {

@@ -539,7 +539,7 @@ export default function TestPage() {
     <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-brand-green rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl"></div>
       </div>
 
@@ -564,7 +564,7 @@ export default function TestPage() {
           <Card className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-slate-700/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Activity className="w-5 h-5 text-ramadan-green" />
+                <Activity className="w-5 h-5 text-brand-green" />
                 {copy.overviewTitle}
               </CardTitle>
               <p className="text-sm text-slate-400">{copy.overviewSubtitle}</p>
@@ -645,7 +645,7 @@ export default function TestPage() {
               </CardHeader>
               <CardContent>
                 {notificationPermission?.granted ? (
-                  <Badge className="bg-ramadan-green text-white">
+                  <Badge className="bg-brand-green text-white">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     {copy.permissionAllowed}
                   </Badge>
@@ -673,7 +673,7 @@ export default function TestPage() {
               </CardHeader>
               <CardContent>
                 {serviceWorkerStatus === 'registered' ? (
-                  <Badge className="bg-ramadan-green text-white">
+                  <Badge className="bg-brand-green text-white">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
                     {copy.swActive}
                   </Badge>
@@ -700,7 +700,7 @@ export default function TestPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-slate-300">{copy.notificationsLabel}</span>
-                <Badge className={notificationsEnabledUI ? 'bg-ramadan-green' : 'bg-slate-600'}>
+                <Badge className={notificationsEnabledUI ? 'bg-brand-green' : 'bg-slate-600'}>
                   {notificationsEnabledUI ? copy.on : copy.off}
                 </Badge>
               </div>
@@ -744,7 +744,7 @@ export default function TestPage() {
               <Button
                 onClick={testNotificationNow}
                 variant="default"
-                className="w-full bg-ramadan-gold hover:bg-ramadan-gold/90 text-slate-900"
+                className="w-full bg-brand-gold hover:bg-brand-gold/90 text-slate-900"
                 disabled={isLoading || !notificationPermission?.granted}
               >
                 <Bell className="w-4 h-4 mr-2" />

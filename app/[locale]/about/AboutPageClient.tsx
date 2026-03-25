@@ -36,7 +36,7 @@ export function AboutPageClient({ locale, selectedCityLabel, methodLabel }: Abou
     {
       icon: Calendar,
       title: t('featureCountdown'),
-      color: 'ramadan-gold',
+      color: 'brand-gold',
     },
     {
       icon: Calendar,
@@ -75,13 +75,13 @@ export function AboutPageClient({ locale, selectedCityLabel, methodLabel }: Abou
       icon: MapPin,
       label: t('location'),
       value: selectedCityLabel,
-      iconClass: 'text-ramadan-green bg-ramadan-green/20',
+      iconClass: 'text-brand-green bg-brand-green/20',
     },
     {
       icon: Calculator,
       label: t('method'),
       value: methodLabel,
-      iconClass: 'text-ramadan-gold bg-ramadan-gold/20',
+      iconClass: 'text-brand-gold bg-brand-gold/20',
     },
     {
       icon: Database,
@@ -106,7 +106,7 @@ export function AboutPageClient({ locale, selectedCityLabel, methodLabel }: Abou
         transition={{ delay: 0.1 }}
       >
         <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-ramadan-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
 
           <CardHeader className="relative z-10 p-4 sm:p-5 pb-3">
             <CardTitle className="text-lg sm:text-xl font-bold text-amber-100 drop-shadow-[0_1px_6px_rgba(0,0,0,0.65)]">
@@ -119,8 +119,8 @@ export function AboutPageClient({ locale, selectedCityLabel, methodLabel }: Abou
                 const Icon = feature.icon;
                 const colorClasses = {
                   blue: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-                  'ramadan-gold': 'text-ramadan-gold bg-ramadan-gold/10 border-ramadan-gold/30',
-                  green: 'text-ramadan-green bg-ramadan-green/10 border-ramadan-green/30',
+                  'brand-gold': 'text-brand-gold bg-brand-gold/10 border-brand-gold/30',
+                  green: 'text-brand-green bg-brand-green/10 border-brand-green/30',
                   amber: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
                   purple: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
                   emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
@@ -153,7 +153,7 @@ export function AboutPageClient({ locale, selectedCityLabel, methodLabel }: Abou
         transition={{ delay: 0.3 }}
       >
         <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-ramadan-gold/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
 
           <CardHeader className="relative z-10 p-4 sm:p-5 pb-3">
             <CardTitle className="text-lg sm:text-xl font-bold text-slate-100">
@@ -194,10 +194,10 @@ export function AboutPageClient({ locale, selectedCityLabel, methodLabel }: Abou
         transition={{ delay: 0.4 }}
       >
         <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-ramadan-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
           <CardHeader className="relative z-10 p-4 sm:p-5 pb-3">
             <CardTitle className="text-lg sm:text-xl font-bold text-slate-100 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-ramadan-green" aria-hidden />
+              <Shield className="w-5 h-5 text-brand-green" aria-hidden />
               {t('privacyTitle')}
             </CardTitle>
           </CardHeader>

@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from 'crypto';
 
-export const OPS_AUTH_COOKIE = 'ramadan-ops-auth';
-const OPS_AUTH_SALT = 'ramadan-ops-v1';
+export const OPS_AUTH_COOKIE = 'prayer-ops-auth';
+const OPS_AUTH_SALT = 'prayer-ops-v1';
 
 function getOpsPassword() {
   return process.env.OPS_DASHBOARD_PASSWORD || null;

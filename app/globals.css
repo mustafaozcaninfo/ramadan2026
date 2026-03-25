@@ -7,7 +7,7 @@
   --card-foreground: 210 40% 98%;
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
-  --primary: 142 76% 36%; /* Ramazan green */
+  --primary: 142 76% 36%; /* Brand green */
   --primary-foreground: 210 40% 98%;
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
@@ -50,7 +50,7 @@
   
   /* Custom gradients for Qatar theme */
   --gradient-qatar: linear-gradient(135deg, #8B1538 0%, #0f172a 50%, #020617 100%);
-  --gradient-ramadan: linear-gradient(135deg, #10b981 0%, #0f172a 50%, #020617 100%);
+  --gradient-brand: linear-gradient(135deg, #10b981 0%, #0f172a 50%, #020617 100%);
   --gradient-luxury: linear-gradient(135deg, #8B1538 0%, #10b981 30%, #fbbf24 60%, #0f172a 100%);
 }
 
@@ -147,11 +147,15 @@ body {
   font-feature-settings: 'tnum';
 }
 
-/* Qatar theme background - gradient over Ramadan image */
+/* Qatar theme background */
 .bg-qatar-gradient {
-  background-image:
-    linear-gradient(135deg, rgba(139, 21, 56, 0.9) 0%, rgba(160, 29, 66, 0.8) 25%, rgba(30, 41, 59, 0.9) 60%, rgba(51, 65, 85, 0.95) 100%),
-    url('/ramadan-bg.jpg');
+  background-image: linear-gradient(
+    135deg,
+    rgba(139, 21, 56, 0.9) 0%,
+    rgba(160, 29, 66, 0.8) 25%,
+    rgba(30, 41, 59, 0.9) 60%,
+    rgba(51, 65, 85, 0.95) 100%
+  );
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -160,13 +164,13 @@ body {
 
 @media (min-width: 1024px) {
   .bg-qatar-gradient,
-  .bg-ramadan-gradient,
+  .bg-brand-gradient,
   .bg-luxury-gradient {
     background-attachment: fixed;
   }
 }
 
-.bg-ramadan-gradient {
+.bg-brand-gradient {
   background-image: linear-gradient(135deg, #10b981 0%, #34d399 30%, #1e293b 70%, #334155 100%);
   background-attachment: fixed;
 }
@@ -181,11 +185,7 @@ body {
   padding-bottom: calc(7.25rem + env(safe-area-inset-bottom, 0px));
 }
 
-/* Custom shadow utilities */
-.shadow-ramadan-glow {
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-}
-
+/* Custom shadow utilities (Tailwind shadow-brand-glow preferred) */
 .shadow-qatar-glow {
   box-shadow: 0 0 20px rgba(139, 21, 56, 0.3);
 }

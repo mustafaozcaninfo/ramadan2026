@@ -6,17 +6,17 @@ import { useTranslations } from 'next-intl';
 
 interface ScrollToTodayProps {
   className?: string;
-  /** Ay içindeki bugünün günü (1–31); görünen ay bugünü içermiyorsa null. */
-  todayDayInMonth: number | null;
+  /** Gregoryen bugün (YYYY-MM-DD); listede yoksa null. */
+  todayIso: string | null;
 }
 
-export function ScrollToToday({ className, todayDayInMonth }: ScrollToTodayProps) {
+export function ScrollToToday({ className, todayIso }: ScrollToTodayProps) {
   const t = useTranslations('calendar');
 
   const scrollToToday = () => {
-    if (todayDayInMonth === null) return;
+    if (todayIso === null) return;
 
-    const todayCardId = `day-${todayDayInMonth}`;
+    const todayCardId = `day-${todayIso}`;
     const todayCard = document.getElementById(todayCardId);
 
     if (todayCard) {
@@ -24,9 +24,9 @@ export function ScrollToToday({ className, todayDayInMonth }: ScrollToTodayProps
 
       const cardDiv = todayCard.querySelector('div') as HTMLElement | null;
       if (cardDiv) {
-        cardDiv.classList.add('ring-2', 'ring-ramadan-green', 'ring-opacity-75', 'transition-all');
+        cardDiv.classList.add('ring-2', 'ring-brand-green', 'ring-opacity-75', 'transition-all');
         setTimeout(() => {
-          cardDiv.classList.remove('ring-2', 'ring-ramadan-green', 'ring-opacity-75');
+          cardDiv.classList.remove('ring-2', 'ring-brand-green', 'ring-opacity-75');
         }, 2000);
       }
 
@@ -45,7 +45,7 @@ export function ScrollToToday({ className, todayDayInMonth }: ScrollToTodayProps
       variant="outline"
       size="sm"
       className={className}
-      disabled={todayDayInMonth === null}
+      disabled={todayIso === null}
       aria-label={t('scrollToToday')}
     >
       <Calendar className="w-4 h-4 mr-2" />

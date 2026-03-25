@@ -49,7 +49,7 @@ const ROW_META: {
     labelTr: 'Akşam',
     labelEn: 'Maghrib',
     labelAr: 'المغرب',
-    color: 'ramadan-gold',
+    color: 'brand-gold',
   },
   { key: 'Isha', icon: Moon, labelTr: 'Yatsı', labelEn: 'Isha', labelAr: 'العشاء', color: 'purple' },
 ];
@@ -59,7 +59,7 @@ const ROW_RING: Record<string, string> = {
   amber: 'border-amber-500/55 bg-amber-500/10',
   yellow: 'border-yellow-500/50 bg-yellow-500/10',
   orange: 'border-orange-500/55 bg-orange-500/10',
-  'ramadan-gold': 'border-ramadan-gold/55 bg-ramadan-gold/10',
+  'brand-gold': 'border-brand-gold/55 bg-brand-gold/10',
   purple: 'border-purple-500/55 bg-purple-500/10',
 };
 
@@ -137,7 +137,7 @@ export function PrayerTimeCard({
   return (
     <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
       <div
-        className="absolute inset-0 bg-gradient-to-br from-qatar-maroon/10 via-transparent to-ramadan-green/10 pointer-events-none"
+        className="absolute inset-0 bg-gradient-to-br from-qatar-maroon/10 via-transparent to-brand-green/10 pointer-events-none"
         aria-hidden
       />
 
@@ -147,9 +147,9 @@ export function PrayerTimeCard({
         </CardTitle>
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="inline-flex items-center gap-2 rounded-lg border border-slate-500/50 bg-slate-900/35 px-3 py-2 text-xs sm:text-sm text-slate-100">
-            <Clock3 className="w-4 h-4 text-ramadan-gold shrink-0" />
+            <Clock3 className="w-4 h-4 text-brand-gold shrink-0" />
             <span className="min-w-0">{nextLabel}</span>
-            <span className="font-bold tabular-nums text-ramadan-gold shrink-0">
+            <span className="font-bold tabular-nums text-brand-gold shrink-0">
               {normalizeAladhanTime(nextSlot.time)}
             </span>
           </div>

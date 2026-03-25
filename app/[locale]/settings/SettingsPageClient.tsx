@@ -64,12 +64,12 @@ export function SettingsPageClient({ locale }: SettingsPageClientProps) {
             transition={{ delay: index * 0.1 }}
           >
             <Card className="bg-gradient-to-br from-slate-700/95 via-slate-800/90 to-slate-900/95 border-slate-600/60 backdrop-blur-sm shadow-xl shadow-black/30 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-ramadan-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-green/10 via-transparent to-qatar-maroon/10 pointer-events-none" aria-hidden />
 
               <CardHeader className="relative z-10 p-4 sm:p-5 pb-3">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-ramadan-green/20 rounded-lg">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-ramadan-green" />
+                  <div className="p-2 bg-brand-green/20 rounded-lg">
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-brand-green" />
                   </div>
                   <div className="flex-1">
                     <CardTitle className="text-lg sm:text-xl font-bold text-slate-100">

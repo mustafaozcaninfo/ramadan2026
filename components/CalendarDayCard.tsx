@@ -10,19 +10,17 @@ import {
   ChevronDown,
   Clock,
   Sunrise as SunriseIcon,
-  BookOpen,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getDuaByDay } from '@/lib/duas';
-import { hijriRamadanDayFromResponse, type AladhanResponse } from '@/lib/prayer';
 import { gregorianDdMmYyyyToIso } from '@/lib/gregorianIso';
+import type { AladhanResponse } from '@/lib/prayer';
 
 const PRAYER_KEYS = [
   { key: 'Fajr' as const, labelKey: 'fajr', icon: Moon, color: 'blue' },
   { key: 'Sunrise' as const, labelKey: 'sunrise', icon: SunriseIcon, color: 'amber' },
   { key: 'Dhuhr' as const, labelKey: 'dhuhr', icon: Sun, color: 'yellow' },
   { key: 'Asr' as const, labelKey: 'asr', icon: Clock, color: 'orange' },
-  { key: 'Maghrib' as const, labelKey: 'maghrib', icon: Sun, color: 'ramadan-gold' },
+  { key: 'Maghrib' as const, labelKey: 'maghrib', icon: Sun, color: 'brand-gold' },
   { key: 'Isha' as const, labelKey: 'isha', icon: Moon, color: 'purple' },
 ] as const;
 
@@ -47,10 +45,10 @@ const colorClasses: Record<string, { border: string; text: string; bg: string }>
     text: 'text-orange-200',
     bg: 'bg-orange-500/10',
   },
-  'ramadan-gold': {
-    border: 'border-ramadan-gold/60',
-    text: 'text-ramadan-gold',
-    bg: 'bg-ramadan-gold/10',
+  'brand-gold': {
+    border: 'border-brand-gold/60',
+    text: 'text-brand-gold',
+    bg: 'bg-brand-gold/10',
   },
   purple: {
     border: 'border-purple-500/60',
@@ -85,9 +83,6 @@ export function CalendarDayCard({
   const cardIso = gregorianDdMmYyyyToIso(day.data.date.gregorian.date);
   const isTodayDate = cardIso !== null && cardIso === cityTodayIso;
   const timings = day.data.timings;
-  const ramadanDuaDay = hijriRamadanDayFromResponse(day.data.date.hijri);
-  const dua =
-    ramadanDuaDay !== null ? getDuaByDay(ramadanDuaDay, locale === 'ar' ? 'en' : locale) : null;
 
   const expanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
   const setExpanded = onToggle || (() => setInternalExpanded((prev) => !prev));
@@ -96,18 +91,18 @@ export function CalendarDayCard({
     <div
       className={`relative overflow-hidden backdrop-blur-sm transition-all duration-300 rounded-xl ${
         isTodayDate
-          ? 'bg-gradient-to-br from-ramadan-green/40 via-slate-700/95 to-slate-800/95 border-2 border-ramadan-green shadow-xl shadow-ramadan-green/40'
+          ? 'bg-gradient-to-br from-brand-green/40 via-slate-700/95 to-slate-800/95 border-2 border-brand-green shadow-xl shadow-brand-green/40'
           : 'bg-gradient-to-br from-slate-700/90 to-slate-800/90 border border-slate-600/60 hover:border-slate-500 hover:shadow-lg hover:scale-[1.02]'
       }`}
     >
       {isTodayDate && (
-        <div className="absolute inset-0 bg-gradient-to-br from-ramadan-green/15 via-transparent to-qatar-maroon/15 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-green/15 via-transparent to-qatar-maroon/15 pointer-events-none" />
       )}
 
       <button
         type="button"
         onClick={setExpanded}
-        className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ramadan-green focus-visible:ring-offset-2 rounded-lg active:scale-[0.98] transition-transform"
+        className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 rounded-lg active:scale-[0.98] transition-transform"
         aria-expanded={expanded}
         aria-controls={`day-${dayOfMonth}-content`}
         aria-label={expanded ? t('collapse') : t('expand')}
@@ -116,7 +111,7 @@ export function CalendarDayCard({
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <p
-                className={`text-base sm:text-lg font-bold ${isTodayDate ? 'text-ramadan-green' : 'text-slate-100'}`}
+                className={`text-base sm:text-lg font-bold ${isTodayDate ? 'text-brand-green' : 'text-slate-100'}`}
               >
                 {format(date, 'd MMMM', { locale: dateLocale })}
               </p>
@@ -131,7 +126,7 @@ export function CalendarDayCard({
               transition={{ duration: 0.25, ease: 'easeInOut' }}
               className={`inline-flex items-center justify-center w-8 h-8 rounded-full border transition-colors ${
                 expanded
-                  ? 'bg-ramadan-gold/20 border-ramadan-gold text-ramadan-gold'
+                  ? 'bg-brand-gold/20 border-brand-gold text-brand-gold'
                   : 'bg-slate-600/50 border-slate-500 text-slate-300'
               }`}
               aria-hidden
@@ -142,7 +137,7 @@ export function CalendarDayCard({
           <div className="text-xs sm:text-sm text-slate-200 mt-2 space-y-0.5">
             <p className="font-medium">{format(date, 'EEEE, d MMMM yyyy', { locale: dateLocale })}</p>
             {day.data.date.hijri?.day && day.data.date.hijri?.month?.en && (
-              <p className="text-ramadan-gold font-semibold">
+              <p className="text-brand-gold font-semibold">
                 {day.data.date.hijri.day} {day.data.date.hijri.month.en} {day.data.date.hijri.year} AH
               </p>
             )}
@@ -186,7 +181,7 @@ export function CalendarDayCard({
             <div className="px-4 sm:px-5 pb-4 sm:pb-5 relative z-10 pt-0 space-y-4">
               <div>
                 <h4 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-ramadan-green" aria-hidden />
+                  <Clock className="w-4 h-4 text-brand-green" aria-hidden />
                   {t('allPrayerTimes')}
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
@@ -210,37 +205,6 @@ export function CalendarDayCard({
                   })}
                 </div>
               </div>
-
-              {dua && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="rounded-xl bg-gradient-to-br from-ramadan-gold/10 to-qatar-maroon/10 border border-ramadan-gold/30 p-4"
-                >
-                  <h4 className="text-sm font-semibold text-ramadan-gold mb-3 flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" aria-hidden />
-                    {t('dayDua')}
-                  </h4>
-                  <h5 className="font-semibold text-slate-100 mb-2">
-                    {locale === 'ar' ? t('dayDua') : dua.title}
-                  </h5>
-                  <div className="bg-slate-800/60 rounded-lg p-3 mb-2 border border-slate-600/50">
-                    <p
-                      className="text-lg sm:text-xl text-right leading-relaxed text-ramadan-green font-arabic"
-                      lang="ar"
-                    >
-                      {dua.arabic}
-                    </p>
-                  </div>
-                  {locale !== 'ar' ? (
-                    <>
-                      <p className="text-xs text-slate-400 italic mb-1.5">{dua.transliteration}</p>
-                      <p className="text-sm text-slate-200 leading-relaxed">{dua.translation}</p>
-                    </>
-                  ) : null}
-                </motion.div>
-              )}
             </div>
           </motion.div>
         )}

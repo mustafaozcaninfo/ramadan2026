@@ -24,7 +24,7 @@ export async function generateMetadata({
   return {
     title: `${tCommon('appName')} - ${tHome('subtitle')}`,
     description: tHome('subtitle'),
-    manifest: '/manifest.json',
+    manifest: '/manifest.webmanifest',
     appleWebApp: {
       capable: true,
       statusBarStyle: 'black-translucent',
@@ -67,7 +67,6 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} className="dark">
       <head>
-        <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="format-detection" content="telephone=no" />

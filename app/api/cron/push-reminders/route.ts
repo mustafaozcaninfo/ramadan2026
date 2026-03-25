@@ -3,7 +3,7 @@ import webPush from 'web-push';
 import { Redis } from '@upstash/redis';
 import { getPrayerTimes, getDohaDateString } from '@/lib/prayer';
 
-const REDIS_PREFIX = 'ramadan:push:';
+const REDIS_PREFIX = 'prayer:push:';
 const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 
   try {
     webPush.setVapidDetails(
-      'mailto:ramadan@example.com',
+      'mailto:ops@example.com',
       VAPID_PUBLIC,
       VAPID_PRIVATE
     );

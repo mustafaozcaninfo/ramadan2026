@@ -32,7 +32,7 @@ export default async function ResourceDetailPage({
   return (
     <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-brand-green rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl" />
       </div>
 

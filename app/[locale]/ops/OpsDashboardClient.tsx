@@ -176,7 +176,7 @@ export function OpsDashboardClient() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             <div className="rounded-xl border border-slate-600/60 bg-slate-800/50 p-4">
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2 mb-3">
-                <Server className="w-4 h-4 text-ramadan-gold" />
+                <Server className="w-4 h-4 text-brand-gold" />
                 {t('envReadiness')}
               </h3>
               <div className="space-y-2 text-sm">
@@ -198,7 +198,7 @@ export function OpsDashboardClient() {
 
             <div className="rounded-xl border border-slate-600/60 bg-slate-800/50 p-4">
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2 mb-3">
-                <Bell className="w-4 h-4 text-ramadan-gold" />
+                <Bell className="w-4 h-4 text-brand-gold" />
                 {t('nextReminder')}
               </h3>
               {data.nextReminder ? (

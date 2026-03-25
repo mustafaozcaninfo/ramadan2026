@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Iftar & Sahur | الإفطار والسحور',
-    short_name: 'Iftar Sahur',
-    description: 'Multilingual iftar and suhoor prayer-time app',
+    name: 'Prayer Times',
+    short_name: 'Prayer Times',
+    description: 'Multilingual prayer times for your city (Aladhan)',
     start_url: '/',
     display: 'standalone',
     background_color: '#0f172a',

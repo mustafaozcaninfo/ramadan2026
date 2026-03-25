@@ -118,14 +118,6 @@ export interface AladhanResponse {
 
 export type HijriDateInfo = AladhanResponse['data']['date']['hijri'];
 
-/** Ramazan günü (1–30) when API Hijri ayı 9; aksi halde null. */
-export function hijriRamadanDayFromResponse(hijri: HijriDateInfo | undefined): number | null {
-  if (!hijri || hijri.month?.number !== 9) return null;
-  const day = parseInt(String(hijri.day).replace(/\D/g, ''), 10);
-  if (day >= 1 && day <= 30) return day;
-  return null;
-}
-
 /**
  * Prayer times for a Gregorian date (YYYY-MM-DD) via Aladhan.
  */

@@ -19,7 +19,7 @@ export function LanguageSwitcher() {
 
   return (
     <div className="inline-flex items-center gap-2 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-lg px-3 py-2 min-h-[44px]">
-      <Globe className="w-4 h-4 text-ramadan-green" />
+      <Globe className="w-4 h-4 text-brand-green" />
       <label className="sr-only" htmlFor="language-switcher">
         {tCommon('language')}
       </label>

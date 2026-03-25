@@ -6,7 +6,7 @@ import {
   getYearMonthInCityTimezone,
   getCityDateString,
 } from '@/lib/prayer';
-import { getCityConfigFromCookie } from '@/lib/cityCookie';
+import { getCityConfigFromNextCookies } from '@/lib/cityCookie';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Navigation } from '@/components/Navigation';
@@ -61,7 +61,7 @@ export default async function CalendarPage({
   const tCommon = await getTranslations('common');
 
   const cookieStore = await cookies();
-  const cityConfig = getCityConfigFromCookie(cookieStore.get('ramadan-city')?.value);
+  const cityConfig = getCityConfigFromNextCookies(cookieStore);
   const selectedCityLabel = `${cityConfig.city}, ${cityConfig.country}`;
   const isTr = locale === 'tr';
   const isAr = locale === 'ar';
@@ -73,8 +73,6 @@ export default async function CalendarPage({
   const { year: defaultYear, month: defaultMonth } = getYearMonthInCityTimezone(cityConfig);
   const year = parseYearMonthParam(resolvedSearchParams.year, defaultYear, 'year');
   const month = parseYearMonthParam(resolvedSearchParams.month, defaultMonth, 'month');
-
-  const cityTodayIso = getCityDateString(cityConfig);
 
   let prayerTimes: Awaited<ReturnType<typeof getMonthPrayerTimes>>;
   try {
@@ -92,6 +90,7 @@ export default async function CalendarPage({
     locale: dateLocale,
   });
 
+  const cityTodayIso = getCityDateString(cityConfig);
   const [ty, tm, td] = cityTodayIso.split('-').map(Number);
   const todayDayInMonth =
     ty === year && tm === month && td >= 1 && td <= 31 ? td : null;
@@ -102,9 +101,9 @@ export default async function CalendarPage({
   return (
     <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-green rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-ramadan-gold rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-gold rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 pb-4 sm:pb-6 relative z-10 safe-area-inset-top">
@@ -114,7 +113,7 @@ export default async function CalendarPage({
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-50 mb-2 sm:mb-3 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
                 {t('title')}
               </h1>
-              <p className="text-lg sm:text-xl font-semibold text-ramadan-gold/95 mb-2">
+              <p className="text-lg sm:text-xl font-semibold text-brand-gold/95 mb-2">
                 {t('monthNav', { monthYear: monthYearLabel })}
               </p>
               <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-2">
@@ -177,7 +176,7 @@ export default async function CalendarPage({
 
           <div className="text-center text-xs sm:text-sm text-slate-300 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-600/50">
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-700/50 backdrop-blur-sm rounded-lg border border-slate-600/50 mb-2 sm:mb-3 shadow-md">
-              <p className="text-ramadan-green font-medium">
+              <p className="text-brand-green font-medium">
                 {selectedCityLabel} • {methodLabel}
               </p>
             </div>
@@ -187,7 +186,7 @@ export default async function CalendarPage({
                 href="https://aladhan.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-ramadan-green hover:text-ramadan-gold transition-colors font-medium"
+                className="text-brand-green hover:text-brand-gold transition-colors font-medium"
               >
                 Aladhan API
               </a>

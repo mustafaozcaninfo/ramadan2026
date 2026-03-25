@@ -2,7 +2,9 @@ import { MetadataRoute } from 'next';
 import { routing } from '@/lib/i18n/routing';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://ramadan-2026-doha.vercel.app';
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://localhost:3000'
+  ).replace(/\/$/, '');
 
   const routes = [
     '',

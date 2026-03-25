@@ -57,9 +57,9 @@ export function CalendarPageClient({
 
       const cardDiv = todayCard.querySelector('div') as HTMLElement | null;
       if (cardDiv) {
-        cardDiv.classList.add('ring-2', 'ring-ramadan-green', 'ring-opacity-75', 'transition-all');
+        cardDiv.classList.add('ring-2', 'ring-brand-green', 'ring-opacity-75', 'transition-all');
         setTimeout(() => {
-          cardDiv.classList.remove('ring-2', 'ring-ramadan-green', 'ring-opacity-75');
+          cardDiv.classList.remove('ring-2', 'ring-brand-green', 'ring-opacity-75');
         }, 2000);
       }
     }

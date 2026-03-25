@@ -285,7 +285,7 @@ export function ResourceDetailClient({ slug, initialLocale }: { slug: string; in
             <div className="grid gap-4 lg:grid-cols-2">
               <section className="rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4">
                 <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2 mb-3">
-                  <BookOpenText className="w-4 h-4 text-ramadan-gold" />
+                  <BookOpenText className="w-4 h-4 text-brand-gold" />
                   {t('sourcePanel')}
                 </h2>
                 <div className="space-y-2">

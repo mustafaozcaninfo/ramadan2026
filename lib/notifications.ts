@@ -1,6 +1,11 @@
 /**
- * Browser notification utilities for Sahur and Iftar reminders
+ * Browser notification utilities for prayer time reminders
  */
+
+const LS_NOTIFICATIONS = 'prayer-notifications-enabled';
+const LS_LEGACY_NOTIFICATIONS = 'ramadan-notifications-enabled';
+const IDB_NAME = 'prayer-app';
+const NOTIFICATION_TAG = 'prayer-reminder';
 
 export interface NotificationPermission {
   granted: boolean;
@@ -55,7 +60,7 @@ export function showNotification(
   return new Notification(title, {
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    tag: 'ramadan-reminder',
+    tag: NOTIFICATION_TAG,
     requireInteraction: false,
     ...options,
   });
@@ -91,7 +96,10 @@ export function scheduleNotification(
  */
 export function areNotificationsEnabled(): boolean {
   if (typeof window === 'undefined') return false;
-  return localStorage.getItem('ramadan-notifications-enabled') === 'true';
+  return (
+    localStorage.getItem(LS_NOTIFICATIONS) === 'true' ||
+    localStorage.getItem(LS_LEGACY_NOTIFICATIONS) === 'true'
+  );
 }
 
 /**
@@ -142,7 +150,8 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 export function enableNotifications(locale?: NotificationLocale | PushLocale, reminderIntervals?: number[]): void {
   if (typeof window === 'undefined') return;
   const pushLocale = locale ? normalizeNotificationLocale(locale) : undefined;
-  localStorage.setItem('ramadan-notifications-enabled', 'true');
+  localStorage.setItem(LS_NOTIFICATIONS, 'true');
+  localStorage.removeItem(LS_LEGACY_NOTIFICATIONS);
   syncNotificationSettingsToSW(true, pushLocale);
   postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: true, locale: pushLocale });
   if (pushLocale) void subscribeToPush(pushLocale, reminderIntervals);
@@ -153,7 +162,8 @@ export function enableNotifications(locale?: NotificationLocale | PushLocale, re
  */
 export function disableNotifications(): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('ramadan-notifications-enabled', 'false');
+  localStorage.setItem(LS_NOTIFICATIONS, 'false');
+  localStorage.removeItem(LS_LEGACY_NOTIFICATIONS);
   syncNotificationSettingsToSW(false);
   postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: false });
 }
@@ -164,7 +174,7 @@ export function disableNotifications(): void {
 export function setNotificationLocale(locale: NotificationLocale | PushLocale): void {
   if (typeof window === 'undefined' || !('indexedDB' in window)) return;
   const pushLocale = normalizeNotificationLocale(locale);
-  const request = indexedDB.open('ramadan-app', 1);
+  const request = indexedDB.open(IDB_NAME, 1);
   request.onupgradeneeded = (event) => {
     const db = (event.target as IDBOpenDBRequest).result;
     if (!db.objectStoreNames.contains('settings')) {
@@ -190,7 +200,7 @@ function postMessageToSW(msg: { type: string; enabled?: boolean; locale?: PushLo
  */
 function syncNotificationSettingsToSW(enabled: boolean, locale?: PushLocale): void {
   if (typeof window === 'undefined' || !('indexedDB' in window)) return;
-  const request = indexedDB.open('ramadan-app', 1);
+  const request = indexedDB.open(IDB_NAME, 1);
   request.onupgradeneeded = (event) => {
     const db = (event.target as IDBOpenDBRequest).result;
     if (!db.objectStoreNames.contains('settings')) {

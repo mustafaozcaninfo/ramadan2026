@@ -17,7 +17,7 @@ async function rateLimitWithUpstash(identifier: string, limit: number, windowSec
     const ratelimit = new Ratelimit({
       redis,
       limiter: Ratelimit.slidingWindow(limit, `${windowSeconds} s`),
-      prefix: 'ramadan:api:',
+      prefix: 'prayer:api:',
     });
     const { success, limit: l, remaining } = await ratelimit.limit(identifier);
     return success ? { success: true } : { success: false, limit: l, remaining };

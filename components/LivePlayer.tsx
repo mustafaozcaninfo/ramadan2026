@@ -221,7 +221,7 @@ export function LivePlayer({
       {status === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-900/95 to-black">
           <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 animate-spin rounded-full border-2 border-ramadan-gold/30 border-t-ramadan-gold" />
+            <div className="h-12 w-12 animate-spin rounded-full border-2 border-brand-gold/30 border-t-brand-gold" />
             <span className="text-sm font-medium text-slate-300">{t.loading}</span>
           </div>
         </div>
@@ -256,7 +256,7 @@ export function LivePlayer({
           <span className="text-center text-sm text-slate-300">{errorMessage}</span>
           <button
             onClick={handleRetry}
-            className="flex items-center gap-2 rounded-xl bg-ramadan-green px-6 py-3 font-semibold text-white transition-all hover:bg-ramadan-green/90 active:scale-95"
+            className="flex items-center gap-2 rounded-xl bg-brand-green px-6 py-3 font-semibold text-white transition-all hover:bg-brand-green/90 active:scale-95"
           >
             <RotateCcw className="h-4 w-4" />
             {t.retry}

@@ -11,7 +11,7 @@ export interface AppUser {
 }
 
 const DEFAULT_REMINDER_INTERVALS = [15, 10, 5, 0];
-const STORAGE_KEY = 'ramadan-app-settings';
+const STORAGE_KEY = 'prayer-app-settings';
 const MAX_RECENTLY_VIEWED = 30;
 
 export interface ResourceFilters {

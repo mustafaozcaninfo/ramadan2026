@@ -9,15 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-ramadan-green to-ramadan-green/90 text-white hover:from-ramadan-green/90 hover:to-ramadan-green shadow-ramadan-glow hover:shadow-ramadan-glow hover:scale-105",
+        default: "bg-gradient-to-r from-brand-green to-brand-green/90 text-white hover:from-brand-green/90 hover:to-brand-green shadow-brand-glow hover:shadow-brand-glow hover:scale-105",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-700/50 hover:border-slate-600 hover:text-ramadan-green",
+          "border border-slate-700/50 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-700/50 hover:border-slate-600 hover:text-brand-green",
         secondary:
           "bg-gradient-to-r from-slate-700 to-slate-800 text-secondary-foreground hover:from-slate-600 hover:to-slate-700",
-        ghost: "hover:bg-slate-800/50 hover:text-ramadan-green backdrop-blur-sm",
-        link: "text-ramadan-green underline-offset-4 hover:underline hover:text-ramadan-gold",
+        ghost: "hover:bg-slate-800/50 hover:text-brand-green backdrop-blur-sm",
+        link: "text-brand-green underline-offset-4 hover:underline hover:text-brand-gold",
       },
       size: {
         default: "h-11 sm:h-10 px-4 py-2",

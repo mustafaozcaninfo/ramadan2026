@@ -3,13 +3,10 @@ import { getTranslations } from 'next-intl/server';
 import {
   getTodayPrayerTimes,
   getPrayerTimes,
-  hijriRamadanDayFromResponse,
   getCityDateString,
 } from '@/lib/prayer';
-import { getCityConfigFromCookie } from '@/lib/cityCookie';
+import { getCityConfigFromNextCookies } from '@/lib/cityCookie';
 import { PrayerTimeCard } from '@/components/PrayerTimeCard';
-import { DuaOfTheDay } from '@/components/DuaOfTheDay';
-import { DailyHatim } from '@/components/DailyHatim';
 import { AzanButton } from '@/components/AzanButton';
 import { Navigation } from '@/components/Navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -30,7 +27,7 @@ export default async function HomePage({
   const tCommon = await getTranslations('common');
 
   const cookieStore = await cookies();
-  const cityConfig = getCityConfigFromCookie(cookieStore.get('ramadan-city')?.value);
+  const cityConfig = getCityConfigFromNextCookies(cookieStore);
   const tz = cityConfig.timezone ?? 'Asia/Qatar';
 
   let prayerData;
@@ -46,8 +43,6 @@ export default async function HomePage({
 
   const timings = prayerData.data.timings;
   const dateInfo = prayerData.data.date;
-
-  const ramadanDay = hijriRamadanDayFromResponse(dateInfo.hijri);
 
   const dateLocale = locale === 'tr' ? tr : enUS;
 
@@ -97,7 +92,7 @@ export default async function HomePage({
     <ErrorBoundary>
       <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
         <div className="absolute inset-0 opacity-25">
-          <div className="absolute -top-20 -left-20 w-[28rem] h-[28rem] bg-ramadan-green rounded-full blur-3xl"></div>
+          <div className="absolute -top-20 -left-20 w-[28rem] h-[28rem] bg-brand-green rounded-full blur-3xl"></div>
           <div className="absolute -bottom-20 -right-20 w-[28rem] h-[28rem] bg-qatar-maroon rounded-full blur-3xl"></div>
         </div>
 
@@ -112,13 +107,8 @@ export default async function HomePage({
                   {gregorianDate}
                 </h1>
                 {hijriDate && (
-                  <p className="mt-1 text-xs sm:text-sm text-ramadan-gold font-semibold">
+                  <p className="mt-1 text-xs sm:text-sm text-brand-gold font-semibold">
                     {hijriDate}
-                  </p>
-                )}
-                {ramadanDay !== null && (
-                  <p className="mt-2 inline-flex items-center rounded-full bg-slate-800/70 border border-slate-600/60 px-3 py-1 text-[11px] sm:text-xs font-semibold text-slate-100 shadow-ramadan-glow">
-                    {tHome('ramadanDay', { day: ramadanDay })}
                   </p>
                 )}
               </div>
@@ -126,10 +116,10 @@ export default async function HomePage({
             </div>
 
             <div
-              className="relative overflow-hidden rounded-2xl border border-ramadan-gold/40 bg-slate-900/70 shadow-2xl shadow-black/40 backdrop-blur-sm"
+              className="relative overflow-hidden rounded-2xl border border-brand-gold/40 bg-slate-900/70 shadow-2xl shadow-black/40 backdrop-blur-sm"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, rgba(15,23,42,0.94) 0%, rgba(15,23,42,0.64) 45%, rgba(15,23,42,0.9) 100%), url('/ramadan-bg.jpg')",
+                  'linear-gradient(135deg, rgba(15,23,42,0.94) 0%, rgba(15,23,42,0.64) 45%, rgba(15,23,42,0.9) 100%)',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
@@ -144,12 +134,12 @@ export default async function HomePage({
                   </p>
                   <p className="mt-2 text-sm text-slate-200/90">{heroSubtitle}</p>
                   <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-black/30 px-3 py-1 text-[11px] sm:text-xs text-slate-100 border border-amber-300/40">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-ramadan-glow" />
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-brand-glow" />
                     {selectedCityLabel}
                   </p>
                 </div>
                 <div className="hidden sm:flex flex-col items-end text-right text-xs text-slate-100/90 gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-ramadan-gold/40 bg-black/25 px-3 py-1 text-[11px] uppercase tracking-[0.15em] text-amber-200">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-gold/40 bg-black/25 px-3 py-1 text-[11px] uppercase tracking-[0.15em] text-amber-200">
                     <Sparkles className="w-3.5 h-3.5" />
                     {tHome('prayerTimesBadge')}
                   </span>
@@ -163,7 +153,7 @@ export default async function HomePage({
                 href={`/calendar?year=${calYear}&month=${calMonth}&today=1`}
                 aria-label={goTodayLabel}
               >
-                <Button className="w-full bg-ramadan-green hover:bg-emerald-500 text-white">
+                <Button className="w-full bg-brand-green hover:bg-emerald-500 text-white">
                   <Calendar className="w-4 h-4 mr-2" />
                   {goTodayLabel}
                 </Button>
@@ -207,15 +197,11 @@ export default async function HomePage({
               locale={locale as 'tr' | 'en' | 'ar'}
             />
 
-            <DailyHatim ramadanDay={ramadanDay} locale={locale as 'tr' | 'en' | 'ar'} />
-
             <AzanButton />
-
-            <DuaOfTheDay locale={locale as 'tr' | 'en' | 'ar'} ramadanDay={ramadanDay} />
 
             <div className="text-center text-xs text-slate-300 pt-4 border-t border-slate-600/50">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700/50">
-                <p className="text-ramadan-green font-medium">
+                <p className="text-brand-green font-medium">
                   {selectedCityLabel} • {methodLabel}
                 </p>
               </div>
@@ -225,7 +211,7 @@ export default async function HomePage({
                   href="https://aladhan.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ramadan-green hover:text-ramadan-gold transition-colors font-medium"
+                  className="text-brand-green hover:text-brand-gold transition-colors font-medium"
                 >
                   Aladhan API
                 </a>

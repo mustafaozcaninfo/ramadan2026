@@ -3,7 +3,7 @@ import { Redis } from '@upstash/redis';
 import { pushSubscribeBodySchema } from '@/lib/api-validation';
 import { checkApiRateLimit } from '@/lib/rate-limit';
 
-const REDIS_PREFIX = 'ramadan:push:';
+const REDIS_PREFIX = 'prayer:push:';
 
 function getRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;

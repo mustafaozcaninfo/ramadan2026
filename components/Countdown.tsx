@@ -8,35 +8,35 @@ interface CountdownProps {
   targetDateTime?: Date;
   label: string;
   locale?: 'tr' | 'en' | 'ar';
-  /** `next` = sıradaki namaz (varsayılan); eski sahur/iftar stilleri geriye dönük. */
-  variant?: 'sahur' | 'iftar' | 'next';
+  /** `next` = default next-prayer; `fajr` / `maghrib` = alternate accent styles. */
+  variant?: 'fajr' | 'maghrib' | 'next';
 }
 
 interface CountdownCardProps {
   value: number;
   label: string;
   index: number;
-  variant?: 'sahur' | 'iftar' | 'next';
+  variant?: 'fajr' | 'maghrib' | 'next';
 }
 
 function CountdownCard({ value, label, index, variant = 'next' }: CountdownCardProps) {
   const reduceMotion = useReducedMotion();
   const gradientClass =
-    variant === 'sahur'
+    variant === 'fajr'
       ? 'bg-gradient-to-br from-blue-500/40 via-blue-600/50 to-blue-700/60 dark:from-blue-600/50 dark:via-blue-700/60 dark:to-blue-800/70'
-      : variant === 'iftar'
-        ? 'bg-gradient-to-br from-ramadan-gold/40 via-ramadan-gold/50 to-ramadan-gold/60 dark:from-ramadan-gold/50 dark:via-ramadan-gold/60 dark:to-ramadan-gold/70'
+      : variant === 'maghrib'
+        ? 'bg-gradient-to-br from-brand-gold/40 via-brand-gold/50 to-brand-gold/60 dark:from-brand-gold/50 dark:via-brand-gold/60 dark:to-brand-gold/70'
         : 'bg-gradient-to-br from-emerald-500/35 via-slate-600/45 to-slate-700/55 dark:from-emerald-600/40 dark:via-slate-700/55 dark:to-slate-800/65';
 
   const borderClass =
-    variant === 'sahur'
+    variant === 'fajr'
       ? 'border-blue-400/50 dark:border-blue-500/50'
-      : variant === 'iftar'
-        ? 'border-ramadan-gold/50 dark:border-ramadan-gold/60'
+      : variant === 'maghrib'
+        ? 'border-brand-gold/50 dark:border-brand-gold/60'
         : 'border-emerald-400/45 dark:border-emerald-500/40';
 
   const textColor =
-    variant === 'sahur' ? 'text-blue-100' : variant === 'iftar' ? 'text-ramadan-gold' : 'text-emerald-100';
+    variant === 'fajr' ? 'text-blue-100' : variant === 'maghrib' ? 'text-brand-gold' : 'text-emerald-100';
 
   const isLowTime =
     (label.toLowerCase().includes('minute') ||

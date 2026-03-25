@@ -36,14 +36,14 @@ export function Navigation() {
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 px-3 sm:px-4 py-2 sm:py-2 rounded-xl transition-all duration-300 min-h-[44px] min-w-[44px] touch-manipulation relative',
                   isActive
-                    ? 'text-ramadan-green bg-gradient-to-b from-ramadan-green/10 to-transparent'
-                    : 'text-slate-400 active:text-ramadan-green hover:text-slate-300'
+                    ? 'text-brand-green bg-gradient-to-b from-brand-green/10 to-transparent'
+                    : 'text-slate-400 active:text-brand-green hover:text-slate-300'
                 )}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={item.label}
               >
                 {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-b from-ramadan-green/5 to-transparent rounded-xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-brand-green/5 to-transparent rounded-xl"></div>
                 )}
                 <Icon className={cn(
                   'w-5 h-5 sm:w-6 sm:h-6 relative z-10 transition-transform',

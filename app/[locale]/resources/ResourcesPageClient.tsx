@@ -198,9 +198,9 @@ export function ResourcesPageClient() {
   return (
     <main className="min-h-screen bg-qatar-gradient page-with-nav relative overflow-hidden">
       <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-ramadan-green rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-brand-green rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-qatar-maroon rounded-full blur-3xl" />
-        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-ramadan-gold rounded-full blur-3xl opacity-40" />
+        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-brand-gold rounded-full blur-3xl opacity-40" />
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 pb-5 sm:pb-6 relative z-10 safe-area-inset-top">
@@ -225,7 +225,7 @@ export function ResourcesPageClient() {
                 value={resourcesSearch}
                 onChange={(e) => setResourcesSearch(e.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950/70 pl-9 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-ramadan-green/70"
+                className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950/70 pl-9 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-green/70"
               />
             </label>
 
@@ -350,7 +350,7 @@ export function ResourcesPageClient() {
         <section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="sm:col-span-2 lg:col-span-1 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4">
             <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-              <Filter className="w-4 h-4 text-ramadan-gold" />
+              <Filter className="w-4 h-4 text-brand-gold" />
               {t('categories')}
             </h2>
             <div className="mt-3 space-y-2">
@@ -367,7 +367,7 @@ export function ResourcesPageClient() {
                     }
                     className={`w-full text-left rounded-lg border px-3 py-2 text-sm transition-colors ${
                       active
-                        ? 'border-ramadan-green/60 bg-ramadan-green/15 text-emerald-100'
+                        ? 'border-brand-green/60 bg-brand-green/15 text-emerald-100'
                         : 'border-slate-700 bg-slate-950/40 text-slate-300 hover:border-slate-500'
                     }`}
                   >
@@ -381,13 +381,13 @@ export function ResourcesPageClient() {
 
           <div className="sm:col-span-2 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4">
             <h2 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-ramadan-gold" />
+              <Sparkles className="w-4 h-4 text-brand-gold" />
               {t('routines')}
             </h2>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {response?.meta.routines.map((routine) => (
                 <div key={routine.id} className="rounded-xl border border-slate-700 bg-slate-950/45 p-3">
-                  <p className="text-xs text-ramadan-gold font-semibold flex items-center gap-1">
+                  <p className="text-xs text-brand-gold font-semibold flex items-center gap-1">
                     <Clock3 className="w-3 h-3" />
                     {routine.minutes} {t('min')}
                   </p>
