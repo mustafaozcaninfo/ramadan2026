@@ -20,7 +20,7 @@ const CHANNELS = [
     id: 'qtv1',
     nameKey: 'channel1',
     nameAr: 'قناة قطر 1',
-    src: 'https://qatartv.akamaized.net/hls/live/2026573/qtv1/master.m3u8',
+    src: 'https://live.kwikmotion.com/qtv1live/qtv1.smil/playlist.m3u8',
   },
   {
     id: 'qtv2',
