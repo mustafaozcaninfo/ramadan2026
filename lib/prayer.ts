@@ -16,7 +16,7 @@ export interface CityConfig {
 }
 
 export const SUPPORTED_CITIES: CityConfig[] = [
-  { city: 'Doha', country: 'Qatar', timezone: 'Asia/Qatar', method: '10', latitude: 25.2854, longitude: 51.531 },
+  { city: 'Doha', country: 'Qatar', timezone: 'Asia/Qatar', method: '10', latitude: 25.323, longitude: 51.5303 },
   { city: 'Istanbul', country: 'Turkey', timezone: 'Europe/Istanbul', method: '13', latitude: 41.0082, longitude: 28.9784 },
   { city: 'London', country: 'United Kingdom', timezone: 'Europe/London', method: '3', latitude: 51.5074, longitude: -0.1278 },
   { city: 'Dubai', country: 'United Arab Emirates', timezone: 'Asia/Dubai', method: '8', latitude: 25.2048, longitude: 55.2708 },
@@ -29,8 +29,8 @@ const DEFAULT_CITY: CityConfig = {
   country: 'Qatar',
   timezone: 'Asia/Qatar',
   method: '10',
-  latitude: 25.2854,
-  longitude: 51.531,
+  latitude: 25.323,
+  longitude: 51.5303,
 };
 
 function toAladhanDate(isoDate: string): string {
