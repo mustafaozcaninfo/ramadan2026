@@ -1,5 +1,7 @@
 /**
- * Prayer times utilities — Aladhan API only (timingsByCity).
+ * Prayer times utilities — Aladhan API.
+ * Uses fixed lat/long per city (timings endpoint) for deterministic results;
+ * falls back to city/country geocoding (timingsByCity) only if coords missing.
  */
 
 import { formatInTimeZone, toDate } from 'date-fns-tz';
@@ -9,15 +11,17 @@ export interface CityConfig {
   country: string;
   timezone?: string;
   method?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export const SUPPORTED_CITIES: CityConfig[] = [
-  { city: 'Doha', country: 'Qatar', timezone: 'Asia/Qatar', method: '10' },
-  { city: 'Istanbul', country: 'Turkey', timezone: 'Europe/Istanbul', method: '13' },
-  { city: 'London', country: 'United Kingdom', timezone: 'Europe/London', method: '3' },
-  { city: 'Dubai', country: 'United Arab Emirates', timezone: 'Asia/Dubai', method: '8' },
-  { city: 'Riyadh', country: 'Saudi Arabia', timezone: 'Asia/Riyadh', method: '4' },
-  { city: 'Cairo', country: 'Egypt', timezone: 'Africa/Cairo', method: '5' },
+  { city: 'Doha', country: 'Qatar', timezone: 'Asia/Qatar', method: '10', latitude: 25.2854, longitude: 51.531 },
+  { city: 'Istanbul', country: 'Turkey', timezone: 'Europe/Istanbul', method: '13', latitude: 41.0082, longitude: 28.9784 },
+  { city: 'London', country: 'United Kingdom', timezone: 'Europe/London', method: '3', latitude: 51.5074, longitude: -0.1278 },
+  { city: 'Dubai', country: 'United Arab Emirates', timezone: 'Asia/Dubai', method: '8', latitude: 25.2048, longitude: 55.2708 },
+  { city: 'Riyadh', country: 'Saudi Arabia', timezone: 'Asia/Riyadh', method: '4', latitude: 24.7136, longitude: 46.6753 },
+  { city: 'Cairo', country: 'Egypt', timezone: 'Africa/Cairo', method: '5', latitude: 30.0444, longitude: 31.2357 },
 ];
 
 const DEFAULT_CITY: CityConfig = {
@@ -25,6 +29,8 @@ const DEFAULT_CITY: CityConfig = {
   country: 'Qatar',
   timezone: 'Asia/Qatar',
   method: '10',
+  latitude: 25.2854,
+  longitude: 51.531,
 };
 
 function toAladhanDate(isoDate: string): string {
@@ -36,10 +42,22 @@ function toAladhanDate(isoDate: string): string {
 
 function buildAladhanUrl(date: string, config: CityConfig): string {
   const aladhanDate = toAladhanDate(date);
+  const method = config.method ?? DEFAULT_CITY.method ?? '10';
+
+  if (typeof config.latitude === 'number' && typeof config.longitude === 'number') {
+    const params = new URLSearchParams({
+      latitude: String(config.latitude),
+      longitude: String(config.longitude),
+      method,
+    });
+    if (config.timezone) params.set('timezonestring', config.timezone);
+    return `https://api.aladhan.com/v1/timings/${aladhanDate}?${params.toString()}`;
+  }
+
   const params = new URLSearchParams({
     city: config.city,
     country: config.country,
-    method: config.method ?? DEFAULT_CITY.method ?? '10',
+    method,
   });
   return `https://api.aladhan.com/v1/timingsByCity/${aladhanDate}?${params.toString()}`;
 }
