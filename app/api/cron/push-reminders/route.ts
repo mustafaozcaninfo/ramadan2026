@@ -8,6 +8,12 @@ import {
   type CityConfig,
   type PrayerTimes,
 } from '@/lib/prayer';
+import {
+  buildPrayerNotificationPayload,
+  DEFAULT_REMINDER_INTERVALS,
+  PRAYER_NOTIFICATION_ORDER,
+  type PrayerNotificationKey,
+} from '@/lib/notificationCopy';
 import { getValidatedCityConfig } from '@/lib/api-validation';
 import {
   PUSH_SUBSCRIPTION_PREFIX,
@@ -19,63 +25,6 @@ const VAPID_PUBLIC = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
 const IS_PROD = process.env.NODE_ENV === 'production';
-
-const PRAYER_ORDER: (keyof PrayerTimes)[] = [
-  'Fajr',
-  'Sunrise',
-  'Dhuhr',
-  'Asr',
-  'Maghrib',
-  'Isha',
-];
-
-const PRAYER_LABELS: Record<'tr' | 'en' | 'ar', Record<keyof PrayerTimes, string>> = {
-  tr: {
-    Fajr: 'İmsak',
-    Sunrise: 'Güneş',
-    Dhuhr: 'Öğle',
-    Asr: 'İkindi',
-    Maghrib: 'Akşam',
-    Isha: 'Yatsı',
-  },
-  en: {
-    Fajr: 'Fajr',
-    Sunrise: 'Sunrise',
-    Dhuhr: 'Dhuhr',
-    Asr: 'Asr',
-    Maghrib: 'Maghrib',
-    Isha: 'Isha',
-  },
-  ar: {
-    Fajr: 'الفجر',
-    Sunrise: 'الشروق',
-    Dhuhr: 'الظهر',
-    Asr: 'العصر',
-    Maghrib: 'المغرب',
-    Isha: 'العشاء',
-  },
-};
-
-function buildPayload(
-  loc: 'tr' | 'en' | 'ar',
-  prayerKey: keyof PrayerTimes,
-  minutes: number
-): { title: string; body: string } {
-  const name = PRAYER_LABELS[loc][prayerKey];
-  if (loc === 'tr') {
-    return minutes === 0
-      ? { title: `${name} vakti`, body: `${name} vakti girdi` }
-      : { title: `${minutes} dakika kaldı`, body: `${minutes} dakika sonra ${name}` };
-  }
-  if (loc === 'ar') {
-    return minutes === 0
-      ? { title: `وَقت ${name}`, body: `دخل وَقت ${name}` }
-      : { title: `متبقي ${minutes} دقيقة`, body: `متبقي ${minutes} دقيقة على ${name}` };
-  }
-  return minutes === 0
-    ? { title: `${name} time`, body: `${name} time has started` }
-    : { title: `${minutes} min left`, body: `${minutes} minutes until ${name}` };
-}
 
 function getRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -200,10 +149,10 @@ export async function GET(request: NextRequest) {
 
       let reminder: { prayerKey: keyof PrayerTimes; minutes: number } | null = null;
 
-      outer: for (const prayerKey of PRAYER_ORDER) {
-        const timeStr = timings[prayerKey];
+      outer: for (const prayerKey of PRAYER_NOTIFICATION_ORDER) {
+        const timeStr = timings[prayerKey as keyof PrayerTimes];
         if (!timeStr) continue;
-        for (const minutes of [15, 10, 5, 0]) {
+        for (const minutes of DEFAULT_REMINDER_INTERVALS) {
           const tUtc = localPrayerTimeToUtc(dateStr, timeStr, tz).getTime() - minutes * oneMin;
           if (now >= tUtc && now < tUtc + windowMs) {
             reminder = { prayerKey, minutes };
@@ -218,7 +167,7 @@ export async function GET(request: NextRequest) {
       if (await redis.get(sentKey)) continue;
       await redis.set(sentKey, '1', { ex: 600 });
 
-      const defaultIntervals = [15, 10, 5, 0];
+      const defaultIntervals = [...DEFAULT_REMINDER_INTERVALS];
 
       for (const row of subs) {
         const intervals = Array.isArray(row.reminderIntervals) && row.reminderIntervals.length
@@ -227,7 +176,11 @@ export async function GET(request: NextRequest) {
         if (!intervals.includes(reminder.minutes)) continue;
 
         const loc = row.locale === 'en' ? 'en' : row.locale === 'ar' ? 'ar' : 'tr';
-        const { title, body } = buildPayload(loc, reminder.prayerKey, reminder.minutes);
+        const { title, body } = buildPrayerNotificationPayload(
+          loc,
+          reminder.prayerKey as PrayerNotificationKey,
+          reminder.minutes
+        );
         try {
           await webPush.sendNotification(
             { endpoint: row.subscription.endpoint, keys: row.subscription.keys },

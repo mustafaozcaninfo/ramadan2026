@@ -173,12 +173,42 @@ export function enableNotifications(locale?: NotificationLocale | PushLocale, re
 /**
  * Disable notifications
  */
-export function disableNotifications(): void {
+export async function disableNotifications(): Promise<void> {
   if (typeof window === 'undefined') return;
+  await unsubscribeFromPush();
   localStorage.setItem(LS_NOTIFICATIONS, 'false');
   localStorage.removeItem(LS_LEGACY_NOTIFICATIONS);
   syncNotificationSettingsToSW(false);
   postMessageToSW({ type: 'NOTIFICATION_SETTINGS_CHANGED', enabled: false });
+}
+
+/**
+ * Remove Web Push subscription from backend (and browser when possible).
+ */
+export async function unsubscribeFromPush(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return;
+
+    const endpoint = sub.endpoint;
+    await fetch('/api/push-unsubscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: { endpoint } }),
+    });
+
+    try {
+      await sub.unsubscribe();
+    } catch {
+      // Redis entry removed; browser unsubscribe is best-effort
+    }
+  } catch {
+    // ignore
+  }
 }
 
 /**

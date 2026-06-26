@@ -31,6 +31,14 @@ export const pushSubscribeBodySchema = z.object({
 
 export type PushSubscribeBody = z.infer<typeof pushSubscribeBodySchema>;
 
+export const pushUnsubscribeBodySchema = z.object({
+  subscription: z.object({
+    endpoint: z.string().url(),
+  }),
+});
+
+export type PushUnsubscribeBody = z.infer<typeof pushUnsubscribeBodySchema>;
+
 export function getValidatedCityConfig(city?: string, country?: string) {
   if (!city || !country) return SUPPORTED_CITIES[0];
   const found = SUPPORTED_CITIES.find((c) => c.city === city && c.country === country);

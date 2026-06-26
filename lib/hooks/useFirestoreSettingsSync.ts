@@ -20,12 +20,14 @@ import {
  */
 export function useFirestoreSettingsSync(locale: string) {
   const user = useAppStore((s) => s.user);
+  const city = useAppStore((s) => s.city);
   const notificationsEnabled = useAppStore((s) => s.notificationsEnabled);
   const reminderIntervals = useAppStore((s) => s.reminderIntervals);
   const liveAutoplay = useAppStore((s) => s.liveAutoplay);
   const setNotificationsEnabled = useAppStore((s) => s.setNotificationsEnabled);
   const setReminderIntervals = useAppStore((s) => s.setReminderIntervals);
   const setLiveAutoplay = useAppStore((s) => s.setLiveAutoplay);
+  const setCity = useAppStore((s) => s.setCity);
   const loadedRef = useRef(false);
 
   // Load from Firestore when user appears
@@ -38,6 +40,9 @@ export function useFirestoreSettingsSync(locale: string) {
     loadUserSettings(user.uid).then((data) => {
       if (cancelled) return;
       if (data) {
+        if (typeof data.city === 'string' && data.city) {
+          setCity(data.city);
+        }
         if (Array.isArray(data.reminderIntervals) && data.reminderIntervals.length) {
           setReminderIntervals(data.reminderIntervals);
         }
@@ -49,7 +54,7 @@ export function useFirestoreSettingsSync(locale: string) {
               : undefined;
             enableNotifications(normalizeNotificationLocale(locale), intervals);
           } else {
-            disableNotifications();
+            void disableNotifications();
           }
         }
         if (typeof data.liveAutoplay === 'boolean') {
@@ -61,7 +66,7 @@ export function useFirestoreSettingsSync(locale: string) {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, setNotificationsEnabled, setReminderIntervals, setLiveAutoplay, locale]);
+  }, [user?.uid, setNotificationsEnabled, setReminderIntervals, setLiveAutoplay, setCity, locale]);
 
   // Persist to Firestore when user is set and store changes (debounced)
   useEffect(() => {
@@ -71,8 +76,9 @@ export function useFirestoreSettingsSync(locale: string) {
         notificationsEnabled,
         reminderIntervals,
         liveAutoplay,
+        city,
       });
     }, 500);
     return () => clearTimeout(t);
-  }, [user?.uid, notificationsEnabled, reminderIntervals, liveAutoplay]);
+  }, [user?.uid, notificationsEnabled, reminderIntervals, liveAutoplay, city]);
 }

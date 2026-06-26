@@ -440,7 +440,7 @@ export default function TestPage() {
         body: t('bodyMaghribNow'),
         icon: '/icon-192.png',
         badge: '/icon-192.png',
-        tag: 'test-iftar-now',
+        tag: 'test-maghrib-now',
         requireInteraction: false,
       });
 
@@ -525,7 +525,7 @@ export default function TestPage() {
 
   const toggleNotifications = () => {
     if (notificationsEnabledUI) {
-      disableNotifications();
+      void disableNotifications();
       setNotificationsEnabledUI(false);
       setTestResult(copy.notificationsOff);
     } else {

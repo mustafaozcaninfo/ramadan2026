@@ -72,7 +72,7 @@ export function NotificationButton() {
       }
     } else {
       if (effectiveEnabled) {
-        disableNotifications();
+        void disableNotifications();
         setEnabled(false);
         setNotificationsEnabled(false);
         toast.success(t('disableNotifications'));

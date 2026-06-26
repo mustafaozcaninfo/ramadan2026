@@ -8,63 +8,21 @@ import {
   subscribeToPush,
   normalizeNotificationLocale,
 } from '@/lib/notifications';
+import {
+  buildPrayerNotificationPayload,
+  DEFAULT_REMINDER_INTERVALS,
+  PRAYER_NOTIFICATION_ORDER,
+  type PrayerNotificationKey,
+} from '@/lib/notificationCopy';
 import { useLocale } from 'next-intl';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { SUPPORTED_CITIES } from '@/lib/prayer';
 
-type PrayerKey = 'Fajr' | 'Sunrise' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha';
-
-const PRAYER_NAMES: Record<'tr' | 'en' | 'ar', Record<PrayerKey, string>> = {
-  tr: {
-    Fajr: 'İmsak',
-    Sunrise: 'Güneş',
-    Dhuhr: 'Öğle',
-    Asr: 'İkindi',
-    Maghrib: 'Akşam',
-    Isha: 'Yatsı',
-  },
-  en: {
-    Fajr: 'Fajr',
-    Sunrise: 'Sunrise',
-    Dhuhr: 'Dhuhr',
-    Asr: 'Asr',
-    Maghrib: 'Maghrib',
-    Isha: 'Isha',
-  },
-  ar: {
-    Fajr: 'الفجر',
-    Sunrise: 'الشروق',
-    Dhuhr: 'الظهر',
-    Asr: 'العصر',
-    Maghrib: 'المغرب',
-    Isha: 'العشاء',
-  },
-};
-
-const PRAYER_ORDER: PrayerKey[] = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-
-function safariStrings(locale: 'tr' | 'en' | 'ar', key: PrayerKey, minutes: number) {
-  const name = PRAYER_NAMES[locale][key];
-  if (locale === 'tr') {
-    return minutes === 0
-      ? { title: `${name} vakti`, body: `${name} vakti girdi` }
-      : { title: `${minutes} dakika kaldı`, body: `${minutes} dakika sonra ${name}` };
-  }
-  if (locale === 'ar') {
-    return minutes === 0
-      ? { title: `وَقت ${name}`, body: `دخل وَقت ${name}` }
-      : { title: `متبقي ${minutes} دقيقة`, body: `متبقي ${minutes} دقيقة على ${name}` };
-  }
-  return minutes === 0
-    ? { title: `${name} time`, body: `${name} time has started` }
-    : { title: `${minutes} min left`, body: `${minutes} minutes until ${name}` };
-}
-
 function isSafariOrIOS(): boolean {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent;
-  // iOS standalone mode (PWA added to home screen)
-  const isStandalone = ('standalone' in window.navigator && (window.navigator as any).standalone) ||
+  const isStandalone =
+    ('standalone' in window.navigator && (window.navigator as Navigator & { standalone?: boolean }).standalone) ||
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   return (
     isStandalone ||
@@ -109,7 +67,6 @@ function getOffsetMsAtTimeZone(date: Date, timeZone: string): number {
 }
 
 function cityDateTimeToDate(timeZone: string, year: number, month: number, day: number, hh: number, mm: number): Date {
-  // Convert "city local datetime" -> actual Date (UTC) by solving timezone offset.
   let utcMs = Date.UTC(year, month - 1, day, hh, mm, 0);
   for (let i = 0; i < 2; i++) {
     const offsetMs = getOffsetMsAtTimeZone(new Date(utcMs), timeZone);
@@ -125,10 +82,8 @@ function parseTimeInCity(timeStr: string, timeZone: string): Date {
 }
 
 /**
- * Client-side notification scheduler for Safari/iOS.
- * Safari/iOS does not run Service Workers in background (even in standalone/PWA mode),
- * so we schedule timeouts while the app is open.
- * Chrome/Edge/Firefox use the Service Worker for background reminders.
+ * Client-side notification scheduler for Safari/iOS while the app is open.
+ * Chrome/Edge/Firefox rely on server Web Push (no duplicate SW local scheduler).
  */
 export function NotificationManager() {
   const scheduledRef = useRef<Set<number>>(new Set());
@@ -142,14 +97,14 @@ export function NotificationManager() {
     setNotificationLocale(normalizedLocale);
   }, [normalizedLocale]);
 
-  // Re-subscribe with updated reminderIntervals when they change (updates Redis)
+  // Re-subscribe when city, locale, or intervals change (updates Redis)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!areNotificationsEnabled()) return;
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const intervals = reminderIntervals.length ? reminderIntervals : [15, 10, 5, 0];
+    const intervals = reminderIntervals.length ? reminderIntervals : [...DEFAULT_REMINDER_INTERVALS];
     void subscribeToPush(normalizedLocale, intervals);
-  }, [reminderIntervals, normalizedLocale]);
+  }, [reminderIntervals, normalizedLocale, city, cityConfig.city, cityConfig.country]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -158,7 +113,7 @@ export function NotificationManager() {
     if (!isSafariOrIOS()) return;
 
     const scheduled = scheduledRef.current;
-    const intervals = reminderIntervals.length ? reminderIntervals : [0];
+    const intervals = reminderIntervals.length ? reminderIntervals : [...DEFAULT_REMINDER_INTERVALS];
 
     const scheduleNotifications = async () => {
       try {
@@ -176,9 +131,9 @@ export function NotificationManager() {
         scheduled.forEach((id) => clearTimeout(id));
         scheduled.clear();
 
-        const reminders: Array<{ time: Date; minutes: number; prayerKey: PrayerKey }> = [];
+        const reminders: Array<{ time: Date; minutes: number; prayerKey: PrayerNotificationKey }> = [];
 
-        for (const prayerKey of PRAYER_ORDER) {
+        for (const prayerKey of PRAYER_NOTIFICATION_ORDER) {
           const timeStr = timings[prayerKey];
           if (!timeStr) continue;
           const prayerInstant = parseTimeInCity(timeStr, cityTz);
@@ -196,7 +151,7 @@ export function NotificationManager() {
           if (delay > 0 && delay < 24 * 60 * 60 * 1000) {
             const timeoutId = window.setTimeout(() => {
               if (!('Notification' in window) || Notification.permission !== 'granted') return;
-              const { title, body } = safariStrings(normalizedLocale, prayerKey, minutes);
+              const { title, body } = buildPrayerNotificationPayload(normalizedLocale, prayerKey, minutes);
               showNotification(title, { body, tag: `safari-${prayerKey}-${minutes}-${Date.now()}` });
             }, delay);
             scheduled.add(timeoutId);
